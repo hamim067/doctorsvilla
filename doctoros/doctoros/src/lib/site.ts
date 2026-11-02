@@ -1,6 +1,6 @@
 // ডাক্তারের Premium ওয়েবসাইট — প্ল্যান যাচাই, ডিফল্ট লেখা, ইনপুট যাচাই
 import "server-only";
-import { and, count, eq, isNotNull, sql } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import type { SiteContent, SiteText } from "@/db/schema";
@@ -106,7 +106,7 @@ export async function loadSite(doctorId: string) {
   const [row] = await db.select({
     published: schema.doctorSites.published,
     content: schema.doctorSites.content,
-    hasPhoto: isNotNull(schema.doctorSites.photo),
+    hasPhoto: sql<boolean>`${schema.doctorSites.photo} is not null`,
     updatedAt: schema.doctorSites.updatedAt,
   }).from(schema.doctorSites).where(eq(schema.doctorSites.doctorId, doctorId)).limit(1);
   return row ?? null;

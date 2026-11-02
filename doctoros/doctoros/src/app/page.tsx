@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@/components/ThemeToggle";
 import Link from "next/link";
 import { Icon } from "@/components/Icons";
 import { findDoctors, homeStats, openToday, type OpenChamber } from "@/lib/home";
@@ -73,6 +74,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
             <a href="#how">কীভাবে কাজ করে</a>
             <a href="#for-doctors">ডাক্তারদের জন্য</a>
           </nav>
+          <ThemeToggle className="home-mode" label={false} />
           <Link href="/login" className="btn-o">ডাক্তার লগইন</Link>
           <Link href="/me" className="btn-d"><span className="dot" />আমার সিরিয়াল</Link>
         </header>
@@ -232,7 +234,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
         <div className="hm-top">
           <header className="row-sb">
             <span className="hm-logo"><span className="hm-mark"><Icon name="plus" size={16} stroke={2.8} color="#5BD6A4" /></span>DoctorOS</span>
-            <Link href="/me" className="hm-login">আমার সিরিয়াল</Link>
+            <span className="row" style={{ gap: 8 }}><ThemeToggle className="home-mode on-dark" label={false} /><Link href="/me" className="hm-login">আমার সিরিয়াল</Link></span>
           </header>
           {liveCount > 0 && <span className="hm-live"><span className="dot" />এখন {bn(liveCount)}টি চেম্বারে লাইভ সিরিয়াল</span>}
           <h1>সঠিক ডাক্তার।<br /><span>সঠিক সময়ে।</span></h1>

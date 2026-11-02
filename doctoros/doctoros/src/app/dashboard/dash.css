@@ -1,6 +1,6 @@
 /* ডাক্তারের ড্যাশবোর্ড — শান্ত সাদা কার্ড, এক রঙের প্রধান টিল, কমলা শুধু মনোযোগের জন্য */
 .db { display: flex; flex-direction: column; gap: clamp(14px, 1.6vw, 20px); }
-.db h1 { font-family: "Baloo Da 2", "Hind Siliguri", sans-serif; font-size: clamp(24px, 2.6vw, 34px); line-height: 1.15; font-weight: 800; color: var(--heading); }
+.db h1 { font-family: "Anek Bangla", "Hind Siliguri", sans-serif; font-size: clamp(24px, 2.6vw, 34px); line-height: 1.15; font-weight: 800; color: var(--heading); }
 .db h2 { font-size: clamp(15px, 1.2vw, 17px); font-weight: 700; color: var(--ink); }
 .db .card { background: var(--card); border: 1px solid var(--line-2); border-radius: 20px; padding: clamp(16px, 1.6vw, 22px); box-shadow: var(--shadow-sm); }
 .db-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; }
@@ -15,7 +15,7 @@
 .db-live-tag { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; background: rgba(91, 214, 164, 0.14); color: #CFF3E4; padding: 5px 12px; border-radius: 999px; }
 .db-live-tag .dot { background: var(--mint); box-shadow: 0 0 0 4px rgba(91, 214, 164, 0.18); }
 .db-live-main { display: flex; align-items: flex-end; gap: clamp(12px, 2vw, 22px); }
-.db-live-num { font-family: "Baloo Da 2", sans-serif; font-size: clamp(58px, 7vw, 88px); font-weight: 800; line-height: 0.9; letter-spacing: -1px; }
+.db-live-num { font-family: "Anek Bangla", sans-serif; font-size: clamp(58px, 7vw, 88px); font-weight: 800; line-height: 0.9; letter-spacing: -1px; }
 .db-live-who { display: flex; flex-direction: column; padding-bottom: 8px; min-width: 0; }
 .db-live-who b { font-size: clamp(16px, 1.6vw, 20px); }
 .db .soft { color: #A9C7C0; }
@@ -118,6 +118,6 @@
   .db-today { grid-template-columns: minmax(0, 1fr); }
 }
 
-.dash[data-theme="dark"] .db-cta { background: linear-gradient(135deg, #173F37, #1B2826) !important; border-color: #24564B !important; }
-.dash[data-theme="dark"] .db-chip.in_progress { background: #2A2219; border-color: #5A3A22; }
-.dash[data-theme="dark"] .kpi-delta.down { color: var(--orange-ink); }
+:root[data-theme="dark"] .dash .db-cta { background: linear-gradient(135deg, #173F37, #1B2826) !important; border-color: #24564B !important; }
+:root[data-theme="dark"] .dash .db-chip.in_progress { background: #2A2219; border-color: #5A3A22; }
+:root[data-theme="dark"] .dash .kpi-delta.down { color: var(--orange-ink); }

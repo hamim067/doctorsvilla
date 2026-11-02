@@ -185,3 +185,48 @@
 .hm-cta a { min-height: 52px; border-radius: 999px; background: #fff; color: #8A3A10; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; margin-top: 4px; }
 .hm-foot { padding: 28px 18px 28px; font-size: 14px; color: #55635F; }
 .hm .doc { border-radius: 18px; padding: 14px; }
+
+/* ================= হোম পেজ — ডার্ক মোড ================= */
+:root[data-theme="dark"] .hd { background: #0C1513; color: #E4ECE9; color-scheme: dark; }
+:root[data-theme="dark"] .hd h1, :root[data-theme="dark"] .hd h2, :root[data-theme="dark"] .hd-logo, :root[data-theme="dark"] .hd-nav nav a { color: #F0F6F4; }
+:root[data-theme="dark"] .hd .muted, :root[data-theme="dark"] .muted-2, :root[data-theme="dark"] .lead, :root[data-theme="dark"] .popular { color: #A9BCB7; }
+:root[data-theme="dark"] .teal { color: #5BD6A4; }
+:root[data-theme="dark"] .btn-o, :root[data-theme="dark"] .btn-big-o { border-color: #2B3B38; color: #E4ECE9; }
+:root[data-theme="dark"] .btn-d { background: #E4ECE9; color: #0C1513; }
+:root[data-theme="dark"] .btn-d:hover { background: #fff; color: #0C1513; }
+:root[data-theme="dark"] .hd-hero { background: #10221E radial-gradient(#1C3A33 1.2px, transparent 1.2px); background-size: 22px 22px; }
+:root[data-theme="dark"] .pill { background: #13201E; border-color: #24453D; color: #9FE3C6; }
+:root[data-theme="dark"] .hd-search { background: #13201E; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4); }
+:root[data-theme="dark"] .hd-search label { background: #0C1513; }
+:root[data-theme="dark"] .hd-search input, :root[data-theme="dark"] .hd-search select { color: #E4ECE9; }
+:root[data-theme="dark"] .popular a { background: rgba(255, 255, 255, 0.04); border-color: #24453D; color: #9FE3C6; }
+:root[data-theme="dark"] .phone-card, :root[data-theme="dark"] .float { background: #16241F; color: #E4ECE9; }
+:root[data-theme="dark"] .trust, :root[data-theme="dark"] .doc { background: #111D1A; border-color: #22332F; }
+:root[data-theme="dark"] .ti, :root[data-theme="dark"] .ck, :root[data-theme="dark"] .vbadge { background: #173F37; color: #6FDDB8; }
+:root[data-theme="dark"] .spec { background: #111D1A !important; color: #E4ECE9; border: 1px solid #22332F; }
+:root[data-theme="dark"] .spec:hover { color: #fff; }
+:root[data-theme="dark"] .spec .small { color: #A9BCB7 !important; }
+:root[data-theme="dark"] .spec-ic { background: #1A2B27; }
+:root[data-theme="dark"] .doc-name { color: #F0F6F4; }
+:root[data-theme="dark"] .doc-slot, :root[data-theme="dark"] .step { background: #13201E; color: #C9D6D2; }
+:root[data-theme="dark"] .hd-live { background: #081A16; border: 1px solid #1C3A33; }
+:root[data-theme="dark"] .track input { background: #0C1513; border-color: #2B3B38; color: #E4ECE9; }
+:root[data-theme="dark"] .hd-cta { border-color: #1F7D69; }
+:root[data-theme="dark"] .foot-top { border-color: #22332F; }
+:root[data-theme="dark"] .hd a:not([class]) { color: #6FDDB8; }
+/* মোবাইল B */
+:root[data-theme="dark"] .hm { background: #0C1513; color: #E4ECE9; color-scheme: dark; }
+:root[data-theme="dark"] .hm-top { background: #071411; }
+:root[data-theme="dark"] .hm-search, :root[data-theme="dark"] .hm-card, :root[data-theme="dark"] .hm-results { background: #13201E; color: #E4ECE9; box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45); }
+:root[data-theme="dark"] .hm-field { background: #0C1513; }
+:root[data-theme="dark"] .hm-field input, :root[data-theme="dark"] .hm-field select { color: #E4ECE9; }
+:root[data-theme="dark"] .hm-tabs button { color: #A9BCB7; }
+:root[data-theme="dark"] .hm-tabs button.on { background: #1F7D69; }
+:root[data-theme="dark"] .hm-open { border-color: #22332F; color: #E4ECE9; }
+:root[data-theme="dark"] .hm-results h2, :root[data-theme="dark"] .hm-sec h2 { color: #F0F6F4; }
+:root[data-theme="dark"] .hm-spec { border-color: #22332F; color: #E4ECE9; }
+:root[data-theme="dark"] .hm-step.s0 { background: #13201E; }
+:root[data-theme="dark"] .hm-step.s1 { background: #173F37; }
+:root[data-theme="dark"] .hm-step.s2 { background: #071411; border: 1px solid #1C3A33; }
+:root[data-theme="dark"] .hm-foot, :root[data-theme="dark"] .hm .muted { color: #A9BCB7; }
+:root[data-theme="dark"] .hm .doc { background: #0F1A17; }

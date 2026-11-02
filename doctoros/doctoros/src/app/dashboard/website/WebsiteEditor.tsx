@@ -23,26 +23,25 @@ function Switch({ on, set, label }: { on: boolean; set: (v: boolean) => void; la
   );
 }
 
-function Step({ n, title, hint, on, set, children }: {
-  n: number; title: string; hint: string; on?: boolean; set?: (v: boolean) => void; children: React.ReactNode;
+function Step({ n, icon, title, hint, on, set, open, onOpen, children }: {
+  n: number; icon: keyof typeof ICON; title: string; hint: string; on?: boolean; set?: (v: boolean) => void;
+  open: boolean; onOpen: () => void; children: React.ReactNode;
 }) {
   const optional = on !== undefined && set;
   return (
-    <section className={`we-step${optional && !on ? " off" : ""}`}>
-      <header className="we-step-h">
-        <span className="we-num">{n.toLocaleString("bn-BD")}</span>
-        <span className="col grow" style={{ gap: 2 }}>
-          <h2>{title}</h2>
-          <span className="we-hint">{hint}</span>
-        </span>
-        {optional && (
-          <label className="we-show">
-            <span>{on ? "দেখাবে" : "লুকানো"}</span>
-            <Switch on={on} set={set} label={`${title} দেখাবে`} />
-          </label>
-        )}
-      </header>
-      {optional && !on ? <p className="we-offnote">এই অংশ ওয়েবসাইটে দেখাবে না। চালু করতে ডানের সুইচ চাপুন।</p> : <div className="we-body">{children}</div>}
+    <section className={`we-step${optional && !on ? " off" : ""}${open ? " open" : ""}`} data-step={n}>
+      <div className="we-step-h">
+        <button type="button" className="we-step-btn" aria-expanded={open} onClick={onOpen}>
+          <span className="we-num"><Icon name={icon} size={18} /></span>
+          <span className="col grow" style={{ gap: 0 }}>
+            <span className="we-step-t">{title}</span>
+            <span className="we-hint">{optional && !on ? "লুকানো — ওয়েবসাইটে দেখাবে না" : hint}</span>
+          </span>
+        </button>
+        {optional && <Switch on={on} set={set} label={`${title} দেখাবে`} />}
+        <button type="button" className="we-chev" aria-label={open ? "বন্ধ করুন" : "খুলুন"} onClick={onOpen}><Icon name={open ? "up" : "down"} size={18} /></button>
+      </div>
+      {open && (optional && !on ? <p className="we-offnote">এই অংশ এখন লুকানো। দেখাতে সুইচটা চালু করুন।</p> : <div className="we-body">{children}</div>)}
     </section>
   );
 }
@@ -84,6 +83,44 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
   const [dirty, setDirty] = useState(false);
   const [state, action, pending] = useActionState(saveSite, undefined);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [openStep, setOpenStep] = useState(1);
+  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  const [pvDark, setPvDark] = useState(false);
+  const [pvSheet, setPvSheet] = useState(false);
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const sheetRef = useRef<HTMLIFrameElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState({ w: 800, h: 600 });
+  const [ready, setReady] = useState(0);
+
+  // ডানের প্রিভিউ বাক্সের মাপ — ডেস্কটপ ভিউ ১২৮০px এঁকে ছোট করে দেখানো হয়
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setBox({ w: e.contentRect.width, h: e.contentRect.height }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  // প্রিভিউ পেজ তৈরি হলে জানায়
+  useEffect(() => {
+    const on = (e: MessageEvent) => { if (e.origin === location.origin && e.data?.type === "dv-ready") setReady((x) => x + 1); };
+    window.addEventListener("message", on);
+    return () => window.removeEventListener("message", on);
+  }, []);
+  const post = (msg: object) => {
+    for (const f of [frameRef.current, sheetRef.current]) f?.contentWindow?.postMessage(msg, location.origin);
+  };
+  // যা লিখছেন সাথে সাথে প্রিভিউতে
+  useEffect(() => {
+    const t = setTimeout(() => post({ type: "dv-content", content: c, photo: photoOut === "keep" ? "keep" : photo, lang, dark: pvDark }), 120);
+    return () => clearTimeout(t);
+  }, [c, photo, photoOut, lang, pvDark, ready]); // eslint-disable-line react-hooks/exhaustive-deps
+  const SECTION_OF: Record<number, string> = { 1: "top", 2: "top", 3: "services", 4: "about", 5: "chambers", 6: "faq", 7: "footer" };
+  const toggle = (n: number) => {
+    setOpenStep((o) => (o === n ? 0 : n));
+    post({ type: "dv-scroll", id: SECTION_OF[n] });
+  };
+  const stepProps = (n: number) => ({ open: openStep === n, onOpen: () => toggle(n) });
 
   useEffect(() => {
     if (state?.at) { setPhotoOut("keep"); setDirty(false); }
@@ -160,36 +197,46 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
       <input type="hidden" name="photo" value={photoOut} />
       <input type="hidden" name="published" value={published ? "1" : "0"} />
 
-      <div className="we-head">
-        <div className="col" style={{ gap: 4 }}>
-          <h1>আমার ওয়েবসাইট</h1>
-          <span className="we-hint">ধাপে ধাপে ঘরগুলো পূরণ করুন — ডিজাইন আপনাআপনি সুন্দর হয়ে যাবে। চেম্বার, সময় আর ফি নেওয়া হয় <Link href="/dashboard/chambers">চেম্বার সেটিং</Link> থেকে।</span>
+      {/* উপরের বার — Shopify-র মতো: শিরোনাম, অবস্থা, ভাষা, সেভ */}
+      <div className="we-top">
+        <div className="we-top-l">
+          <span className="we-top-ic"><Icon name="globe" size={20} /></span>
+          <span className="col" style={{ gap: 0, minWidth: 0 }}>
+            <span className="we-top-t">আমার ওয়েবসাইট</span>
+            <span className={`we-badge${published ? " on" : ""}`}><i />{published ? "প্রকাশিত" : "খসড়া"}</span>
+          </span>
         </div>
-        <div className="row" style={{ gap: 8 }}>
-          <a className="btn" href={`/dr/${doctor.slug}?preview=1`} target="_blank" rel="noreferrer"><Icon name="eye" size={18} />প্রিভিউ</a>
+        <div className="we-seg" role="tablist" aria-label="লেখার ভাষা">
+          <button type="button" role="tab" aria-selected={!en} className={!en ? "on" : ""} onClick={() => setLang("bn")}>বাংলা</button>
+          <button type="button" role="tab" aria-selected={en} className={en ? "on" : ""} onClick={() => setLang("en")}>English</button>
+        </div>
+        <div className="we-top-r">
+          <span className="we-status" aria-live="polite">
+            {state?.error ? <span className="we-err">⚠ {state.error}</span> : state?.ok && !dirty ? <span className="we-ok">✓ সেভ হয়েছে</span> : dirty ? <span className="we-dirty"><i />সেভ বাকি</span> : null}
+          </span>
+          <a className="btn btn-sm we-hide-sm" href={`/dr/${doctor.slug}?preview=1`} target="_blank" rel="noreferrer"><Icon name="external" size={16} />নতুন ট্যাবে</a>
+          <button className="btn btn-primary btn-sm we-save-btn" disabled={pending}>{pending ? "সেভ হচ্ছে…" : published ? "সেভ ও প্রকাশ" : "সেভ করুন"}</button>
         </div>
       </div>
 
-      {offer && <p className="we-offer"><Icon name="award" size={18} />{offer} — এই সময়ে যোগ দেওয়া ডাক্তাররা পরেও বিশেষ সুবিধা পাবেন।</p>}
+      <div className="we-grid">
+      <div className="we-left">
+      {offer && <p className="we-offer"><Icon name="award" size={18} />{offer}</p>}
+      {state?.ok && !dirty && <p className="we-okbar">✓ {state.ok}</p>}
       {!premium && <p className="alert alert-error">আপনার Premium চালু নেই। লেখা সেভ করতে পারবেন, কিন্তু প্রকাশ করতে Premium লাগবে।</p>}
 
       <div className="we-publish">
-        <span className="we-pub-ic" data-on={published}><Icon name="globe" size={22} /></span>
         <span className="col grow" style={{ gap: 2 }}>
-          <b>{published ? "ওয়েবসাইট প্রকাশিত" : "ওয়েবসাইট এখনো প্রকাশ হয়নি"}</b>
-          <span className="we-hint">{published ? <>রোগীরা দেখবেন: <a href={`/dr/${doctor.slug}`} target="_blank" rel="noreferrer">{link}</a></> : "প্রকাশ না করা পর্যন্ত রোগীরা আগের সাধারণ প্রোফাইল দেখবেন।"}</span>
+          <b>{published ? "রোগীরা আপনার ওয়েবসাইট দেখছেন" : "ওয়েবসাইট এখনো প্রকাশ হয়নি"}</b>
+          <span className="we-hint">{published ? <a href={`/dr/${doctor.slug}`} target="_blank" rel="noreferrer">{link}</a> : "চালু করে সেভ করলেই প্রকাশ হবে।"}</span>
         </span>
         <Switch on={published} set={(v) => { setPublished(v); setDirty(true); }} label="ওয়েবসাইট প্রকাশ" />
       </div>
 
-      <div className="we-lang" role="tablist" aria-label="লেখার ভাষা">
-        <span className="we-hint">লেখার ভাষা:</span>
-        <button type="button" role="tab" aria-selected={!en} className={!en ? "on" : ""} onClick={() => setLang("bn")}>বাংলা</button>
-        <button type="button" role="tab" aria-selected={en} className={en ? "on" : ""} onClick={() => setLang("en")}>English (ঐচ্ছিক)</button>
-      </div>
-      {en && <p className="we-note">ইংরেজি ঐচ্ছিক। অন্তত <b>পদবি</b> আর <b>মূল শিরোনাম</b> ইংরেজিতে লিখলে ওয়েবসাইটে EN | বাংলা বোতাম দেখাবে। খালি ঘরে বাংলাটাই দেখাবে।</p>}
+      {en && <p className="we-note">ইংরেজি ঐচ্ছিক। অন্তত <b>পদবি</b> আর <b>বড় শিরোনাম</b> লিখলে ওয়েবসাইটে EN | বাংলা বোতাম দেখাবে। খালি ঘরে বাংলাটাই দেখাবে।</p>}
 
-      <Step n={1} title="হেডার — একদম উপরের অংশ" hint="নাম, ডিগ্রি, BMDC আর সিরিয়াল হটলাইন">
+      <span className="we-group">ওয়েবসাইটের অংশগুলো — উপর থেকে নিচে</span>
+      <Step n={1} icon="layout" {...stepProps(1)} title="হেডার" hint="নাম, ডিগ্রি, BMDC আর সিরিয়াল হটলাইন">
         <div className="we-profile">
           <span className="we-logo"><Icon name="heart" size={22} color="#fff" /></span>
           <span className="col grow" style={{ gap: 0 }}>
@@ -230,7 +277,7 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
         )}
       </Step>
 
-      <Step n={2} title="মূল অংশ — ছবি ও বড় শিরোনাম" hint="ওয়েবসাইট খুললেই রোগী প্রথমে এটা দেখবেন">
+      <Step n={2} icon="user" {...stepProps(2)} title="মূল অংশ (ছবি ও শিরোনাম)" hint="ওয়েবসাইট খুললেই রোগী প্রথমে এটা দেখবেন">
         {!en && (
           <div className="we-photo">
             <div className="we-photo-box">
@@ -269,7 +316,7 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
         )}
       </Step>
 
-      <Step n={3} title="চিকিৎসা সেবাসমূহ" hint="কোন কোন সমস্যার চিকিৎসা করেন — কার্ড আকারে দেখাবে" {...sec("services")}>
+      <Step n={3} icon="steth" {...stepProps(3)} title="চিকিৎসা সেবা" hint="কোন কোন সমস্যার চিকিৎসা করেন — কার্ড আকারে দেখাবে" {...sec("services")}>
         {txt("servicesTitle", "এই অংশের শিরোনাম", "যেমন: হৃদরোগের বিশেষায়িত চিকিৎসা", 0, 120)}
         {B.services.length === 0 && <p className="we-hint">এখনো কোনো সেবা নেই।</p>}
         {B.services.map((s, i) => {
@@ -306,11 +353,11 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
         )}
       </Step>
 
-      <Step n={4} title="পরিচিতি" hint="আপনার সম্পর্কে বিস্তারিত — শিক্ষা, অভিজ্ঞতা, কোথায় কাজ করেন" {...sec("about")}>
+      <Step n={4} icon="award" {...stepProps(4)} title="পরিচিতি" hint="আপনার সম্পর্কে বিস্তারিত — শিক্ষা, অভিজ্ঞতা, কোথায় কাজ করেন" {...sec("about")}>
         {txt("about", "পরিচিতি", "যেমন: রাজশাহী মেডিকেল কলেজ থেকে এমবিবিএস…", 7, 2500)}
       </Step>
 
-      <Step n={5} title="চেম্বার ও অনলাইন সিরিয়াল" hint="চেম্বারের ঠিকানা, সময়, ফি আর সিরিয়াল ফর্ম">
+      <Step n={5} icon="pin" {...stepProps(5)} title="চেম্বার ও সিরিয়াল" hint="চেম্বারের ঠিকানা, সময়, ফি আর সিরিয়াল ফর্ম">
         {chambers.length === 0 ? (
           <div className="we-empty">
             <Icon name="pin" size={22} />
@@ -341,7 +388,7 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
         )}
       </Step>
 
-      <Step n={6} title="প্রশ্নোত্তর" hint="রোগীরা প্রায়ই যা জিজ্ঞেস করেন — রিপোর্ট, ফি, সময়" {...sec("faq")}>
+      <Step n={6} icon="help" {...stepProps(6)} title="প্রশ্নোত্তর" hint="রোগীরা প্রায়ই যা জিজ্ঞেস করেন — রিপোর্ট, ফি, সময়" {...sec("faq")}>
         {B.faqs.map((f, i) => {
           const cur = en ? c.en.faqs[i] ?? { q: "", a: "" } : f;
           return (
@@ -367,7 +414,7 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
         )}
       </Step>
 
-      <Step n={7} title="ফুটার — একদম নিচের অংশ" hint="যোগাযোগ, সোশ্যাল লিংক আর জরুরি সতর্কবার্তা">
+      <Step n={7} icon="mail" {...stepProps(7)} title="ফুটার" hint="যোগাযোগ, সোশ্যাল লিংক আর জরুরি সতর্কবার্তা">
         {!en && (
           <div className="grid">
             <label className="field">ইমেইল (ঐচ্ছিক)<input className="input" type="email" maxLength={120} value={c.email} placeholder="dr.name@gmail.com" onChange={(e) => setRoot("email", e.target.value)} /></label>
@@ -383,15 +430,43 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
         {c.sections.emergency && txt("emergency", "সতর্কবার্তার লেখা", "জরুরি অবস্থায় ৯৯৯-এ কল করুন…", 2, 300)}
       </Step>
 
-      <p className="we-tip"><Icon name="shield" size={18} />BMDC-র নিয়ম মেনে চলুন: &quot;সেরা ডাক্তার&quot;, &quot;১০০% সুস্থ&quot; বা আগে-পরের ছবির মতো দাবি লিখবেন না। পেশাদার পরিচিতি আর রোগীর জন্য দরকারি তথ্য রাখুন।</p>
-
-      <div className="we-save">
-        <span className="we-status" aria-live="polite">
-          {state?.error ? <span className="we-err">⚠ {state.error}</span> : state?.ok && !dirty ? <span className="we-ok">✓ {state.ok}</span> : dirty ? "সেভ করা হয়নি এমন পরিবর্তন আছে" : "সব সেভ করা আছে"}
-        </span>
-        <a className="btn" href={`/dr/${doctor.slug}?preview=1`} target="_blank" rel="noreferrer">প্রিভিউ</a>
-        <button className="btn btn-primary" disabled={pending}>{pending ? "সেভ হচ্ছে…" : published ? "সেভ ও প্রকাশ করুন" : "সেভ করুন"}</button>
+      <p className="we-tip"><Icon name="shield" size={18} />BMDC-র নিয়ম মেনে চলুন: &quot;সেরা ডাক্তার&quot;, &quot;১০০% সুস্থ&quot; বা আগে-পরের ছবির মতো দাবি লিখবেন না।</p>
       </div>
+
+      {/* ডানে লাইভ প্রিভিউ */}
+      <div className="we-right">
+        <div className="we-pv-bar">
+          <div className="we-seg sm" role="group" aria-label="প্রিভিউ মাপ">
+            <button type="button" className={device === "desktop" ? "on" : ""} aria-pressed={device === "desktop"} onClick={() => setDevice("desktop")}><Icon name="layout" size={16} />ডেস্কটপ</button>
+            <button type="button" className={device === "mobile" ? "on" : ""} aria-pressed={device === "mobile"} onClick={() => setDevice("mobile")}><Icon name="phone" size={16} />মোবাইল</button>
+          </div>
+          <span className="we-live"><i />লাইভ প্রিভিউ</span>
+          <button type="button" className="we-ib" onClick={() => setPvDark(!pvDark)} aria-label={pvDark ? "লাইট প্রিভিউ" : "ডার্ক প্রিভিউ"} title={pvDark ? "লাইট প্রিভিউ" : "ডার্ক প্রিভিউ"}><Icon name={pvDark ? "sun" : "moon"} size={16} /></button>
+        </div>
+        <div className="we-pv" ref={boxRef}>
+          {device === "desktop" ? (
+            <div className="we-pv-desk" style={{ width: 1280, height: box.h / (box.w / 1280), transform: `scale(${box.w / 1280})` }}>
+              <iframe ref={frameRef} src="/site-preview" title="ওয়েবসাইটের প্রিভিউ" />
+            </div>
+          ) : (
+            <div className="we-pv-phone"><iframe ref={frameRef} src="/site-preview" title="মোবাইল প্রিভিউ" /></div>
+          )}
+        </div>
+      </div>
+      </div>
+
+      {/* ছোট স্ক্রিনে: প্রিভিউ বোতাম আর পুরো পর্দার প্রিভিউ */}
+      <button type="button" className="we-fab" onClick={() => setPvSheet(true)}><Icon name="eye" size={18} />প্রিভিউ</button>
+      {pvSheet && (
+        <div className="we-sheet" role="dialog" aria-label="প্রিভিউ">
+          <div className="we-sheet-bar">
+            <b>লাইভ প্রিভিউ</b>
+            <button type="button" className="we-ib" onClick={() => setPvDark(!pvDark)} aria-label="লাইট/ডার্ক"><Icon name={pvDark ? "sun" : "moon"} size={16} /></button>
+            <button type="button" className="btn btn-sm" onClick={() => setPvSheet(false)}><Icon name="x" size={16} />বন্ধ</button>
+          </div>
+          <iframe ref={sheetRef} src="/site-preview" title="প্রিভিউ" />
+        </div>
+      )}
     </form>
   );
 }

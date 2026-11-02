@@ -3,6 +3,7 @@ import { useActionState, useEffect, useState } from "react";
 import { bookOnline } from "@/app/dr/actions";
 import { Icon, type ICON } from "@/components/Icons";
 import { keepValues } from "@/components/keepValues";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import type { SiteContent, SiteText } from "@/db/schema";
 
 type Lang = "bn" | "en";
@@ -69,12 +70,12 @@ function shortDegrees(deg: string) {
   return (top.length ? top : parts).slice(-2).join(" • ");
 }
 
-function BookingForm({ chambers, t, lang }: { chambers: WsChamber[]; t: typeof UI.bn; lang: Lang }) {
+function BookingForm({ chambers, t, lang, live }: { chambers: WsChamber[]; t: typeof UI.bn; lang: Lang; live?: boolean }) {
   const [state, action, pending] = useActionState(bookOnline, undefined);
   const [cid, setCid] = useState(chambers[0]?.id ?? "");
   const ch = chambers.find((c) => c.id === cid) ?? chambers[0];
   return (
-    <form className="ws-form" onSubmit={keepValues(action)}>
+    <form className="ws-form" onSubmit={live ? (e) => e.preventDefault() : keepValues(action)}>
       <div className="ws-form-grid">
         <label><span className="sr">{t.name}</span><input name="name" required minLength={2} maxLength={60} placeholder={t.name} autoComplete="name" /></label>
         <label><span className="sr">{t.phone}</span><input name="phone" required inputMode="tel" maxLength={16} placeholder={t.phone} autoComplete="tel" /></label>
@@ -97,8 +98,9 @@ function BookingForm({ chambers, t, lang }: { chambers: WsChamber[]; t: typeof U
   );
 }
 
-export function DoctorWebsite({ d }: { d: WsData }) {
-  const [lang, setLang] = useState<Lang>("bn");
+export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolean; forceLang?: Lang }) {
+  const [lang0, setLang] = useState<Lang>("bn");
+  const lang: Lang = forceLang ?? lang0;
   const [menu, setMenu] = useState(false);
   useEffect(() => {
     try {
@@ -106,7 +108,7 @@ export function DoctorWebsite({ d }: { d: WsData }) {
       if (d.english && saved === "en") setLang("en");
     } catch { /* প্রাইভেট উইন্ডো */ }
   }, [d.english]);
-  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  useEffect(() => { if (!live) document.documentElement.lang = lang; }, [lang, live]);
   const pick = (l: Lang) => {
     setLang(l);
     try { localStorage.setItem("ws_lang", l); } catch { /* ignore */ }
@@ -165,7 +167,11 @@ export function DoctorWebsite({ d }: { d: WsData }) {
   ) : null;
 
   return (
-    <div className={`ws th-${c.theme}${lang === "en" ? " is-en" : ""}`} id="top">
+    <div className={`ws th-${c.theme}${lang === "en" ? " is-en" : ""}`} id="top"
+      onClickCapture={live ? (e) => {
+        const a = (e.target as HTMLElement).closest("a");
+        if (a && !a.getAttribute("href")?.startsWith("#")) e.preventDefault();
+      } : undefined}>
       {d.preview && <div className="ws-preview">{d.preview === "draft" ? t.draft : t.plan}</div>}
 
       {/* ---------- আর্টবোর্ড ১ · হেডার ---------- */}
@@ -192,6 +198,7 @@ export function DoctorWebsite({ d }: { d: WsData }) {
           </nav>
           <div className="ws-nav-r">
             {LangSwitch}
+            {!live && <ThemeToggle className="ws-mode" label={false} />}
             {bookHref && <a href={bookHref} className="ws-btn ws-btn-p ws-nav-cta"><Icon name="calendar" size={18} />{show.booking || hasCh ? t.book : t.call}</a>}
             {nav.length > 1 && (
               <button type="button" className="ws-burger" aria-expanded={menu} aria-label={t.menu} onClick={() => setMenu(!menu)}>
@@ -319,7 +326,7 @@ export function DoctorWebsite({ d }: { d: WsData }) {
                   <p>{t.bookText}</p>
                   {c.hotline && <a href={tel!} className="ws-book-hot"><Icon name="phone" size={18} />{t.hotline}: {num(c.hotline)}</a>}
                 </div>
-                <BookingForm chambers={d.chambers} t={t} lang={lang} />
+                <BookingForm chambers={d.chambers} t={t} lang={lang} live={live} />
               </div>
             </div>
           </section>
@@ -346,7 +353,7 @@ export function DoctorWebsite({ d }: { d: WsData }) {
       </main>
 
       {/* ---------- আর্টবোর্ড ৩ · ফুটার ---------- */}
-      <footer className="ws-foot">
+      <footer className="ws-foot" id="footer">
         <div className="ws-wrap">
           <div className="ws-foot-grid">
             <div className="ws-foot-col">

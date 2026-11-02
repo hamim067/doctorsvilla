@@ -1,20 +1,33 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icons";
 
-/** ড্যাশবোর্ডের লাইট/ডার্ক মোড — কুকিতে মনে রাখে, পেজ রিলোড ছাড়াই বদলায় */
-export function ThemeToggle({ initial }: { initial: "light" | "dark" }) {
-  const [mode, setMode] = useState(initial);
-  const next = mode === "dark" ? "light" : "dark";
+type Mode = "light" | "dark";
+const EVT = "dos-theme";
+
+/**
+ * পুরো সাইটের লাইট/ডার্ক মোড — <html data-theme> বদলায়, কুকিতে মনে রাখে।
+ * রুট লেআউটের ছোট স্ক্রিপ্ট পেজ আঁকার আগেই কুকি পড়ে নেয়, তাই ঝলক দেখা যায় না।
+ */
+export function ThemeToggle({ className = "theme-btn", label = true }: { className?: string; label?: boolean }) {
+  const [mode, setMode] = useState<Mode>("light");
+  useEffect(() => {
+    const read = () => setMode(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+    read();
+    window.addEventListener(EVT, read);
+    return () => window.removeEventListener(EVT, read);
+  }, []);
+  const next: Mode = mode === "dark" ? "light" : "dark";
   function flip() {
-    document.querySelectorAll<HTMLElement>(".dash").forEach((el) => { el.dataset.theme = next; });
+    document.documentElement.dataset.theme = next;
     document.cookie = `dos_theme=${next}; path=/; max-age=31536000; samesite=lax`;
-    setMode(next);
+    window.dispatchEvent(new Event(EVT));
   }
+  const text = next === "dark" ? "ডার্ক মোড" : "লাইট মোড";
   return (
-    <button type="button" className="theme-btn" onClick={flip} aria-label={next === "dark" ? "ডার্ক মোড চালু করুন" : "লাইট মোড চালু করুন"} title={next === "dark" ? "ডার্ক মোড" : "লাইট মোড"}>
+    <button type="button" className={className} onClick={flip} aria-label={`${text} চালু করুন`} title={text}>
       <Icon name={mode === "dark" ? "sun" : "moon"} size={17} />
-      <span>{mode === "dark" ? "লাইট মোড" : "ডার্ক মোড"}</span>
+      {label && <span>{text}</span>}
     </button>
   );
 }

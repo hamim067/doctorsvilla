@@ -1,5 +1,9 @@
 import { eq } from "drizzle-orm";
-import { cookies } from "next/headers";
+import "@fontsource/anek-bangla/400.css";
+import "@fontsource/anek-bangla/500.css";
+import "@fontsource/anek-bangla/600.css";
+import "@fontsource/anek-bangla/700.css";
+import "@fontsource/anek-bangla/800.css";
 import Link from "next/link";
 import { db, schema } from "@/db";
 import { logout } from "@/app/auth-actions";
@@ -28,18 +32,17 @@ const SETTINGS: Item[] = [
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const s = await requireStaff();
   const [doctor] = await db.select({ name: schema.doctors.name, slug: schema.doctors.slug }).from(schema.doctors).where(eq(schema.doctors.id, s.doctorId)).limit(1);
-  const theme = (await cookies()).get("dos_theme")?.value === "dark" ? "dark" : "light";
   const isDoctor = s.role !== "ASSISTANT";
   const show = (list: Item[]) => list.filter((i) => isDoctor || !i.doctorOnly);
   const link = (i: Item) => <NavLink key={i.href} href={i.href}><Icon name={i.icon} size={18} />{i.label}</NavLink>;
   return (
-    <div className="dash" data-theme={theme}>
+    <div className="dash">
       <aside className="dash-side">
         <div className="dash-top">
           <Link href="/dashboard" className="brand-sm"><span className="brand-mark"><Icon name="pulse" size={18} stroke={2.4} color="#fff" /></span>DoctorOS</Link>
           <span className="who-name">{s.name}</span>
           <span className="dash-top-r">
-            <ThemeToggle initial={theme} />
+            <ThemeToggle />
             <form action={logout}><button className="who-out">লগআউট</button></form>
           </span>
         </div>
@@ -58,7 +61,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <span style={{ fontWeight: 600 }}>{doctor?.name}</span>
           <span style={{ color: "var(--side-ink)", fontSize: 13 }}>লগইন: {s.name} · {isDoctor ? "ডাক্তার" : "অ্যাসিস্ট্যান্ট"}</span>
           <span className="row" style={{ gap: 8 }}>
-            <ThemeToggle initial={theme} />
+            <ThemeToggle />
             <form action={logout}><button className="who-out">লগআউট</button></form>
           </span>
         </div>

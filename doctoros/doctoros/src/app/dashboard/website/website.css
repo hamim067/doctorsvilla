@@ -1,7 +1,42 @@
-/* "আমার ওয়েবসাইট" এডিটর — ধাপে ধাপে কার্ড, লাইট/ডার্ক দুই মোডেই var() দিয়ে */
-.we { display: flex; flex-direction: column; gap: 16px; max-width: 920px; width: 100%; }
-.we-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
-.we-head h1 { font-family: "Baloo Da 2", "Hind Siliguri", sans-serif; font-weight: 800; color: var(--heading); }
+/* "আমার ওয়েবসাইট" এডিটর — Shopify-র মতো: বামে অংশগুলোর তালিকা, ডানে লাইভ প্রিভিউ (লাইট/ডার্ক দুই মোডেই var()) */
+.dash-main:has(.we) { max-width: none; padding-top: 0; }
+.we { display: flex; flex-direction: column; width: 100%; }
+.we-top { position: sticky; top: 0; z-index: 15; display: flex; align-items: center; gap: 14px; padding: 14px 0; margin-bottom: 16px; background: color-mix(in srgb, var(--dash-bg) 92%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line-2); }
+.we-top-l { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; min-width: 0; }
+.we-top-ic { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; background: var(--heading-bg); color: #fff; display: flex; align-items: center; justify-content: center; }
+.we-top-t { font-size: 20px; font-weight: 700; color: var(--heading); line-height: 1.2; }
+.we-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.we-badge i { width: 8px; height: 8px; border-radius: 50%; background: var(--switch-off); }
+.we-badge.on { color: var(--teal-ink); }
+.we-badge.on i { background: #22B07D; box-shadow: 0 0 0 3px color-mix(in srgb, #22B07D 25%, transparent); }
+.we-top-r { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.we-status { font-size: 13.5px; }
+.we-dirty { display: inline-flex; align-items: center; gap: 6px; color: var(--orange-ink); font-weight: 600; }
+.we-dirty i { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
+.we-save-btn { min-width: 112px; }
+.we-seg { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--card); border: 1px solid var(--line-2); box-shadow: var(--shadow-sm); }
+.we-seg button { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px; border-radius: 9px; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.we-seg button.on { background: var(--heading-bg); color: #fff; }
+.we-seg.sm button { min-height: 30px; padding: 0 10px; font-size: 13px; }
+
+.we-grid { display: grid; grid-template-columns: minmax(360px, 460px) minmax(0, 1fr); gap: 22px; align-items: start; }
+.we-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding-bottom: 24px; }
+.we-group { font-size: 12px; font-weight: 700; letter-spacing: 0.4px; color: var(--muted); padding: 8px 4px 0; }
+.we-okbar { font-size: 14px; font-weight: 600; padding: 10px 14px; border-radius: 12px; background: var(--teal-soft); color: var(--teal-ink); }
+
+/* ডানের লাইভ প্রিভিউ */
+.we-right { position: sticky; top: 86px; height: calc(100vh - 106px); display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.we-pv-bar { display: flex; align-items: center; gap: 10px; }
+.we-live { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--muted); margin-left: auto; }
+.we-live i { width: 8px; height: 8px; border-radius: 50%; background: #22B07D; animation: we-pulse 1.8s infinite; }
+@keyframes we-pulse { 50% { opacity: 0.35; } }
+.we-pv { position: relative; flex: 1; min-height: 0; overflow: hidden; border-radius: 18px; border: 1px solid var(--line-2); background: repeating-linear-gradient(45deg, var(--ground) 0 10px, color-mix(in srgb, var(--ground) 70%, var(--card)) 10px 20px); box-shadow: var(--shadow-md); }
+.we-pv-desk { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+.we-pv-desk iframe { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
+.we-pv-phone { position: absolute; inset: 0; display: flex; justify-content: center; align-items: flex-start; padding: 18px; overflow: auto; }
+.we-pv-phone iframe { width: 390px; height: min(800px, 100%); flex: 0 0 auto; border: 10px solid #0E1513; border-radius: 40px; background: #fff; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25); }
+.we-fab, .we-sheet { display: none; }
+
 .we-hint { font-size: 14px; color: var(--muted); font-weight: 400; }
 .we-ref { font-size: 13px; color: var(--muted); font-weight: 400; }
 .we-err { color: var(--red); font-size: 14px; font-weight: 600; }
@@ -14,26 +49,29 @@
 
 .we-publish { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 18px; background: var(--card); border: 1px solid var(--line-2); box-shadow: var(--shadow-sm); }
 .we-publish b { font-size: 17px; color: var(--ink); }
-.we-pub-ic { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--ground); color: var(--muted); }
-.we-pub-ic[data-on="true"] { background: var(--teal-soft); color: var(--teal-ink); }
 
-.we-lang { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.we-lang button { min-height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--card); color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
-.we-lang button.on { background: var(--teal); border-color: var(--teal); color: #fff; }
 .we-note { font-size: 14px; padding: 10px 14px; border-radius: 12px; background: var(--sky-soft); color: var(--sky); }
 
-/* ধাপের কার্ড */
-.we-step { background: var(--card); border: 1px solid var(--line-2); border-radius: 20px; box-shadow: var(--shadow-sm); overflow: hidden; }
-.we-step-h { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--line-2); }
-.we-step.off .we-step-h { border-bottom: 0; }
-.we-step-h h2 { font-size: 18px; color: var(--ink); }
-.we-num { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 11px; background: var(--heading-bg); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; }
+/* অংশের অ্যাকর্ডিয়ন কার্ড */
+.we-step { background: var(--card); border: 1px solid var(--line-2); border-radius: 16px; box-shadow: var(--shadow-sm); overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s; }
+.we-step.open { border-color: color-mix(in srgb, var(--teal) 45%, var(--line-2)); box-shadow: var(--shadow-md); }
+.we-step-h { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 8px; }
+.we-step.open .we-step-h { border-bottom: 1px solid var(--line-2); }
+.we-step-btn { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 6px; border: 0; background: transparent; font: inherit; text-align: left; color: inherit; cursor: pointer; border-radius: 10px; }
+.we-step-btn:hover .we-step-t { color: var(--teal-ink); }
+.we-step-t { font-size: 16px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+.we-step-btn .we-hint { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.we-num { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 11px; background: var(--teal-soft); color: var(--teal-ink); display: flex; align-items: center; justify-content: center; }
+.we-step.open .we-num { background: var(--heading-bg); color: #fff; }
 .we-step.off .we-num { background: var(--ground); color: var(--muted); }
-.we-show { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); font-weight: 600; cursor: pointer; }
-.we-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-.we-offnote { padding: 0 18px 16px 68px; font-size: 14px; color: var(--muted); margin-top: -6px; }
+.we-step.off .we-step-t { color: var(--muted); }
+.we-chev { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 9px; border: 0; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.we-chev:hover { background: var(--ground); }
+.we-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.we-offnote { padding: 14px 16px; font-size: 14px; color: var(--muted); }
 .we-sub { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--ground); }
 .we-sub b { font-size: 15px; color: var(--ink); }
+.we-body .grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
 
 /* সুইচ */
 .we-switch { position: relative; width: 50px; height: 28px; flex: 0 0 50px; border-radius: 999px; border: 0; background: var(--switch-off); cursor: pointer; padding: 0; transition: background 0.18s; }
@@ -81,20 +119,37 @@
 .we-tip svg { flex: 0 0 auto; margin-top: 2px; }
 
 /* নিচে লেগে থাকা সেভ বার */
-.we-save { position: sticky; bottom: 12px; z-index: 5; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 18px;
-  background: var(--card); border: 1px solid var(--line-2); box-shadow: var(--shadow-md); }
 .we-status { flex: 1; font-size: 14px; color: var(--muted); min-width: 0; }
 
+/* ল্যাপটপ ছোট হলে প্রিভিউ সরু */
+@media (max-width: 1280px) {
+  .we-grid { grid-template-columns: minmax(340px, 400px) minmax(0, 1fr); }
+  .we-hide-sm { display: none; }
+}
+/* ট্যাবলেট/মোবাইল: এক কলাম, প্রিভিউ বোতামে পুরো পর্দায় */
+@media (max-width: 1100px) {
+  .we-grid { grid-template-columns: minmax(0, 1fr); }
+  .we-right { display: none; }
+  .we-left { max-width: 720px; width: 100%; margin: 0 auto; padding-bottom: 120px; }
+  .we-fab { display: inline-flex; align-items: center; gap: 8px; position: fixed; right: 16px; bottom: 84px; z-index: 30; min-height: 48px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--heading-bg); color: #fff; font: inherit; font-weight: 700; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25); cursor: pointer; }
+  .we-sheet { display: flex; flex-direction: column; position: fixed; inset: 0; z-index: 100; background: var(--dash-bg); }
+  .we-sheet-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line-2); background: var(--card); }
+  .we-sheet-bar b { flex: 1; color: var(--ink); }
+  .we-sheet iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+  .we-top-r { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); background: var(--card); border-top: 1px solid var(--line-2); box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08); }
+  .we-top-r .we-status { flex: 1; }
+  .we-top-r .we-save-btn { min-height: 46px; padding: 0 22px; }
+}
+@media (max-width: 900px) {
+  .dash-main:has(.we) { padding-top: 12px; }
+  .we-top { position: static; padding: 4px 0 12px; background: transparent; backdrop-filter: none; }
+}
 @media (max-width: 600px) {
-  .we-step-h { padding: 14px; gap: 10px; }
-  .we-step-h h2 { font-size: 16px; }
-  .we-num { width: 30px; height: 30px; flex-basis: 30px; font-size: 15px; }
+  .we-top { flex-wrap: wrap; gap: 10px; }
+  .we-top-l { flex-basis: 100%; }
+  .we-top .we-seg { width: 100%; }
+  .we-top .we-seg button { flex: 1; justify-content: center; }
   .we-body { padding: 14px; }
-  .we-offnote { padding: 0 14px 14px; }
-  .we-show > span { display: none; }
   .we-photo { align-items: flex-start; }
   .we-photo-box { width: 88px; height: 110px; flex-basis: 88px; }
-  .we-save { flex-wrap: wrap; bottom: 8px; }
-  .we-status { flex-basis: 100%; }
-  .we-save .btn { flex: 1; }
 }

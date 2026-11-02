@@ -98,3 +98,26 @@
 .pt-who label.new { border-style: dashed; color: #55635F; }
 .pt-who input { position: absolute; opacity: 0; pointer-events: none; }
 .pt-who label:has(input:focus-visible) { outline: 2px solid #0B6E5F; outline-offset: 2px; }
+
+/* ================= রোগীর পেজ — ডার্ক মোড ================= */
+:root[data-theme="dark"] .pt { background: #0C1513; color: #E4ECE9; color-scheme: dark; }
+:root[data-theme="dark"] .pt-band { background: #0B4A40; }
+:root[data-theme="dark"] .pt-card, :root[data-theme="dark"] .pt-chamber, :root[data-theme="dark"] .pt-radio, :root[data-theme="dark"] .pt-day,
+:root[data-theme="dark"] .pt-serial, :root[data-theme="dark"] .pt-summary, :root[data-theme="dark"] .pt-who label, :root[data-theme="dark"] .pt-top,
+:root[data-theme="dark"] .pt-bottom { background: #13201E; border-color: #24332F; color: #E4ECE9; }
+:root[data-theme="dark"] .pt-chamber:hover, :root[data-theme="dark"] .pt-radio:hover { color: #fff; }
+:root[data-theme="dark"] .pt .muted, :root[data-theme="dark"] .pt-stats span, :root[data-theme="dark"] .pt-fee small, :root[data-theme="dark"] .pt-summary-grid small, :root[data-theme="dark"] .pt-status.muted { color: #A9BCB7; }
+:root[data-theme="dark"] .pt-bio { color: #C9D6D2; }
+:root[data-theme="dark"] .pt-stats div, :root[data-theme="dark"] .pt-chip { background: #0F1A17; color: #C9D6D2; }
+:root[data-theme="dark"] .pt-av, :root[data-theme="dark"] .pt-verified, :root[data-theme="dark"] .pt-serial-n { background: #173F37; color: #6FDDB8; }
+:root[data-theme="dark"] .pt-radio.on, :root[data-theme="dark"] .pt-who label.on { background: #173F37; border-color: #1F9C80; color: #E4ECE9; }
+:root[data-theme="dark"] .pt-day:has(input:disabled) { background: #0F1A17; color: #6B7C78; }
+:root[data-theme="dark"] .pt-day:has(input:checked) { background: #14937A; border-color: #14937A; }
+:root[data-theme="dark"] .pt-status.ok, :root[data-theme="dark"] .pt .teal { color: #6FDDB8; }
+:root[data-theme="dark"] .pt-status.warn { color: #F4B88E; }
+:root[data-theme="dark"] .pt-iconbtn { color: #E4ECE9; }
+:root[data-theme="dark"] .pt .input { background: #0F1A17; border-color: #344743; color: #E4ECE9; }
+:root[data-theme="dark"] .pt a:not([class]) { color: #6FDDB8; }
+:root[data-theme="dark"] .lv { background: #061210; }
+:root[data-theme="dark"] .lv-card { background: #13201E; color: #E4ECE9; }
+:root[data-theme="dark"] .lv-mine { color: #6FDDB8; }
