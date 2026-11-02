@@ -9,8 +9,11 @@ const { bookings, chambers, doctors, followUps, holidays, patientAccounts, patie
 export const ONLINE_BOOKING_DAYS = 14;
 
 /** 01712345678 / +8801712345678 / 8801712345678 → 01712345678; ভুল হলে null */
+/** বাংলা সংখ্যা (০-৯) → ইংরেজি (0-9) */
+export const toAsciiDigits = (s: string) => s.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)));
+
 export function normalizePhone(raw: string): string | null {
-  const d = raw.replace(/[^\d]/g, "").replace(/^880/, "0").replace(/^88(?=01)/, "");
+  const d = toAsciiDigits(raw).replace(/[^\d]/g, "").replace(/^880/, "0").replace(/^88(?=01)/, "");
   return /^01[3-9]\d{8}$/.test(d) ? d : null;
 }
 

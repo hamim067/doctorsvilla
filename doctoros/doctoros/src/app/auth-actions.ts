@@ -4,14 +4,14 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
-import { normalizePhone } from "@/lib/booking";
+import { normalizePhone, toAsciiDigits } from "@/lib/booking";
 import { type FormState, str } from "@/lib/form";
 
 const registerSchema = z.object({
   name: z.string().min(3, "ডাক্তারের নাম দিন"),
   degrees: z.string().min(2, "ডিগ্রি দিন (যেমন MBBS, FCPS)"),
   specialty: z.string().min(2, "বিশেষজ্ঞতা দিন"),
-  bmdcNo: z.string().regex(/^[A-Za-z]?-?\d{3,7}$/, "সঠিক BMDC নাম্বার দিন"),
+  bmdcNo: z.string().regex(/^[A-Za-z]?-?\d{3,7}$/, "সঠিক BMDC নাম্বার দিন, যেমন A-12345"),
   slug: z
     .string()
     .regex(/^[a-z0-9][a-z0-9-]{2,40}$/, "প্রোফাইল লিংক: ইংরেজি ছোট হাতের অক্ষর, সংখ্যা ও - (কমপক্ষে ৩ অক্ষর)"),
@@ -25,7 +25,8 @@ export async function registerDoctor(_: FormState, fd: FormData): Promise<FormSt
     name: str(fd, "name"),
     degrees: str(fd, "degrees"),
     specialty: str(fd, "specialty"),
-    bmdcNo: str(fd, "bmdcNo"),
+    // বাংলা সংখ্যা, ফাঁকা জায়গা, ছোট হাতের অক্ষর — সব মেনে নিয়ে A-12345 আকারে রাখি
+    bmdcNo: toAsciiDigits(str(fd, "bmdcNo")).replace(/\s+/g, "").toUpperCase(),
     slug: str(fd, "slug").toLowerCase(),
     password: str(fd, "password"),
   });
