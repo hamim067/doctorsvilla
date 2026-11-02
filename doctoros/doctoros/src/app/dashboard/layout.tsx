@@ -1,9 +1,11 @@
 import { eq } from "drizzle-orm";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { db, schema } from "@/db";
 import { logout } from "@/app/auth-actions";
 import { Icon, type ICON } from "@/components/Icons";
 import { NavLink } from "@/components/NavLink";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { requireStaff } from "@/lib/auth";
 
 type Item = { href: string; label: string; icon: keyof typeof ICON; doctorOnly?: boolean };
@@ -15,6 +17,7 @@ const DAILY: Item[] = [
 ];
 const GROW: Item[] = [
   { href: "/dashboard/reports", label: "রিপোর্ট", icon: "steth", doctorOnly: true },
+  { href: "/dashboard/website", label: "আমার ওয়েবসাইট", icon: "globe", doctorOnly: true },
   { href: "/dashboard/share", label: "শেয়ার ও QR", icon: "arrow", doctorOnly: true },
 ];
 const SETTINGS: Item[] = [
@@ -25,16 +28,20 @@ const SETTINGS: Item[] = [
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const s = await requireStaff();
   const [doctor] = await db.select({ name: schema.doctors.name, slug: schema.doctors.slug }).from(schema.doctors).where(eq(schema.doctors.id, s.doctorId)).limit(1);
+  const theme = (await cookies()).get("dos_theme")?.value === "dark" ? "dark" : "light";
   const isDoctor = s.role !== "ASSISTANT";
   const show = (list: Item[]) => list.filter((i) => isDoctor || !i.doctorOnly);
   const link = (i: Item) => <NavLink key={i.href} href={i.href}><Icon name={i.icon} size={18} />{i.label}</NavLink>;
   return (
-    <div className="dash">
+    <div className="dash" data-theme={theme}>
       <aside className="dash-side">
         <div className="dash-top">
           <Link href="/dashboard" className="brand-sm"><span className="brand-mark"><Icon name="pulse" size={18} stroke={2.4} color="#fff" /></span>DoctorOS</Link>
           <span className="who-name">{s.name}</span>
-          <form action={logout}><button className="who-out">লগআউট</button></form>
+          <span className="dash-top-r">
+            <ThemeToggle initial={theme} />
+            <form action={logout}><button className="who-out">লগআউট</button></form>
+          </span>
         </div>
         <Link href="/dashboard" className="brand"><span className="brand-mark"><Icon name="pulse" size={20} stroke={2.4} color="#fff" /></span>DoctorOS</Link>
         <nav className="dash-nav" aria-label="ড্যাশবোর্ড মেনু">
@@ -50,7 +57,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="who">
           <span style={{ fontWeight: 600 }}>{doctor?.name}</span>
           <span style={{ color: "var(--side-ink)", fontSize: 13 }}>লগইন: {s.name} · {isDoctor ? "ডাক্তার" : "অ্যাসিস্ট্যান্ট"}</span>
-          <form action={logout}><button className="who-out">লগআউট</button></form>
+          <span className="row" style={{ gap: 8 }}>
+            <ThemeToggle initial={theme} />
+            <form action={logout}><button className="who-out">লগআউট</button></form>
+          </span>
         </div>
       </aside>
       <main className="dash-main">{children}</main>

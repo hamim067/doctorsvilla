@@ -133,7 +133,7 @@ export default async function Reports({ searchParams }: { searchParams: Promise<
             return (
               <g key={d.date}>
                 <title>{`${formatDateBn(d.date)}: ${d.done} জন দেখা, মোট সিরিয়াল ${d.total}`}</title>
-                {d.total > d.done && <rect x={x} y={H - hTot} width={w} height={hTot - hDone} fill="#CFE6E0" rx="2" />}
+                {d.total > d.done && <rect x={x} y={H - hTot} width={w} height={hTot - hDone} fill="#CFE6E0" className="rp-rest" rx="2" />}
                 {d.done > 0 && <rect x={x} y={H - hDone} width={w} height={hDone} fill="#0B6E5F" rx="2" />}
                 {i % labelEvery === 0 && <text x={x + w / 2} y={H + 18} textAnchor="middle" fontSize="12" fill="#55635F">{formatDateBn(d.date, false).split(" ")[0]}</text>}
               </g>
@@ -149,20 +149,20 @@ export default async function Reports({ searchParams }: { searchParams: Promise<
       <div className="row" style={{ alignItems: "stretch", gap: 16 }}>
         <div className="card stack-sm" style={{ flex: "1 1 280px" }}>
           <h2>নতুন বনাম ফলোআপ</h2>
-          <div style={{ display: "flex", height: 14, borderRadius: 7, overflow: "hidden", background: "#E6EBE8" }} role="img" aria-label={`নতুন ${cur.done - cur.followUp}, ফলোআপ ${cur.followUp}`}>
+          <div style={{ display: "flex", height: 14, borderRadius: 7, overflow: "hidden", background: "var(--track)" }} role="img" aria-label={`নতুন ${cur.done - cur.followUp}, ফলোআপ ${cur.followUp}`}>
             <span style={{ width: `${pct(cur.done - cur.followUp, cur.done)}%`, background: "#0B6E5F" }} />
             <span style={{ width: `${pct(cur.followUp, cur.done)}%`, background: "#C2551A" }} />
           </div>
-          <span className="small"><b style={{ color: "#0B6E5F" }}>নতুন {bn(cur.done - cur.followUp)} জন</b> · <b style={{ color: "#C2551A" }}>ফলোআপ {bn(cur.followUp)} জন</b></span>
+          <span className="small"><b style={{ color: "var(--teal-ink)" }}>নতুন {bn(cur.done - cur.followUp)} জন</b> · <b style={{ color: "#C2551A" }}>ফলোআপ {bn(cur.followUp)} জন</b></span>
           <span className="small muted">অটোমেটিক রিমাইন্ডারে যারা ফিরে এসেছেন, তারা ফলোআপের মধ্যে।</span>
         </div>
         <div className="card stack-sm" style={{ flex: "1 1 280px" }}>
           <h2>সিরিয়াল কোথা থেকে</h2>
-          <div style={{ display: "flex", height: 14, borderRadius: 7, overflow: "hidden", background: "#E6EBE8" }} role="img" aria-label={`অনলাইন ${cur.online}, সরাসরি ${cur.total - cur.online}`}>
+          <div style={{ display: "flex", height: 14, borderRadius: 7, overflow: "hidden", background: "var(--track)" }} role="img" aria-label={`অনলাইন ${cur.online}, সরাসরি ${cur.total - cur.online}`}>
             <span style={{ width: `${pct(cur.online, cur.total)}%`, background: "#0B6E5F" }} />
             <span style={{ width: `${pct(cur.total - cur.online, cur.total)}%`, background: "#9AAAA5" }} />
           </div>
-          <span className="small"><b style={{ color: "#0B6E5F" }}>অনলাইন {bn(cur.online)}</b> · <b style={{ color: "#55635F" }}>সরাসরি এসে {bn(cur.total - cur.online)}</b></span>
+          <span className="small"><b style={{ color: "var(--teal-ink)" }}>অনলাইন {bn(cur.online)}</b> · <b style={{ color: "var(--muted)" }}>সরাসরি এসে {bn(cur.total - cur.online)}</b></span>
           <span className="small muted">QR পোস্টার আর প্রোফাইল লিংক শেয়ার করলে অনলাইন বাড়ে — <Link href="/dashboard/share">শেয়ার পেজ</Link></span>
         </div>
       </div>

@@ -1,12 +1,12 @@
 /* ডাক্তারের ড্যাশবোর্ড — শান্ত সাদা কার্ড, এক রঙের প্রধান টিল, কমলা শুধু মনোযোগের জন্য */
 .db { display: flex; flex-direction: column; gap: clamp(14px, 1.6vw, 20px); }
-.db h1 { font-family: "Baloo Da 2", "Hind Siliguri", sans-serif; font-size: clamp(24px, 2.6vw, 34px); line-height: 1.15; font-weight: 800; color: var(--night); }
+.db h1 { font-family: "Baloo Da 2", "Hind Siliguri", sans-serif; font-size: clamp(24px, 2.6vw, 34px); line-height: 1.15; font-weight: 800; color: var(--heading); }
 .db h2 { font-size: clamp(15px, 1.2vw, 17px); font-weight: 700; color: var(--ink); }
-.db .card { background: #fff; border: 1px solid #E3E9E6; border-radius: 20px; padding: clamp(16px, 1.6vw, 22px); box-shadow: var(--shadow-sm); }
+.db .card { background: var(--card); border: 1px solid var(--line-2); border-radius: 20px; padding: clamp(16px, 1.6vw, 22px); box-shadow: var(--shadow-sm); }
 .db-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; }
 .db-head .row { flex-wrap: wrap; }
 .db-empty { max-width: 640px; }
-.db .muted { color: #5B6965; }
+.db .muted { color: var(--muted); }
 
 /* ---- লাইভ প্যানেল ---- */
 .db-live { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(240px, 1fr); border-radius: 24px; overflow: hidden; color: #fff;
@@ -31,10 +31,10 @@
 
 /* ---- KPI ---- */
 .db-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(12px, 1.4vw, 16px); }
-.kpi { background: #fff; border: 1px solid #E3E9E6; border-radius: 20px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-sm); min-width: 0; transition: box-shadow 0.15s, transform 0.15s; }
+.kpi { background: var(--card); border: 1px solid var(--line-2); border-radius: 20px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-sm); min-width: 0; transition: box-shadow 0.15s, transform 0.15s; }
 .kpi:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 .kpi-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.kpi-label { font-size: 14px; color: #5B6965; font-weight: 600; }
+.kpi-label { font-size: 14px; color: var(--muted); font-weight: 600; }
 .kpi-ic { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex: 0 0 34px; background: var(--teal-soft); color: var(--teal); }
 .kpi-ic.t1 { background: var(--teal-soft); color: var(--teal); }
 .kpi-ic.t2 { background: var(--orange-soft); color: var(--orange); }
@@ -45,11 +45,11 @@
 .kpi-value { font-size: clamp(24px, 2.4vw, 34px); font-weight: 700; line-height: 1.05; color: var(--ink); letter-spacing: -0.5px; white-space: nowrap; }
 .kpi-spark { flex: 0 1 120px; min-width: 64px; }
 .kpi-spark svg { width: 100%; height: auto; display: block; }
-.kpi-delta { font-size: 13px; font-weight: 700; color: #5B6965; }
-.kpi-delta span { font-weight: 400; color: #5B6965; }
-.kpi-delta.up { color: #0B6E5F; }
+.kpi-delta { font-size: 13px; font-weight: 700; color: var(--muted); }
+.kpi-delta span { font-weight: 400; color: var(--muted); }
+.kpi-delta.up { color: var(--teal-ink); }
 .kpi-delta.down { color: #A33F10; }
-.kpi-sub { font-size: 13px; color: #5B6965; }
+.kpi-sub { font-size: 13px; color: var(--muted); }
 
 /* ---- চার্ট গ্রিড ---- */
 .db-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: clamp(12px, 1.4vw, 16px); }
@@ -57,12 +57,12 @@
 .db-chart { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .db-chart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
 .db-big { font-size: clamp(22px, 2vw, 30px); font-weight: 700; color: var(--ink); white-space: nowrap; }
-.db-big small { font-size: 14px; color: #5B6965; font-weight: 400; }
+.db-big small { font-size: 14px; color: var(--muted); font-weight: 400; }
 .ch { position: relative; width: 100%; min-width: 0; }
 .ch-tip { position: absolute; top: 0; transform: translate(-50%, -6px); background: var(--night); color: #fff; border-radius: 10px; padding: 6px 10px; font-size: 12px; display: flex; flex-direction: column; pointer-events: none; white-space: nowrap; box-shadow: 0 6px 16px rgba(13, 47, 42, 0.25); z-index: 2; }
 .ch-tip b { font-size: 14px; }
-.ch-empty { pointer-events: none; position: absolute; inset: 22% 6% auto 6%; text-align: center; font-size: 14px; color: #5B6965; background: rgba(255, 255, 255, 0.94); padding: 10px 12px; border-radius: 12px; }
-.split { display: flex; gap: 2px; height: 14px; border-radius: 7px; overflow: hidden; background: #E6EBE8; }
+.ch-empty { pointer-events: none; position: absolute; inset: 22% 6% auto 6%; text-align: center; font-size: 14px; color: var(--muted); background: color-mix(in srgb, var(--card) 94%, transparent); padding: 10px 12px; border-radius: 12px; }
+.split { display: flex; gap: 2px; height: 14px; border-radius: 7px; overflow: hidden; background: var(--track); }
 .split span { display: block; height: 100%; }
 .leg { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .leg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
@@ -75,7 +75,7 @@
 
 /* ---- আজকের সিরিয়াল ---- */
 .db-today { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
-.db-chip { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 14px; border: 1px solid #E3E9E6; color: var(--ink); font-size: 14px; min-width: 0; transition: border-color 0.15s; }
+.db-chip { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 14px; border: 1px solid var(--line-2); color: var(--ink); font-size: 14px; min-width: 0; transition: border-color 0.15s; }
 .db-chip:hover { color: var(--ink); border-color: var(--teal); }
 .db-chip b { width: 30px; height: 30px; flex: 0 0 30px; border-radius: 9px; background: var(--ground); display: flex; align-items: center; justify-content: center; }
 .db-chip .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -117,3 +117,7 @@
   .db-chart-head { flex-direction: column; gap: 2px; }
   .db-today { grid-template-columns: minmax(0, 1fr); }
 }
+
+.dash[data-theme="dark"] .db-cta { background: linear-gradient(135deg, #173F37, #1B2826) !important; border-color: #24564B !important; }
+.dash[data-theme="dark"] .db-chip.in_progress { background: #2A2219; border-color: #5A3A22; }
+.dash[data-theme="dark"] .kpi-delta.down { color: var(--orange-ink); }

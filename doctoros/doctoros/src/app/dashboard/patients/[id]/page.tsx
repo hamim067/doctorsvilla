@@ -36,7 +36,7 @@ export default async function PatientProfile({ params }: { params: Promise<{ id:
     <>
       <Link href="/dashboard/patients" className="small">← রোগী খোঁজা</Link>
       <div className="card row" style={{ gap: 18 }}>
-        <div aria-hidden style={{ width: 64, height: 64, borderRadius: 32, background: "#d5e6e1", color: "var(--teal)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 22 }}>{p.name.slice(0, 2)}</div>
+        <div aria-hidden style={{ width: 64, height: 64, borderRadius: 32, background: "var(--teal-soft)", color: "var(--teal)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 22 }}>{p.name.slice(0, 2)}</div>
         <div className="stack-sm" style={{ flex: 1, gap: 2 }}>
           <h1 style={{ fontSize: 24 }}>{p.name}</h1>
           <span className="muted">{patientCode(p.number)} · {row.phone}{p.gender ? ` · ${p.gender}` : ""}{age ? ` · ${bn(age)} বছর` : ""}</span>
@@ -57,7 +57,7 @@ export default async function PatientProfile({ params }: { params: Promise<{ id:
         {hist.map(({ b, chamberName }) => {
           const v = visitByBooking.get(b.id);
           return (
-            <div key={b.id} className="row" style={{ borderTop: "1px solid #eef1ef", paddingTop: 12, alignItems: "flex-start" }}>
+            <div key={b.id} className="row" style={{ borderTop: "1px solid var(--row-line)", paddingTop: 12, alignItems: "flex-start" }}>
               <div className="stack-sm" style={{ width: 160, gap: 0 }}>
                 <strong>{formatDateBn(b.date, false)} {b.date.slice(0, 4)}</strong>
                 <span className="muted small">{chamberName} · সিরিয়াল {bn(b.serialNo)}</span>

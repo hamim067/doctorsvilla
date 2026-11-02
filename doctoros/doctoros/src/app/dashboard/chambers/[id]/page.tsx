@@ -36,7 +36,7 @@ export default async function ChamberEditPage({ params, searchParams }: { params
         <h2>ছুটি / চেম্বার বন্ধ</h2>
         <p className="small">ছুটি যোগ করলে ওই দিনের বুক করা সব রোগীকে স্বয়ংক্রিয় এসএমএস যাবে, আর তাদের সিরিয়াল বাতিল হবে।</p>
         {hols.map((h) => (
-          <form key={h.id} action={removeHoliday} className="row between" style={{ background: "#fff", padding: "8px 12px", borderRadius: 10 }}>
+          <form key={h.id} action={removeHoliday} className="row between" style={{ background: "var(--card)", padding: "8px 12px", borderRadius: 10 }}>
             <input type="hidden" name="id" value={h.id} /><input type="hidden" name="chamberId" value={id} />
             <span>{formatDateBn(h.date)}{h.note ? ` · ${h.note}` : ""}</span>
             <button className="btn" style={{ minHeight: 36 }}>মুছুন</button>

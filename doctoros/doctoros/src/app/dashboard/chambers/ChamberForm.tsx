@@ -55,7 +55,7 @@ export function ChamberForm({ action, chamber, submitLabel }: { action: (s: Form
           const s = sched.get(d);
           const open = s ? true : isNew ? d !== 5 : false; // নতুন চেম্বারে শুক্রবার বাদে সব খোলা
           return (
-            <div key={d} className="row" style={{ borderTop: "1px solid #eef1ef", paddingTop: 8 }}>
+            <div key={d} className="row" style={{ borderTop: "1px solid var(--row-line)", paddingTop: 8 }}>
               <label className="row" style={{ width: 150, fontWeight: 600, gap: 8 }}>
                 <input type="checkbox" name={`open-${d}`} defaultChecked={open} style={{ width: 20, height: 20 }} />{DAYS[d]}
               </label>

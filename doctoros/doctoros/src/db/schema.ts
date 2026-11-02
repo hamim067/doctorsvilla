@@ -48,6 +48,10 @@ export const doctors = pgTable("doctors", {
   bmdcVerified: boolean("bmdc_verified").notNull().default(false),
   bio: text("bio"),
   experienceYears: integer("experience_years"),
+  /** FREE | PREMIUM — Premium হলে প্রোফাইল লিংকে পুরো ওয়েবসাইট দেখায় */
+  plan: text("plan").notNull().default("FREE"),
+  /** Premium কোন তারিখ পর্যন্ত ("YYYY-MM-DD"); null = মেয়াদ নেই */
+  premiumUntil: text("premium_until"),
   ownerId: text("owner_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   createdAt: createdAt(),
 });
@@ -216,6 +220,38 @@ export const messageLogs = pgTable(
   },
   (t) => [index("message_logs_doctor_created").on(t.doctorId, t.createdAt)],
 );
+
+/** ডাক্তারের Premium ওয়েবসাইটের লেখা ও সেটিং — চেম্বার/সময়/ফি আসে chambers টেবিল থেকে */
+export type SiteService = { title: string; desc: string; icon: string };
+export type SiteFaq = { q: string; a: string };
+export type SiteText = {
+  name?: string; degrees?: string; designation: string; topNote: string;
+  heroTitle: string; heroText: string; about: string; servicesTitle: string;
+  services: SiteService[]; faqs: SiteFaq[]; emergency: string;
+};
+export type SiteSections = {
+  topbar: boolean; stats: boolean; services: boolean; about: boolean;
+  chambers: boolean; booking: boolean; faq: boolean; emergency: boolean;
+};
+export type SiteContent = {
+  theme: "navy" | "green" | "plum";
+  sections: SiteSections;
+  stats: { experience: boolean; patients: boolean; chambers: boolean };
+  hotline: string; whatsapp: string; email: string;
+  facebook: string; youtube: string; linkedin: string;
+  bn: SiteText;
+  /** ইংরেজি ঐচ্ছিক — designation আর heroTitle থাকলে তবেই EN বোতাম দেখায় */
+  en: SiteText;
+};
+
+export const doctorSites = pgTable("doctor_sites", {
+  doctorId: text("doctor_id").primaryKey().references(() => doctors.id, { onDelete: "cascade" }),
+  published: boolean("published").notNull().default(false),
+  content: jsonb("content").$type<SiteContent>().notNull(),
+  /** ছোট করা JPEG (data URL) — আলাদা কলামে, যেন তালিকায় ভারী না হয় */
+  photo: text("photo"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 // ---- relations (db.query.* দিয়ে join করার জন্য) ----
 export const doctorsRelations = relations(doctors, ({ many }) => ({ chambers: many(chambers) }));

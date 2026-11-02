@@ -1,0 +1,100 @@
+/* "আমার ওয়েবসাইট" এডিটর — ধাপে ধাপে কার্ড, লাইট/ডার্ক দুই মোডেই var() দিয়ে */
+.we { display: flex; flex-direction: column; gap: 16px; max-width: 920px; width: 100%; }
+.we-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.we-head h1 { font-family: "Baloo Da 2", "Hind Siliguri", sans-serif; font-weight: 800; color: var(--heading); }
+.we-hint { font-size: 14px; color: var(--muted); font-weight: 400; }
+.we-ref { font-size: 13px; color: var(--muted); font-weight: 400; }
+.we-err { color: var(--red); font-size: 14px; font-weight: 600; }
+.we-ok { color: var(--teal-ink); font-size: 14px; font-weight: 600; }
+.btn-sm { min-height: 36px; padding: 0 12px; font-size: 14px; border-radius: 10px; }
+
+.we-offer { display: flex; gap: 10px; align-items: center; padding: 12px 16px; border-radius: 14px; font-size: 15px; font-weight: 600;
+  background: linear-gradient(90deg, var(--orange-soft), var(--teal-soft)); color: var(--orange-ink); border: 1px solid var(--line-2); }
+.we-offer svg { flex: 0 0 auto; }
+
+.we-publish { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 18px; background: var(--card); border: 1px solid var(--line-2); box-shadow: var(--shadow-sm); }
+.we-publish b { font-size: 17px; color: var(--ink); }
+.we-pub-ic { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--ground); color: var(--muted); }
+.we-pub-ic[data-on="true"] { background: var(--teal-soft); color: var(--teal-ink); }
+
+.we-lang { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.we-lang button { min-height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--card); color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.we-lang button.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+.we-note { font-size: 14px; padding: 10px 14px; border-radius: 12px; background: var(--sky-soft); color: var(--sky); }
+
+/* ধাপের কার্ড */
+.we-step { background: var(--card); border: 1px solid var(--line-2); border-radius: 20px; box-shadow: var(--shadow-sm); overflow: hidden; }
+.we-step-h { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--line-2); }
+.we-step.off .we-step-h { border-bottom: 0; }
+.we-step-h h2 { font-size: 18px; color: var(--ink); }
+.we-num { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 11px; background: var(--heading-bg); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; }
+.we-step.off .we-num { background: var(--ground); color: var(--muted); }
+.we-show { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); font-weight: 600; cursor: pointer; }
+.we-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.we-offnote { padding: 0 18px 16px 68px; font-size: 14px; color: var(--muted); margin-top: -6px; }
+.we-sub { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--ground); }
+.we-sub b { font-size: 15px; color: var(--ink); }
+
+/* সুইচ */
+.we-switch { position: relative; width: 50px; height: 28px; flex: 0 0 50px; border-radius: 999px; border: 0; background: var(--switch-off); cursor: pointer; padding: 0; transition: background 0.18s; }
+.we-switch span { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform 0.18s; }
+.we-switch.on { background: var(--teal); }
+.we-switch.on span { transform: translateX(22px); }
+.we-switch:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+.we-profile { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 1px dashed var(--line-2); }
+.we-profile b { color: var(--ink); }
+.we-logo { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; background: #123B65; display: flex; align-items: center; justify-content: center; }
+
+.we-themes { display: flex; gap: 8px; flex-wrap: wrap; }
+.we-theme { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 14px 0 8px; border-radius: 12px; border: 1.5px solid var(--line-2); background: var(--card); color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.we-theme.on { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+.we-sw { display: flex; border-radius: 8px; overflow: hidden; }
+.we-sw i { width: 14px; height: 26px; display: block; }
+
+.we-photo { display: flex; gap: 16px; align-items: center; }
+.we-photo b { color: var(--ink); }
+.we-photo-box { width: 112px; height: 140px; flex: 0 0 112px; border-radius: 16px; overflow: hidden; background: var(--ground); border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center; }
+.we-photo-box img { width: 100%; height: 100%; object-fit: cover; }
+
+.we-checks { display: flex; flex-direction: column; gap: 10px; padding-left: 4px; }
+.we-checks label { display: flex; gap: 10px; align-items: center; font-size: 15px; color: var(--ink); cursor: pointer; }
+.we-checks input { width: 20px; height: 20px; accent-color: var(--teal); }
+
+.we-item { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 16px; border: 1px solid var(--line-2); background: var(--ground); }
+.we-item-top { display: flex; align-items: center; gap: 10px; }
+.we-item-top b { color: var(--ink); font-size: 15px; }
+.we-svc-ic { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px; background: var(--teal-soft); color: var(--teal-ink); display: flex; align-items: center; justify-content: center; }
+.we-ib { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--card); color: var(--ink); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.we-ib.danger:hover { color: var(--red); border-color: var(--red); }
+.we-icons { display: flex; flex-wrap: wrap; gap: 6px; }
+.we-icons button { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--card); color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.we-icons button.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+.we-add { align-self: flex-start; border-style: dashed; }
+
+.we-empty { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 14px; background: var(--ground); color: var(--muted); }
+.we-empty b { color: var(--ink); }
+.we-chambers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.we-chambers li { display: flex; gap: 8px; align-items: center; font-weight: 600; color: var(--ink); }
+
+.we-tip { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--muted); padding: 0 4px; }
+.we-tip svg { flex: 0 0 auto; margin-top: 2px; }
+
+/* নিচে লেগে থাকা সেভ বার */
+.we-save { position: sticky; bottom: 12px; z-index: 5; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 18px;
+  background: var(--card); border: 1px solid var(--line-2); box-shadow: var(--shadow-md); }
+.we-status { flex: 1; font-size: 14px; color: var(--muted); min-width: 0; }
+
+@media (max-width: 600px) {
+  .we-step-h { padding: 14px; gap: 10px; }
+  .we-step-h h2 { font-size: 16px; }
+  .we-num { width: 30px; height: 30px; flex-basis: 30px; font-size: 15px; }
+  .we-body { padding: 14px; }
+  .we-offnote { padding: 0 14px 14px; }
+  .we-show > span { display: none; }
+  .we-photo { align-items: flex-start; }
+  .we-photo-box { width: 88px; height: 110px; flex-basis: 88px; }
+  .we-save { flex-wrap: wrap; bottom: 8px; }
+  .we-status { flex-basis: 100%; }
+  .we-save .btn { flex: 1; }
+}
