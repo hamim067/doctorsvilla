@@ -1,4 +1,6 @@
+import { and, eq } from "drizzle-orm";
 import Link from "next/link";
+import { db, schema } from "@/db";
 import { requireDoctor } from "@/lib/auth";
 import { doctorChambers } from "@/lib/chambers";
 import { bn, formatTimeBn, WEEKDAYS_SHORT_BN } from "@/lib/time";
@@ -11,6 +13,7 @@ export default async function ChambersPage({ searchParams }: { searchParams: Pro
   const s = await requireDoctor();
   const { welcome } = await searchParams;
   const list = await doctorChambers(s.doctorId);
+  const closed = await db.select().from(schema.chambers).where(and(eq(schema.chambers.doctorId, s.doctorId), eq(schema.chambers.active, false)));
   return (
     <>
       <h1>চেম্বার ও সময়সূচি</h1>
@@ -29,6 +32,9 @@ export default async function ChambersPage({ searchParams }: { searchParams: Pro
             </Link>
           ))}
         </div>
+      )}
+      {closed.length > 0 && (
+        <p className="muted small">বন্ধ চেম্বার: {closed.map((c, i) => <span key={c.id}>{i > 0 && ", "}<Link href={`/dashboard/chambers/${c.id}`}>{c.name}</Link></span>)}</p>
       )}
       <h2 style={{ marginTop: 12 }}>নতুন চেম্বার যোগ করুন</h2>
       <ChamberForm action={createChamber} submitLabel="চেম্বার যোগ করুন" />

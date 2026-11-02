@@ -136,3 +136,13 @@ export async function removeHoliday(fd: FormData) {
   await db.delete(schema.holidays).where(and(eq(schema.holidays.id, str(fd, "id")), eq(schema.holidays.chamberId, chamberId)));
   revalidatePath(`/dashboard/chambers/${chamberId}`);
 }
+
+/** চেম্বার বন্ধ (আর অনলাইনে দেখাবে না) বা আবার চালু — আগের সব তথ্য থেকে যায় */
+export async function setChamberActive(fd: FormData) {
+  const s = await requireDoctor();
+  const id = str(fd, "id");
+  await assertChamber(s.doctorId, id);
+  await db.update(schema.chambers).set({ active: str(fd, "active") === "1" }).where(eq(schema.chambers.id, id));
+  revalidatePath("/dashboard/chambers");
+  revalidatePath(`/dashboard/chambers/${id}`);
+}

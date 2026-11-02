@@ -18,8 +18,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <NavLink href="/dashboard/queue">সিরিয়াল কিউ</NavLink>
         <NavLink href="/dashboard/patients">রোগী খোঁজা</NavLink>
         <NavLink href="/dashboard/followups">ফলোআপ</NavLink>
+        {isDoctor && <NavLink href="/dashboard/reports">রিপোর্ট</NavLink>}
+        {isDoctor && <NavLink href="/dashboard/share">শেয়ার ও QR</NavLink>}
         {isDoctor && <NavLink href="/dashboard/chambers">চেম্বার সেটিং</NavLink>}
         {isDoctor && <NavLink href="/dashboard/staff">অ্যাসিস্ট্যান্ট</NavLink>}
+        <NavLink href="/dashboard/profile">{isDoctor ? "প্রোফাইল" : "পাসওয়ার্ড"}</NavLink>
         {doctor && <a className="nav" href={`/dr/${doctor.slug}`} target="_blank" rel="noreferrer">আমার পাবলিক প্রোফাইল ↗</a>}
         <div className="who stack-sm">
           <span style={{ fontWeight: 600 }}>{doctor?.name}</span>

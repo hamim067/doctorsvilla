@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { db, schema } from "@/db";
 import { requireDoctor } from "@/lib/auth";
 import { formatDateBn, today } from "@/lib/time";
-import { removeHoliday, updateChamber } from "../actions";
+import { removeHoliday, setChamberActive, updateChamber } from "../actions";
 import { ChamberForm } from "../ChamberForm";
 import { HolidayForm } from "./HolidayForm";
 
@@ -29,6 +29,7 @@ export default async function ChamberEditPage({ params, searchParams }: { params
         <h1>{chamber.name}</h1>
         <a className="btn" href={`/tv/${chamber.tvToken}`} target="_blank" rel="noreferrer">টিভি ডিসপ্লে খুলুন ↗</a>
       </div>
+      {!chamber.active && <p className="alert alert-error">এই চেম্বার এখন বন্ধ — রোগীরা অনলাইনে দেখতে বা সিরিয়াল নিতে পারছেন না।</p>}
       {saved && <p className="alert alert-ok">চেম্বার যোগ হয়েছে। এখন রোগীরা অনলাইনে সিরিয়াল নিতে পারবেন।</p>}
       <ChamberForm action={updateChamber} chamber={chamber} submitLabel="সেভ করুন" />
       <div className="card card-warn stack">
@@ -43,6 +44,15 @@ export default async function ChamberEditPage({ params, searchParams }: { params
         ))}
         <HolidayForm chamberId={id} min={today()} />
       </div>
+      <form action={setChamberActive} className="card row between">
+        <input type="hidden" name="id" value={id} />
+        <input type="hidden" name="active" value={chamber.active ? "0" : "1"} />
+        <span className="stack-sm" style={{ gap: 2 }}>
+          <strong>{chamber.active ? "চেম্বার স্থায়ীভাবে বন্ধ করুন" : "চেম্বার আবার চালু করুন"}</strong>
+          <span className="muted small">{chamber.active ? "এখানে আর না বসলে বন্ধ করুন। আগের রোগী ও প্রেসক্রিপশন থেকে যাবে।" : "চালু করলে রোগীরা আবার অনলাইনে সিরিয়াল নিতে পারবেন।"}</span>
+        </span>
+        <button className={chamber.active ? "btn" : "btn btn-primary"}>{chamber.active ? "বন্ধ করুন" : "চালু করুন"}</button>
+      </form>
     </>
   );
 }

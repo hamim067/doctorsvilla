@@ -28,3 +28,14 @@ export async function removeAssistant(fd: FormData) {
     .where(and(eq(schema.users.id, str(fd, "id")), eq(schema.users.doctorId, s.doctorId), eq(schema.users.role, "ASSISTANT")));
   revalidatePath("/dashboard/staff");
 }
+
+/** অ্যাসিস্ট্যান্ট পাসওয়ার্ড ভুলে গেলে ডাক্তার নতুন পাসওয়ার্ড দিয়ে দেবেন */
+export async function resetAssistantPassword(_: FormState, fd: FormData): Promise<FormState> {
+  const s = await requireDoctor();
+  const password = str(fd, "password");
+  if (password.length < 6) return { error: "পাসওয়ার্ড কমপক্ষে ৬ অক্ষর" };
+  const r = await db.update(schema.users).set({ passwordHash: await hashPassword(password) })
+    .where(and(eq(schema.users.id, str(fd, "id")), eq(schema.users.doctorId, s.doctorId), eq(schema.users.role, "ASSISTANT")))
+    .returning({ name: schema.users.name });
+  return r.length ? { ok: `${r[0].name}-এর নতুন পাসওয়ার্ড সেট হয়েছে` } : { error: "অ্যাসিস্ট্যান্ট পাওয়া যায়নি" };
+}

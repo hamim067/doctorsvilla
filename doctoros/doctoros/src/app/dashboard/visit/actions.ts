@@ -54,6 +54,7 @@ export async function savePrescription(_: FormState, fd: FormData): Promise<Form
     }
   });
 
+  if (fd.get("next") === "print") redirect(`/print/rx/${b.id}?auto=1`);
   if (fd.get("next") === "1") {
     if (b.status === "IN_PROGRESS") await advanceQueue(b.chamberId, b.date, "done");
     revalidatePath("/dashboard/queue");

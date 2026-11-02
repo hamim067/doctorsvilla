@@ -151,6 +151,31 @@ async function main() {
     }
   }
 
+  // ---- গত ৪৫ দিনের ভিজিট (রিপোর্ট পেজে চার্ট দেখাতে, একবারই) ----
+  if (chamberIds.RAJ) {
+    const past = await db.select({ id: s.bookings.id }).from(s.bookings).where(eq(s.bookings.chamberId, chamberIds.RAJ));
+    if (past.length < 30) {
+      const names = Object.keys(pid);
+      let seed = 7;
+      const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+      const rows = [];
+      for (let back = 45; back >= 1; back--) {
+        const date = addDays(TODAY, -back);
+        if (new Date(`${date}T12:00:00Z`).getUTCDay() === 5) continue; // শুক্রবার কম ভিড় — বাদ
+        const used = await db.select({ n: s.bookings.serialNo }).from(s.bookings).where(and(eq(s.bookings.chamberId, chamberIds.RAJ), eq(s.bookings.date, date)));
+        let serial = used.reduce((a, r) => Math.max(a, r.n), 0);
+        const count = 4 + Math.floor(rnd() * 7);
+        for (let i = 0; i < count; i++) {
+          const r = rnd();
+          rows.push(mk("RAJ", "demo-tanvir", names[Math.floor(rnd() * names.length)], date, ++serial,
+            r < 0.08 ? "ABSENT" : r < 0.12 ? "CANCELLED" : "DONE", rnd() < 0.55 ? "ONLINE" : "WALK_IN",
+            { type: rnd() < 0.3 ? "FOLLOW_UP" : "NEW" }));
+        }
+      }
+      if (rows.length) await db.insert(s.bookings).values(rows).onConflictDoNothing();
+    }
+  }
+
   // ---- আজকের লাইভ কিউ (প্রতিদিন একবার) ----
   const todayQueue: [string, string, string[]][] = [
     ["RAJ", "demo-tanvir", ["শিরিন আক্তার", "কামাল হোসেন", "জাহিদ হাসান", "নাসরিন সুলতানা", "রহিম উদ্দিন", "রাবেয়া হাসান"]],

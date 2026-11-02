@@ -1,0 +1,64 @@
+/* প্রিন্টের পেজ — স্ক্রিনে কাগজের মতো দেখায়, প্রিন্টে শুধু কাগজ */
+.pr-bar { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--line); padding: 10px 16px; display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.pr-desk { background: #E9ECEA; min-height: 100vh; padding: 24px 12px 48px; }
+.pr-a4 { width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,.12); box-sizing: border-box; color: #10231F; }
+@media (max-width: 860px) { .pr-a4 { width: 100%; min-height: auto; } }
+@page { size: A4; margin: 0; }
+@media print {
+  body { background: #fff; }
+  .pr-bar, .no-print { display: none !important; }
+  .pr-desk { padding: 0; background: #fff; }
+  .pr-a4 { box-shadow: none; width: 210mm; min-height: 297mm; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* পোস্টার */
+.po { padding: 16mm 16mm 14mm; display: flex; flex-direction: column; gap: 9mm; min-height: 297mm; box-sizing: border-box; }
+.po-top { background: #0D2F2A; color: #fff; border-radius: 10mm; padding: 11mm 12mm; display: flex; flex-direction: column; gap: 4mm; }
+.po-top h1 { font-family: "Baloo Da 2", "Hind Siliguri", sans-serif; font-size: 40pt; line-height: 1.1; font-weight: 800; }
+.po-top p { font-size: 15pt; color: #C9DDD8; }
+.po-mid { display: flex; gap: 10mm; align-items: center; }
+.po-qr { width: 88mm; height: 88mm; flex: 0 0 88mm; border: 2mm solid #0B6E5F; border-radius: 8mm; padding: 4mm; box-sizing: border-box; background: #fff; }
+.po-qr svg { width: 100%; height: 100%; display: block; }
+.po-steps { display: flex; flex-direction: column; gap: 6mm; font-size: 15pt; }
+.po-steps div { display: flex; gap: 4mm; align-items: center; }
+.po-steps b { width: 12mm; height: 12mm; flex: 0 0 12mm; border-radius: 6mm; background: #0B6E5F; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16pt; }
+.po-doc { border: 1px solid #DCE3E0; border-radius: 8mm; padding: 8mm 10mm; display: flex; flex-direction: column; gap: 2mm; }
+.po-doc h2 { font-size: 24pt; }
+.po-doc .sub { font-size: 13pt; color: #3A4845; }
+.po-times { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 8mm; font-size: 12.5pt; margin-top: 3mm; }
+.po-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12pt; color: #3A4845; }
+.po-url { font-size: 14pt; font-weight: 700; color: #0B6E5F; }
+
+/* ভিজিটিং কার্ড — ৮৫×৫৫ মিমি, পাতায় ১০টা */
+.vc-sheet { padding: 10mm 15mm; display: grid; grid-template-columns: repeat(2, 85mm); grid-auto-rows: 55mm; gap: 0 10mm; justify-content: center; }
+.vc { box-sizing: border-box; border: 0.2mm dashed #C9D3CF; padding: 5mm 5mm 4mm 6mm; display: flex; gap: 3mm; overflow: hidden; }
+.vc-l { flex: 1; display: flex; flex-direction: column; gap: 0.8mm; min-width: 0; }
+.vc-l b { font-size: 11.5pt; color: #0D2F2A; }
+.vc-l span { font-size: 7.5pt; color: #3A4845; line-height: 1.35; }
+.vc-l .vc-tag { margin-top: auto; font-size: 7.5pt; color: #0B6E5F; font-weight: 700; }
+.vc-qr { width: 26mm; flex: 0 0 26mm; display: flex; flex-direction: column; align-items: center; gap: 1mm; }
+.vc-qr svg { width: 26mm; height: 26mm; display: block; }
+.vc-qr small { font-size: 6pt; color: #55635F; text-align: center; }
+
+/* প্রেসক্রিপশন প্যাড */
+.rx { padding: 12mm 14mm; display: flex; flex-direction: column; min-height: 297mm; box-sizing: border-box; font-size: 11pt; }
+.rx-head { display: flex; justify-content: space-between; gap: 8mm; padding-bottom: 5mm; border-bottom: 1mm solid #0B6E5F; }
+.rx-head h1 { font-size: 20pt; color: #0D2F2A; }
+.rx-head .deg { font-size: 11pt; color: #3A4845; }
+.rx-head .right { text-align: right; font-size: 10pt; color: #3A4845; display: flex; flex-direction: column; gap: 1mm; }
+.rx-pt { display: flex; flex-wrap: wrap; gap: 2mm 8mm; padding: 4mm 0; border-bottom: 0.3mm solid #DCE3E0; font-size: 10.5pt; }
+.rx-pt b { font-weight: 700; }
+.rx-body { display: flex; gap: 8mm; padding-top: 6mm; flex: 1; }
+.rx-left { width: 55mm; flex: 0 0 55mm; border-right: 0.3mm solid #DCE3E0; padding-right: 5mm; display: flex; flex-direction: column; gap: 5mm; font-size: 10pt; }
+.rx-left h3, .rx-right h3 { font-size: 10pt; color: #55635F; font-weight: 700; margin-bottom: 1.5mm; }
+.rx-right { flex: 1; display: flex; flex-direction: column; gap: 5mm; }
+.rx-sym { font-family: "Noto Serif Bengali", serif; font-size: 26pt; font-weight: 800; color: #0B6E5F; line-height: 1; }
+.rx-med { display: flex; flex-direction: column; gap: 0.8mm; padding: 2.5mm 0; border-bottom: 0.2mm dashed #DCE3E0; }
+.rx-med b { font-size: 12pt; }
+.rx-med span { font-size: 10.5pt; color: #3A4845; }
+.rx-fu { background: #FFF4EC; border-radius: 3mm; padding: 3mm 4mm; color: #6E2E0C; font-weight: 700; }
+.rx-foot { margin-top: 8mm; display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; font-size: 9pt; color: #55635F; }
+.rx-qr { display: flex; gap: 3mm; align-items: center; }
+.rx-qr svg { width: 22mm; height: 22mm; display: block; }
+.rx-sign { text-align: center; border-top: 0.3mm solid #10231F; padding-top: 1.5mm; width: 55mm; color: #10231F; }

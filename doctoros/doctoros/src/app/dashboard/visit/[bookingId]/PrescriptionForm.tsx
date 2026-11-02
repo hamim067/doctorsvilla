@@ -65,7 +65,7 @@ export function PrescriptionForm({ bookingId, initial, suggestions, minDate }: P
         </fieldset>
         <SubmitButton pending={pending} className="btn btn-primary btn-big btn-block" name="next" value="1">সেভ করে পরের রোগী</SubmitButton>
         <SubmitButton pending={pending} className="btn btn-block">শুধু সেভ করুন</SubmitButton>
-        <button type="button" className="btn btn-block no-print" onClick={() => window.print()}>প্রিন্ট</button>
+        <SubmitButton pending={pending} className="btn btn-block" name="next" value="print">সেভ করে প্রিন্ট (প্যাডে)</SubmitButton>
       </div>
     </form>
   );
