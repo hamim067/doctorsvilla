@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@/components/ThemeToggle";
 import Link from "next/link";
 import { Icon } from "@/components/Icons";
 import { requirePatient } from "@/lib/patient-auth";
@@ -13,6 +14,7 @@ export default async function MeLayout({ children }: { children: React.ReactNode
         <div className="me-wrap row-sb">
           <Link href="/" className="me-logo dark"><span className="me-mark"><Icon name="plus" size={16} stroke={2.8} color="#5BD6A4" /></span>DoctorOS</Link>
           <form action={patientLogout} className="row" style={{ gap: 10 }}>
+            <ThemeToggle className="home-mode" label={false} />
             <span className="small muted">{s.phone}</span>
             <button className="btn" style={{ minHeight: 38 }}>লগআউট</button>
           </form>

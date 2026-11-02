@@ -4,9 +4,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, schema } from "@/db";
 import { Icon } from "@/components/Icons";
+import { getSession } from "@/lib/auth";
 import { dayAvailability } from "@/lib/booking";
+import { siteOrigin } from "@/lib/qr";
+import { hasPremium, loadSite } from "@/lib/site";
 import { bn, formatTimeBn, today, WEEKDAYS_BN } from "@/lib/time";
 import "../patient.css";
+import "../site.css";
+import "@fontsource/plus-jakarta-sans/500.css";
+import "@fontsource/plus-jakarta-sans/600.css";
+import "@fontsource/plus-jakarta-sans/700.css";
+import "@fontsource/plus-jakarta-sans/800.css";
+import { websiteData } from "@/lib/site-data";
+import { DoctorWebsite } from "./Website";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +29,18 @@ async function load(slug: string) {
     with: { schedules: true },
     orderBy: asc(schema.chambers.createdAt),
   });
-  return { doctor, chambers };
+  const site = await loadSite(doctor.id);
+  return { doctor, chambers, site };
+}
+
+/** ওয়েবসাইট দেখাবে কিনা: প্রকাশিত + Premium; অথবা ডাক্তার নিজে ?preview=1 দিয়ে দেখছেন */
+async function websiteMode(d: NonNullable<Awaited<ReturnType<typeof load>>>, preview: boolean) {
+  const live = Boolean(d.site?.published && hasPremium(d.doctor));
+  if (live) return { show: true, preview: null };
+  if (!preview) return { show: false, preview: null };
+  const s = await getSession();
+  if (!s || s.doctorId !== d.doctor.id) return { show: false, preview: null };
+  return { show: true, preview: (hasPremium(d.doctor) ? "draft" : "plan") as "draft" | "plan" };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -26,7 +48,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!d) return {};
   const city = d.chambers[0]?.city ?? "";
   // Google-এ "রাজশাহীতে হৃদরোগ ডাক্তার" খুঁজলে যেন আসে
-  return { title: `${d.doctor.name} — ${d.doctor.specialty}, ${city}`, description: `${d.doctor.degrees}. ${d.doctor.specialty}, ${city}. অনলাইনে সিরিয়াল নিন।` };
+  const title = `${d.doctor.name} — ${d.doctor.specialty}${city ? `, ${city}` : ""}`;
+  const description = `${d.doctor.degrees}. ${d.doctor.specialty}${city ? `, ${city}` : ""}. অনলাইনে সিরিয়াল নিন।`;
+  const live = d.site?.published && hasPremium(d.doctor);
+  const origin = await siteOrigin();
+  const image = live && d.site?.hasPhoto ? `${origin}/dr/${d.doctor.slug}/photo?v=${d.site.updatedAt.getTime()}` : undefined;
+  return {
+    title: { absolute: title }, description,
+    alternates: { canonical: `${origin}/dr/${d.doctor.slug}` },
+    openGraph: { title, description, type: "profile", url: `${origin}/dr/${d.doctor.slug}`, images: image ? [{ url: image }] : undefined },
+  };
 }
 
 // শনিবার থেকে সাজানো
@@ -46,9 +77,11 @@ function scheduleLines(list: { weekday: number; startTime: string; endTime: stri
   });
 }
 
-export default async function DoctorProfile({ params }: { params: Promise<{ slug: string }> }) {
+export default async function DoctorProfile({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ preview?: string }> }) {
   const data = await load((await params).slug);
   if (!data) notFound();
+  const mode = await websiteMode(data, (await searchParams).preview === "1");
+  if (mode.show) return <Website data={data} preview={mode.preview} />;
   const { doctor, chambers } = data;
   const t = today();
   const todays = await Promise.all(chambers.map((c) => dayAvailability(c.id, t)));
@@ -61,6 +94,7 @@ export default async function DoctorProfile({ params }: { params: Promise<{ slug
       <div className="pt-band">
         <div className="pt-wrap row-sb">
           <Link href="/" className="pt-back"><Icon name="chevron" size={20} stroke={2.2} color="#fff" />DoctorOS</Link>
+          <ThemeToggle className="home-mode on-dark" label={false} />
         </div>
       </div>
 
@@ -128,5 +162,27 @@ export default async function DoctorProfile({ params }: { params: Promise<{ slug
         </div>
       )}
     </main>
+  );
+}
+
+/** Premium ওয়েবসাইট — সার্ভারে সব তথ্য গুছিয়ে ক্লায়েন্ট কম্পোনেন্টে পাঠানো */
+async function Website({ data, preview }: { data: NonNullable<Awaited<ReturnType<typeof load>>>; preview: "draft" | "plan" | null }) {
+  const d = await websiteData(data, preview);
+  const origin = await siteOrigin();
+  const { doctor, chambers } = data;
+  // Google-এর জন্য গোছানো তথ্য (schema.org Physician)
+  const jsonLd = {
+    "@context": "https://schema.org", "@type": "Physician",
+    name: doctor.name, description: d.content.bn.heroText || d.content.bn.designation,
+    medicalSpecialty: doctor.specialty, url: `${origin}/dr/${doctor.slug}`,
+    ...(d.photo ? { image: `${origin}${d.photo}` } : {}),
+    ...(d.content.hotline ? { telephone: d.content.hotline } : {}),
+    address: chambers.map((c) => ({ "@type": "PostalAddress", streetAddress: c.address, addressLocality: c.city, addressCountry: "BD" })),
+  };
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <DoctorWebsite d={d} />
+    </>
   );
 }

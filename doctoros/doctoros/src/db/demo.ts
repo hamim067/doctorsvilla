@@ -218,6 +218,91 @@ async function main() {
     }
   }
 
+  // ---- Premium ওয়েবসাইট (ডেমো) — আগে থেকে থাকলে ডাক্তারের বদলানো লেখা রেখে দেয় ----
+  const sec = { topbar: true, stats: true, services: true, about: true, chambers: true, booking: true, faq: true, emergency: true };
+  const blank = { designation: "", topNote: "", heroTitle: "", heroText: "", about: "", servicesTitle: "", services: [], faqs: [], emergency: "" };
+  const sites: { slug: string; content: s.SiteContent }[] = [
+    {
+      slug: "demo-tanvir",
+      content: {
+        theme: "navy", sections: sec, stats: { experience: true, patients: true, chambers: true },
+        hotline: "01700000011", whatsapp: "01700000011", email: "", facebook: "https://facebook.com", youtube: "", linkedin: "",
+        bn: {
+          designation: "হৃদরোগ ও উচ্চ রক্তচাপ বিশেষজ্ঞ",
+          topNote: "কনসালট্যান্ট, মেডিসিন ও হৃদরোগ (ডেমো)",
+          heroTitle: "হৃদরোগ ও উচ্চ রক্তচাপের যত্নশীল, আধুনিক চিকিৎসা",
+          heroText: "বুকে ব্যথা, বুক ধড়ফড়, উচ্চ রক্তচাপ ও কোলেস্টেরলের সমস্যায় প্রমাণভিত্তিক চিকিৎসা ও দীর্ঘমেয়াদি ফলোআপ। (এটি একটি ডেমো ওয়েবসাইট)",
+          about: "ডা. তানভীর আহমেদ দীর্ঘ ১২ বছর ধরে হৃদরোগ ও মেডিসিনের রোগীদের চিকিৎসা দিচ্ছেন।\nতিনি উচ্চ রক্তচাপ, ডায়াবেটিসের সাথে হৃদরোগ এবং হার্ট অ্যাটাক-পরবর্তী যত্নে বিশেষ মনোযোগ দেন। রোগীকে রোগ সম্পর্কে বুঝিয়ে বলা আর নিয়মিত ফলোআপ তার চিকিৎসার মূল দিক।\n(এটি একটি ডেমো প্রোফাইল — তথ্যগুলো উদাহরণ মাত্র।)",
+          servicesTitle: "হৃদরোগ ও রক্তনালীর সমস্যার বিশেষায়িত চিকিৎসা",
+          services: [
+            { title: "উচ্চ রক্তচাপ নিয়ন্ত্রণ", desc: "দীর্ঘমেয়াদি হাইপারটেনশনের চিকিৎসা, ওষুধ সমন্বয় ও জীবনযাপনের পরামর্শ।", icon: "pulse" },
+            { title: "বুকে ব্যথা ও হার্টের সমস্যা", desc: "বুকে ব্যথা, ধড়ফড় ও শ্বাসকষ্টের কারণ খুঁজে চিকিৎসা।", icon: "heart" },
+            { title: "ইসিজি ও ইকো রিপোর্ট মূল্যায়ন", desc: "হৃদযন্ত্রের কার্যক্ষমতা ও ভাল্ভের পরীক্ষার রিপোর্ট বুঝিয়ে বলা।", icon: "steth" },
+            { title: "কোলেস্টেরল ও ডায়াবেটিস", desc: "হৃদরোগের ঝুঁকি কমাতে রক্তের চর্বি ও সুগার নিয়ন্ত্রণ।", icon: "drop" },
+            { title: "হার্ট অ্যাটাক-পরবর্তী যত্ন", desc: "হাসপাতাল থেকে ফেরার পর নিয়মিত ফলোআপ ও ওষুধ ব্যবস্থাপনা।", icon: "shield" },
+            { title: "প্রতিরোধমূলক চেকআপ", desc: "পরিবারে হৃদরোগ থাকলে আগেভাগে ঝুঁকি যাচাই।", icon: "micro" },
+          ],
+          faqs: [
+            { q: "রিপোর্ট দেখাতে কি আবার ফি লাগে?", a: "প্রেসক্রিপশনের পরবর্তী ৭ দিনের মধ্যে রিপোর্ট দেখালে কোনো ফি লাগে না।" },
+            { q: "অনলাইনে সিরিয়াল নিলে কখন যেতে হবে?", a: "সিরিয়াল নেওয়ার পর মোবাইলে লাইভ দেখতে পারবেন এখন কত নম্বর চলছে — আপনার পালার আগে আগে চেম্বারে আসুন।" },
+            { q: "ফলোআপ ফি কত দিনের মধ্যে প্রযোজ্য?", a: "আগের ভিজিটের ৩০ দিনের মধ্যে এলে ফলোআপ ফি প্রযোজ্য।" },
+          ],
+          emergency: "তীব্র বুকে ব্যথা, বাম হাতে ব্যথা ছড়িয়ে পড়া বা হঠাৎ শ্বাসকষ্ট হলে অপেক্ষা না করে নিকটস্থ হাসপাতালের ইমার্জেন্সিতে যান বা ৯৯৯-এ কল করুন।",
+        },
+        en: {
+          name: "Dr. Tanvir Ahmed", degrees: "MBBS, FCPS (Medicine)",
+          designation: "Cardiology & Hypertension Specialist",
+          topNote: "Consultant, Medicine & Cardiology (demo)",
+          heroTitle: "Caring, modern treatment for heart disease & high blood pressure",
+          heroText: "Evidence-based care and long-term follow-up for chest pain, palpitations, hypertension and cholesterol. (This is a demo website)",
+          about: "Dr. Tanvir Ahmed has been treating medicine and cardiac patients for 12 years.\nHe focuses on hypertension, heart disease with diabetes, and care after a heart attack. Explaining the condition clearly and regular follow-up are at the heart of his practice.\n(This is a demo profile — details are examples only.)",
+          servicesTitle: "Specialized care for heart & blood-vessel conditions",
+          services: [
+            { title: "Blood pressure control", desc: "Long-term hypertension care, medicine adjustment and lifestyle advice.", icon: "pulse" },
+            { title: "Chest pain & heart problems", desc: "Finding and treating the cause of chest pain, palpitations and breathlessness.", icon: "heart" },
+            { title: "ECG & echo review", desc: "Clear explanation of heart function and valve test reports.", icon: "steth" },
+            { title: "Cholesterol & diabetes", desc: "Lowering heart risk by controlling blood fats and sugar.", icon: "drop" },
+            { title: "Care after a heart attack", desc: "Regular follow-up and medicine management after discharge.", icon: "shield" },
+            { title: "Preventive check-up", desc: "Early risk assessment when heart disease runs in the family.", icon: "micro" },
+          ],
+          faqs: [
+            { q: "Is there a fee to show reports?", a: "No fee if you show reports within 7 days of the prescription." },
+            { q: "When should I come after booking online?", a: "Track the running serial live on your phone and arrive a little before your turn." },
+            { q: "How long does the follow-up fee apply?", a: "The follow-up fee applies within 30 days of the previous visit." },
+          ],
+          emergency: "For severe chest pain, pain spreading to the left arm or sudden breathlessness, go to the nearest hospital emergency or call 999 — do not wait.",
+        },
+      },
+    },
+    {
+      slug: "demo-nusrat",
+      content: {
+        theme: "green", sections: { ...sec, about: false }, stats: { experience: true, patients: true, chambers: false },
+        hotline: "01700000012", whatsapp: "", email: "", facebook: "", youtube: "", linkedin: "",
+        bn: {
+          designation: "দন্ত চিকিৎসক ও ওরাল সার্জন",
+          topNote: "",
+          heroTitle: "ব্যথাহীন, যত্নশীল দাঁতের চিকিৎসা — বড়দের ও শিশুদের",
+          heroText: "দাঁতের ব্যথা, রুট ক্যানেল, স্কেলিং আর শিশুদের দাঁতের যত্ন। (এটি একটি ডেমো ওয়েবসাইট)",
+          about: "",
+          servicesTitle: "দাঁতের যেসব চিকিৎসা করা হয়",
+          services: [
+            { title: "রুট ক্যানেল", desc: "দাঁত না তুলে ব্যথা ও সংক্রমণের চিকিৎসা।", icon: "tooth" },
+            { title: "স্কেলিং ও পলিশিং", desc: "দাগ ও পাথর পরিষ্কার, মাড়ির যত্ন।", icon: "shield" },
+            { title: "শিশুদের দাঁত", desc: "শিশুদের জন্য ভয়হীন, ধৈর্যশীল চিকিৎসা।", icon: "child" },
+          ],
+          faqs: [{ q: "রুট ক্যানেলে কয়বার আসতে হয়?", a: "সাধারণত ২–৩ বার; দাঁতের অবস্থা দেখে ঠিক করা হয়।" }],
+          emergency: "",
+        },
+        en: blank,
+      },
+    },
+  ];
+  for (const site of sites) {
+    const id = docIds[site.slug];
+    if (id) await db.insert(s.doctorSites).values({ doctorId: id, published: true, content: site.content }).onConflictDoNothing();
+  }
+
   console.log("ডেমো ডেটা প্রস্তুত");
   await pool.end();
 }

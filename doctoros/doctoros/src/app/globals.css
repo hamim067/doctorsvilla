@@ -65,8 +65,8 @@ p { margin: 0; }
 
 label.field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
 .input, select.input, textarea.input {
-  min-height: 46px; padding: 8px 12px; border-radius: 10px; border: 1px solid #c9d3cf;
-  font: inherit; font-weight: 400; background: #fff; color: var(--ink); width: 100%;
+  min-height: 46px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--input-line);
+  font: inherit; font-weight: 400; background: var(--input-bg); color: var(--ink); width: 100%;
 }
 textarea.input { min-height: 80px; resize: vertical; }
 .input:focus { outline: 2px solid var(--teal); outline-offset: 0; border-color: var(--teal); }
@@ -81,10 +81,10 @@ textarea.input { min-height: 80px; resize: vertical; }
 .alert-error { background: var(--red-soft); color: var(--red); }
 .alert-ok { background: var(--teal-soft); color: #08463d; }
 
-.table-wrap { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow-x: auto; }
+.table-wrap { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 15px; }
 th { text-align: left; font-size: 13px; font-weight: 600; color: var(--muted); background: var(--ground); padding: 12px 14px; }
-td { padding: 12px 14px; border-top: 1px solid #eef1ef; vertical-align: middle; }
+td { padding: 12px 14px; border-top: 1px solid var(--row-line); vertical-align: middle; }
 tr.live td { background: #fffaf5; }
 
 /* ---- সিরিয়াল কিউ ---- */
@@ -161,10 +161,18 @@ tr.live td { background: #fffaf5; }
   --mint: #5BD6A4;
   --sky: #2B5A8F; --sky-soft: #E8EEF8;
   --plum: #5E3F8F; --plum-soft: #F1ECF7;
+  --line-2: #E3E9E6;
+  --heading: #0D2F2A; --heading-bg: #0D2F2A;
+  --teal-ink: #0B6E5F;
+  --switch-off: #C9D3CF;
+  --input-bg: #fff; --input-line: #c9d3cf;
+  --row-line: #eef1ef; --track: #E6EBE8;
   --shadow-sm: 0 1px 2px rgba(13, 47, 42, 0.05), 0 1px 1px rgba(13, 47, 42, 0.03);
   --shadow-md: 0 8px 24px rgba(13, 47, 42, 0.08);
 }
-.dash { display: flex; min-height: 100vh; background: var(--dash-bg); }
+.dash { display: flex; min-height: 100vh; background: var(--dash-bg); font-family: "Anek Bangla", "Hind Siliguri", system-ui, sans-serif; font-feature-settings: "kern"; letter-spacing: 0.1px; }
+.dash h1, .dash h2, .dash h3 { font-family: "Anek Bangla", "Hind Siliguri", sans-serif; letter-spacing: -0.2px; }
+.dash .btn, .dash .input, .dash button, .dash select, .dash textarea { font-family: inherit; }
 .dash-side { position: sticky; top: 0; height: 100vh; flex: 0 0 248px; background: var(--side-bg); color: #fff; padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
 .dash-side .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; padding: 2px 10px 18px; color: #fff; }
 .dash-side .brand:hover { color: #fff; }
@@ -181,7 +189,7 @@ tr.live td { background: #fffaf5; }
 .dash-top { display: none; }
 .dash-main { flex: 1 1 auto; min-width: 0; padding: clamp(16px, 2.4vw, 32px); padding-bottom: 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1480px; }
 .dash-main h1 { font-size: clamp(24px, 2.4vw, 30px); }
-.dash-main .card { border-radius: 18px; border-color: #E3E9E6; box-shadow: var(--shadow-sm); }
+.dash-main .card { border-radius: 18px; border-color: var(--line-2); box-shadow: var(--shadow-sm); }
 
 /* ট্যাবলেট ও মোবাইল: বাম মেনু → উপরে লোগো বার + আড়াআড়ি স্ক্রল করা মেনু */
 @media (max-width: 900px) {
@@ -199,3 +207,61 @@ tr.live td { background: #fffaf5; }
   .dash-side a.nav.active { background: var(--mint); color: var(--side-bg); box-shadow: none; }
   .dash-main { padding: 16px 14px 40px; gap: 16px; }
 }
+
+/* ---- থিম বদলের বোতাম ---- */
+.theme-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.25); background: transparent; color: #fff; font: inherit; font-size: 14px; cursor: pointer; align-self: flex-start; }
+.theme-btn:hover { background: rgba(255, 255, 255, 0.08); }
+.dash-top .theme-btn { min-height: 34px; width: 34px; padding: 0; justify-content: center; border-radius: 999px; }
+.dash-top .theme-btn span { display: none; }
+.dash-top-r { display: flex; align-items: center; gap: 8px; }
+
+/* ================= ড্যাশবোর্ড — ডার্ক মোড ================= */
+:root[data-theme="dark"] .dash {
+  color-scheme: dark;
+  --ink: #E4ECE9; --muted: #9FB2AD; --line: #2B3B38; --line-2: #263634;
+  --ground: #172321; --card: #1B2826; --dash-bg: #111A19;
+  --side-bg: #0A1715; --side-hover: #16302B;
+  --teal: #14937A; --teal-dark: #0F7E68; --teal-soft: #173F37; --teal-ink: #6FDDB8;
+  --orange: #D2631F; --orange-soft: #3A2516; --orange-ink: #F4B88E;
+  --red: #F08A8A; --red-soft: #3B1E1E;
+  --sky: #9CC0EE; --sky-soft: #1C2B3F; --plum: #C9B0F0; --plum-soft: #2A2140;
+  --heading: #F0F6F4; --heading-bg: #14937A;
+  --switch-off: #3A4C49; --input-bg: #13201E; --input-line: #344743;
+  --row-line: #24332F; --track: #263634;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3); --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.45);
+  background: var(--dash-bg); color: var(--ink);
+}
+:root[data-theme="dark"] .dash .dash-main a:not(.btn):not(.db-alert):not(.db-chip):not(.kpi) { color: var(--teal-ink); }
+:root[data-theme="dark"] .dash .btn-primary { color: #fff; }
+:root[data-theme="dark"] .dash th { background: var(--ground); color: var(--muted); }
+:root[data-theme="dark"] .dash tr.live td { background: #2A2219; }
+:root[data-theme="dark"] .dash .badge { background: #26332F; color: #C9D6D2; }
+:root[data-theme="dark"] .dash .badge-teal { background: var(--teal-soft); color: var(--teal-ink); }
+:root[data-theme="dark"] .dash .badge-orange { background: var(--orange-soft); color: var(--orange-ink); }
+:root[data-theme="dark"] .dash .badge-red { background: var(--red-soft); color: var(--red); }
+:root[data-theme="dark"] .dash .badge-blue { background: var(--sky-soft); color: var(--sky); }
+:root[data-theme="dark"] .dash .alert-ok { color: var(--teal-ink); }
+:root[data-theme="dark"] .dash .card-warn { background: var(--orange-soft); border-color: #5A3A22; }
+:root[data-theme="dark"] .dash .chip { background: var(--card); color: var(--ink); border-color: var(--line); }
+:root[data-theme="dark"] .dash .chip:has(input:disabled) { background: var(--ground); color: var(--muted); }
+:root[data-theme="dark"] .dash .now-panel { background: #0F5E50; }
+/* হাতে আঁকা চার্টের লেখা ও গ্রিড লাইন */
+:root[data-theme="dark"] .dash .dash-main svg text { fill: var(--muted); }
+:root[data-theme="dark"] .dash .dash-main svg line { stroke: #2E403C; }
+:root[data-theme="dark"] .dash .dash-main svg circle { stroke: var(--card); }
+:root[data-theme="dark"] .dash .rp-rest { fill: #2E4A44; }
+:root[data-theme="dark"] body:has(.dash, .ws, .hd, .pt, .me, .me-login) { background: #0F1716; }
+
+/* ---- পাবলিক পেজের থিম বোতাম ---- */
+.home-mode { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.home-mode.on-dark { border-color: rgba(255, 255, 255, 0.3); color: #fff; width: 40px; height: 40px; flex-basis: 40px; border-radius: 999px; }
+:root[data-theme="dark"] { --line: #2B3B38; }
+:root[data-theme="dark"] .home-mode { color: #E4ECE9; }
+/* লগইন/রেজিস্ট্রেশন — ডার্ক মোড */
+:root[data-theme="dark"] .auth { background: #0C1513; color: #E4ECE9; color-scheme: dark; --ink: #E4ECE9; --muted: #A9BCB7; --card: #13201E; --ground: #0C1513; --input-bg: #0F1A17; --input-line: #344743; }
+:root[data-theme="dark"] .auth .card { border-color: #24332F; }
+:root[data-theme="dark"] .auth .btn:not(.btn-primary) { color: #E4ECE9; border-color: #24332F; }
+:root[data-theme="dark"] .auth a:not(.btn) { color: #6FDDB8; }
+:root[data-theme="dark"] .auth .alert-ok { background: #173F37; color: #6FDDB8; }
+:root[data-theme="dark"] .auth .alert-error { background: #3B1E1E; color: #F5A3A3; }
+:root[data-theme="dark"] body:has(.auth) { background: #0C1513; }

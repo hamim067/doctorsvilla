@@ -15,6 +15,13 @@
       "when": 1793622438593,
       "tag": "0001_patient_otp",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793626990242,
+      "tag": "0002_premium_site",
+      "breakpoints": true
     }
   ]
 }

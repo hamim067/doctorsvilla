@@ -37,3 +37,14 @@
 .me-code { letter-spacing: 8px; text-align: center; }
 .me-demo { background: #fff4ec; border: 1px dashed #f3b48a; color: #6e2e0c; border-radius: 12px; padding: 12px; font-size: 14px; }
 .me-demo b { font-size: 20px; letter-spacing: 3px; }
+
+/* ================= রোগীর অংশ — ডার্ক মোড ================= */
+:root[data-theme="dark"] .me, :root[data-theme="dark"] .me-login { --ground: #0C1513; --line: #24332F; --ink: #E4ECE9; --muted: #A9BCB7; --teal: #6FDDB8; --teal-soft: #173F37; --orange-soft: #3A2516; background: #0C1513; color: #E4ECE9; color-scheme: dark; }
+:root[data-theme="dark"] .me-head, :root[data-theme="dark"] .me-card, :root[data-theme="dark"] .me-today, :root[data-theme="dark"] .me-chips a, :root[data-theme="dark"] .me-nav { background: #13201E; }
+:root[data-theme="dark"] .me-chips a.on { background: #E4ECE9; color: #0C1513; }
+:root[data-theme="dark"] .me-rx { background: #0F1A17; }
+:root[data-theme="dark"] .me-fu { background: #3A2516; border-color: #5A3A22; }
+:root[data-theme="dark"] .me .input, :root[data-theme="dark"] .me-login .input { background: #0F1A17; border-color: #344743; color: #E4ECE9; }
+:root[data-theme="dark"] .me .btn, :root[data-theme="dark"] .me-login .btn:not(.btn-primary) { background: #13201E; border-color: #24332F; color: #E4ECE9; }
+:root[data-theme="dark"] .me .badge { background: #26332F; color: #C9D6D2; }
+:root[data-theme="dark"] .me-demo { background: #3A2516; border-color: #7A4A26; color: #F4B88E; }
