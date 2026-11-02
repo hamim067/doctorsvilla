@@ -1,5 +1,5 @@
 "use client";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 /**
  * ড্যাশবোর্ডের চার্ট — হাতে আঁকা SVG, কোনো লাইব্রেরি নয়।
@@ -10,6 +10,20 @@ export const CHART = { teal: "#0E8A72", orange: "#C2551A", grid: "#E6EBE8", axis
 
 const bn = (n: number | string) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]);
 
+/** কন্টেইনারের আসল প্রস্থ মাপি — SVG সেই মাপেই আঁকা হয়, তাই লেখা কখনো ছোট-বড় হয় না */
+function useWidth(initial: number) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [w, setW] = useState(initial);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setW(Math.max(240, Math.round(e.contentRect.width))));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, w] as const;
+}
+
 function niceMax(v: number) {
   if (v <= 4) return 4;
   const p = Math.pow(10, Math.floor(Math.log10(v)));
@@ -18,6 +32,12 @@ function niceMax(v: number) {
 }
 
 type Pt = { label: string; value: number; tip: string };
+
+/** টুলটিপ কিনারায় গেলে বাইরে বেরিয়ে না যায় */
+const tipPos = (f: number): React.CSSProperties =>
+  f < 0.18 ? { left: `${f * 100}%`, transform: "translate(-12px, -6px)" }
+  : f > 0.82 ? { left: `${f * 100}%`, transform: "translate(calc(-100% + 12px), -6px)" }
+  : { left: `${f * 100}%` };
 
 function SrTable({ caption, points, unit }: { caption: string; points: Pt[]; unit: string }) {
   return (
@@ -32,21 +52,22 @@ function SrTable({ caption, points, unit }: { caption: string; points: Pt[]; uni
 export function AreaChart({ points, caption, unit = "জন", height = 220, showAvg = true }: { points: Pt[]; caption: string; unit?: string; height?: number; showAvg?: boolean }) {
   const gid = useId();
   const [hover, setHover] = useState<number | null>(null);
-  const W = 640, H = height, L = 30, R = 10, T = 14, B = 26;
+  const [box, W] = useWidth(640);
+  const H = height, L = 30, R = 10, T = 16, B = 26;
   const max = niceMax(Math.max(1, ...points.map((p) => p.value)));
   const x = (i: number) => L + (points.length === 1 ? 0 : (i * (W - L - R)) / (points.length - 1));
   const y = (v: number) => T + (H - T - B) * (1 - v / max);
   const line = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join(" ");
   const area = `${line} L${x(points.length - 1)},${y(0)} L${x(0)},${y(0)} Z`;
   const avg = points.reduce((a, p) => a + p.value, 0) / Math.max(1, points.length);
-  const every = Math.ceil(points.length / 7);
+  const every = Math.max(1, Math.ceil(points.length / Math.max(3, Math.floor(W / 64))));
   const last = points.length - 1;
   const h = hover ?? null;
 
   return (
-    <div className="ch" onMouseLeave={() => setHover(null)}>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={caption} style={{ width: "100%", height: "auto", display: "block" }}
-        onMouseMove={(e) => {
+    <div className="ch" ref={box} onMouseLeave={() => setHover(null)}>
+      <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={caption} style={{ display: "block", maxWidth: "100%", touchAction: "pan-y" }}
+        onPointerMove={(e) => {
           const r = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
           const px = ((e.clientX - r.left) / r.width) * W;
           const i = Math.round(((px - L) / (W - L - R)) * (points.length - 1));
@@ -61,19 +82,19 @@ export function AreaChart({ points, caption, unit = "জন", height = 220, show
         {[0, 0.5, 1].map((f) => (
           <g key={f}>
             <line x1={L} x2={W - R} y1={y(max * f)} y2={y(max * f)} stroke={f === 0 ? CHART.axis : CHART.grid} strokeWidth="1" />
-            <text x={L - 6} y={y(max * f) + 4} textAnchor="end" fontSize="11" fill={CHART.muted}>{bn(Math.round(max * f))}</text>
+            <text x={L - 6} y={y(max * f) + 4} textAnchor="end" fontSize="12" fill={CHART.muted}>{bn(Math.round(max * f))}</text>
           </g>
         ))}
         {showAvg && avg > 0 && (
           <g>
             <line x1={L} x2={W - R} y1={y(avg)} y2={y(avg)} stroke={CHART.muted} strokeWidth="1" strokeDasharray="0" opacity="0.35" />
-            <text x={W - R} y={y(avg) - 5} textAnchor="end" fontSize="11" fill={CHART.muted}>গড় {bn(avg.toFixed(1))}</text>
+            <text x={W - R} y={y(avg) - 5} textAnchor="end" fontSize="12" fill={CHART.muted}>গড় {bn(avg.toFixed(1))}</text>
           </g>
         )}
         <path d={area} fill={`url(#${gid})`} />
         <path d={line} fill="none" stroke={CHART.teal} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-        {points.map((p, i) => i % every === 0 || i === last ? (
-          <text key={p.label} x={x(i)} y={H - 6} textAnchor={i === 0 ? "start" : i === last ? "end" : "middle"} fontSize="11" fill={CHART.muted}>{p.label}</text>
+        {points.map((p, i) => (i % every === 0 && last - i >= every / 2) || i === last ? (
+          <text key={p.label} x={x(i)} y={H - 6} textAnchor={i === 0 ? "start" : i === last ? "end" : "middle"} fontSize="12" fill={CHART.muted}>{p.label}</text>
         ) : null)}
         {h === null && (
           <g>
@@ -89,7 +110,7 @@ export function AreaChart({ points, caption, unit = "জন", height = 220, show
         )}
       </svg>
       {h !== null && (
-        <div className="ch-tip" style={{ left: `${(x(h) / W) * 100}%` }}>
+        <div className="ch-tip" style={tipPos(x(h) / W)}>
           <b>{bn(points[h].value)} {unit}</b><span>{points[h].tip}</span>
         </div>
       )}
@@ -101,22 +122,23 @@ export function AreaChart({ points, caption, unit = "জন", height = 220, show
 /** কলাম চার্ট (একটি সিরিজ) — `highlight` index-এর কলাম গাঢ়, বাকিগুলো হালকা */
 export function ColumnChart({ points, caption, unit = "জন", height = 200, width = 640, highlight, color = CHART.teal, empty }: { points: Pt[]; caption: string; unit?: string; height?: number; width?: number; highlight?: number; color?: string; empty?: string }) {
   const [hover, setHover] = useState<number | null>(null);
-  const W = width, H = height, L = 30, R = 6, T = 18, B = 26;
+  const [box, W] = useWidth(width);
+  const H = height, L = 30, R = 6, T = 20, B = 26;
   const isEmpty = points.every((p) => p.value === 0);
   const max = niceMax(Math.max(1, ...points.map((p) => p.value)));
   const band = (W - L - R) / points.length;
   const bw = Math.min(24, band * 0.62);
   const y = (v: number) => T + (H - T - B) * (1 - v / max);
-  const every = Math.ceil(points.length / 12);
+  const every = Math.max(1, Math.ceil(points.length / Math.max(3, Math.floor(W / 46))));
   const peak = points.reduce((a, p, i) => (p.value > points[a].value ? i : a), 0);
 
   return (
-    <div className="ch" onMouseLeave={() => setHover(null)}>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={caption} style={{ width: "100%", height: "auto", display: "block" }}>
+    <div className="ch" ref={box} onMouseLeave={() => setHover(null)}>
+      <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label={caption} style={{ display: "block", maxWidth: "100%" }}>
         {[0, 0.5, 1].map((f) => (
           <g key={f}>
             <line x1={L} x2={W - R} y1={y(max * f)} y2={y(max * f)} stroke={f === 0 ? CHART.axis : CHART.grid} strokeWidth="1" />
-            <text x={L - 6} y={y(max * f) + 4} textAnchor="end" fontSize="11" fill={CHART.muted}>{bn(Math.round(max * f))}</text>
+            <text x={L - 6} y={y(max * f) + 4} textAnchor="end" fontSize="12" fill={CHART.muted}>{bn(Math.round(max * f))}</text>
           </g>
         ))}
         {points.map((p, i) => {
@@ -126,10 +148,10 @@ export function ColumnChart({ points, caption, unit = "জন", height = 200, wi
           const strong = highlight === undefined ? true : i === highlight;
           const d = h <= 0 ? "" : `M${cx - bw / 2},${base} L${cx - bw / 2},${top + r} Q${cx - bw / 2},${top} ${cx - bw / 2 + r},${top} L${cx + bw / 2 - r},${top} Q${cx + bw / 2},${top} ${cx + bw / 2},${top + r} L${cx + bw / 2},${base} Z`;
           return (
-            <g key={p.label} onMouseEnter={() => setHover(i)}>
+            <g key={p.label} onPointerEnter={() => setHover(i)} onClick={() => setHover(i)}>
               <rect x={L + band * i} y={T} width={band} height={H - T - B} fill="transparent" />
               {d && <path d={d} fill={color} opacity={hover === null ? (strong ? 1 : 0.38) : hover === i ? 1 : 0.38} />}
-              {(i % every === 0 || i === points.length - 1) && <text x={cx} y={H - 7} textAnchor="middle" fontSize="11" fill={CHART.muted}>{p.label}</text>}
+              {(i % every === 0 || i === points.length - 1) && <text x={cx} y={H - 7} textAnchor="middle" fontSize="12" fill={CHART.muted}>{p.label}</text>}
               {i === peak && p.value > 0 && hover === null && <text x={cx} y={top - 5} textAnchor="middle" fontSize="12" fontWeight="700" fill={CHART.ink}>{bn(p.value)}</text>}
             </g>
           );
@@ -137,7 +159,7 @@ export function ColumnChart({ points, caption, unit = "জন", height = 200, wi
       </svg>
       {isEmpty && empty && <div className="ch-empty">{empty}</div>}
       {hover !== null && !isEmpty && (
-        <div className="ch-tip" style={{ left: `${((L + band * hover + band / 2) / W) * 100}%` }}>
+        <div className="ch-tip" style={tipPos((L + band * hover + band / 2) / W)}>
           <b>{bn(points[hover].value)} {unit}</b><span>{points[hover].tip}</span>
         </div>
       )}

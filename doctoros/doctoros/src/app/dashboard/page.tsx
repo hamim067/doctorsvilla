@@ -169,10 +169,10 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       <section className="db-live">
         <div className="db-live-now">
           <span className="db-live-tag"><span className="dot" />{live.current ? "লাইভ" : total ? "বিরতি" : "আজ এখনো শুরু হয়নি"} · {chamber.name}</span>
-          <div className="row" style={{ alignItems: "flex-end", gap: 18 }}>
+          <div className="db-live-main">
             <div className="col"><span className="soft small">এখন চলছে</span><span className="db-live-num">{live.current ? bn(live.current.serialNo) : "—"}</span></div>
-            <div className="col" style={{ paddingBottom: 10 }}>
-              <b style={{ fontSize: 18 }}>{live.current?.patientName ?? (live.waiting[0] ? `পরের জন: ${live.waiting[0].patientName}` : "অপেক্ষমাণ কেউ নেই")}</b>
+            <div className="db-live-who">
+              <b>{live.current?.patientName ?? (live.waiting[0] ? `পরের জন: ${live.waiting[0].patientName}` : "অপেক্ষমাণ কেউ নেই")}</b>
               <span className="soft small">{live.current ? `${live.current.type === "FOLLOW_UP" ? "ফলোআপ" : "নতুন"} · ${patientCode(live.current.patientNumber)}` : ""}</span>
             </div>
           </div>
@@ -201,12 +201,12 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       {/* ---- KPI ---- */}
       <section className="db-kpis">
-        {kpis.map((k) => (
+        {kpis.map((k, i) => (
           <div key={k.label} className="kpi">
-            <div className="row-sb"><span className="kpi-label">{k.label}</span><span className="kpi-ic"><Icon name={k.icon} size={18} /></span></div>
-            <div className="row-sb" style={{ alignItems: "flex-end" }}>
+            <div className="kpi-top"><span className="kpi-label">{k.label}</span><span className={`kpi-ic t${i + 1}`}><Icon name={k.icon} size={18} /></span></div>
+            <div className="kpi-mid">
               <span className="kpi-value">{k.value}</span>
-              {k.spark && <Sparkline values={k.spark} label={`${k.label} — শেষ ৭ দিনের প্রবণতা`} />}
+              {k.spark && <span className="kpi-spark"><Sparkline values={k.spark} label={`${k.label} — প্রবণতা`} /></span>}
             </div>
             {k.delta}
           </div>
@@ -216,9 +216,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       {/* ---- চার্ট ---- */}
       <section className="db-grid">
         <div className="card db-chart wide">
-          <div className="row-sb"><div className="col"><h2>রোগী দেখা হয়েছে — গত ১৪ দিন</h2><span className="small muted">সব চেম্বার মিলিয়ে · বিন্দুর উপর মাউস রাখুন</span></div>
+          <div className="db-chart-head"><div className="col"><h2>রোগী দেখা হয়েছে — গত ১৪ দিন</h2><span className="small muted">সব চেম্বার মিলিয়ে · চার্টে আঙুল/মাউস রাখুন</span></div>
             <span className="db-big">{bn(sum(days14, "done"))}<small> জন</small></span></div>
-          <AreaChart points={areaPts} caption="গত ১৪ দিনে প্রতিদিন দেখা রোগী" />
+          <AreaChart points={areaPts} caption="গত ১৪ দিনে প্রতিদিন দেখা রোগী" height={240} />
         </div>
         <div className="card db-chart">
           <div className="col"><h2>কোন সময় ভিড় বেশি</h2><span className="small muted">গত ৩০ দিন · ঘণ্টা অনুযায়ী দেখা রোগী</span></div>
@@ -229,7 +229,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       <section className="db-grid three">
         <div className="card db-chart">
-          <div className="row-sb"><div className="col"><h2>আগামী ৭ দিনের বুকিং</h2><span className="small muted">এখন পর্যন্ত নেওয়া সিরিয়াল</span></div><span className="db-big">{bn(nextTotal)}</span></div>
+          <div className="db-chart-head"><div className="col"><h2>আগামী ৭ দিনের বুকিং</h2><span className="small muted">এখন পর্যন্ত নেওয়া সিরিয়াল</span></div><span className="db-big">{bn(nextTotal)}</span></div>
           <ColumnChart points={nextPts} caption="আগামী ৭ দিনে বুক করা সিরিয়াল" width={440} height={190} unit="টি সিরিয়াল" empty="এখনো সামনের কোনো বুকিং নেই — QR পোস্টার আর লিংক শেয়ার করলে বাড়বে" />
         </div>
         <div className="card db-chart">
@@ -238,14 +238,14 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <div className="col" style={{ marginTop: 18, gap: 4 }}><h2>সিরিয়াল কোথা থেকে</h2><span className="small muted">গত ৩০ দিন</span></div>
           <SplitBar a={mix.online} b={mix.walkIn} aLabel="অনলাইন" bLabel="সরাসরি এসে" />
         </div>
-        <div className="col" style={{ gap: 16 }}>
+        <div className="db-side-stack">
           <Link href="/dashboard/followups" className="card db-alert">
             <span className="kpi-ic warn"><Icon name="bell" size={18} /></span>
-            <span className="col grow" style={{ gap: 0 }}><span className="kpi-label">ফলোআপ মিস</span><span className="kpi-value" style={{ fontSize: 30 }}>{bn(missed.n)} জন</span><span className="small muted">ফোন করে মনে করিয়ে দিন →</span></span>
+            <span className="col grow" style={{ gap: 0 }}><span className="kpi-label">ফলোআপ মিস</span><span className="kpi-value">{bn(missed.n)} জন</span><span className="small muted">ফোন করে মনে করিয়ে দিন →</span></span>
           </Link>
           <div className="card db-alert">
             <span className="kpi-ic"><Icon name="check" size={18} /></span>
-            <span className="col grow" style={{ gap: 0 }}><span className="kpi-label">এই মাসে এসএমএস</span><span className="kpi-value" style={{ fontSize: 30 }}>{bn(sms.n)}টি</span><span className="small muted">বুকিং, রিমাইন্ডার ও নোটিশ</span></span>
+            <span className="col grow" style={{ gap: 0 }}><span className="kpi-label">এই মাসে এসএমএস</span><span className="kpi-value">{bn(sms.n)}টি</span><span className="small muted">বুকিং, রিমাইন্ডার ও নোটিশ</span></span>
           </div>
           <Link href="/dashboard/share" className="card db-alert db-cta">
             <span className="col grow" style={{ gap: 2 }}><b>অনলাইন বুকিং বাড়ান</b><span className="small">চেম্বারে QR পোস্টার লাগান, প্রোফাইল লিংক শেয়ার করুন →</span></span>
@@ -260,7 +260,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         <div className="db-today">
           {live.rows.slice(0, 12).map((r) => (
             <Link key={r.id} href={`/dashboard/patients/${r.patientId}`} className={`db-chip ${r.status.toLowerCase()}`}>
-              <b>{bn(r.serialNo)}</b><span>{r.patientName}</span><StatusBadge status={r.status} />
+              <b>{bn(r.serialNo)}</b><span className="nm">{r.patientName}</span><StatusBadge status={r.status} />
             </Link>
           ))}
         </div>

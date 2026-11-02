@@ -87,22 +87,6 @@ th { text-align: left; font-size: 13px; font-weight: 600; color: var(--muted); b
 td { padding: 12px 14px; border-top: 1px solid #eef1ef; vertical-align: middle; }
 tr.live td { background: #fffaf5; }
 
-/* ---- ড্যাশবোর্ড লেআউট ---- */
-.dash { display: flex; flex-wrap: wrap; min-height: 100vh; }
-.dash-side { flex: 1 1 220px; max-width: 100%; background: var(--night); color: #fff; padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; }
-.dash-side .brand { font-size: 20px; font-weight: 700; padding: 0 10px 14px; color: #fff; }
-.dash-side a.nav { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; color: #c9ddd8; font-size: 15px; }
-.dash-side a.nav:hover { background: var(--night-2); color: #fff; }
-.dash-side a.nav.active { background: var(--night-2); color: #fff; font-weight: 700; }
-.dash-side .who { margin-top: auto; padding: 12px 10px 0; border-top: 1px solid rgba(255, 255, 255, 0.15); font-size: 14px; }
-.dash-main { flex: 999 1 560px; min-width: 0; padding: 28px 28px 48px; display: flex; flex-direction: column; gap: 20px; }
-@media (max-width: 800px) {
-  .dash-side { flex-direction: row; flex-wrap: wrap; padding: 10px; }
-  .dash-side .brand { padding: 10px; }
-  .dash-side .who { display: none; }
-  .dash-main { padding: 20px 16px 40px; }
-}
-
 /* ---- সিরিয়াল কিউ ---- */
 .now-panel { background: var(--teal); color: #fff; border-radius: 20px; padding: 22px 24px; display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
 .now-panel .num { font-size: 72px; font-weight: 700; line-height: 1; }
@@ -130,7 +114,7 @@ tr.live td { background: #fffaf5; }
 .tv-next .item .n { font-size: min(12vh, 8vw); font-weight: 700; }
 
 @media print {
-  .no-print, .dash-side { display: none !important; }
+  .no-print, .dash-side, .dash-top { display: none !important; }
   .dash-main { padding: 0; }
   body { background: #fff; }
 }
@@ -142,13 +126,6 @@ tr.live td { background: #fffaf5; }
 .right { align-items: flex-end; }
 .sr { position: absolute; left: -9999px; }
 .xs { font-size: 12px; }
-
-/* ---- ড্যাশবোর্ড লোগো ---- */
-.dash-side .brand { display: flex; align-items: center; gap: 10px; }
-.dash-side .brand:hover { color: #fff; }
-.brand-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--teal); display: flex; align-items: center; justify-content: center; }
-.dash-main h1 { font-size: 30px; }
-.card { border-radius: 16px; }
 
 /* ---- লগইন / রেজিস্ট্রেশন ---- */
 .auth { min-height: 100vh; display: flex; flex-wrap: wrap; background: #fff; }
@@ -173,4 +150,52 @@ tr.live td { background: #fffaf5; }
   .auth-side { display: none; }
   .auth-logo-m { display: flex; }
   .auth-main { align-items: flex-start; padding-top: 28px; }
+}
+
+/* ================= ড্যাশবোর্ডের কাঠামো (সব ডাক্তার/অ্যাসিস্ট্যান্ট পেজ) ================= */
+:root {
+  --dash-bg: #F2F5F3;
+  --side-bg: #0C2B26;
+  --side-hover: #163F38;
+  --side-ink: #C4D8D3;
+  --mint: #5BD6A4;
+  --sky: #2B5A8F; --sky-soft: #E8EEF8;
+  --plum: #5E3F8F; --plum-soft: #F1ECF7;
+  --shadow-sm: 0 1px 2px rgba(13, 47, 42, 0.05), 0 1px 1px rgba(13, 47, 42, 0.03);
+  --shadow-md: 0 8px 24px rgba(13, 47, 42, 0.08);
+}
+.dash { display: flex; min-height: 100vh; background: var(--dash-bg); }
+.dash-side { position: sticky; top: 0; height: 100vh; flex: 0 0 248px; background: var(--side-bg); color: #fff; padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+.dash-side .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; padding: 2px 10px 18px; color: #fff; }
+.dash-side .brand:hover { color: #fff; }
+.brand-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--teal); display: flex; align-items: center; justify-content: center; flex: 0 0 34px; }
+.dash-nav { display: flex; flex-direction: column; gap: 2px; }
+.dash-nav-label { font-size: 11px; letter-spacing: 0.6px; color: #7FA59C; padding: 14px 12px 6px; font-weight: 600; }
+.dash-side a.nav { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 12px; border-radius: 10px; color: var(--side-ink); font-size: 15px; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+.dash-side a.nav svg { opacity: 0.8; flex: 0 0 auto; }
+.dash-side a.nav:hover { background: var(--side-hover); color: #fff; }
+.dash-side a.nav.active { background: var(--side-hover); color: #fff; font-weight: 700; box-shadow: inset 3px 0 0 var(--mint); }
+.dash-side a.nav.active svg { opacity: 1; color: var(--mint); }
+.dash-side .who { margin-top: auto; padding: 14px 10px 0; border-top: 1px solid rgba(255, 255, 255, 0.12); font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
+.dash-side .who-out { min-height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.25); background: transparent; color: #fff; font: inherit; font-size: 14px; cursor: pointer; align-self: flex-start; }
+.dash-top { display: none; }
+.dash-main { flex: 1 1 auto; min-width: 0; padding: clamp(16px, 2.4vw, 32px); padding-bottom: 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1480px; }
+.dash-main h1 { font-size: clamp(24px, 2.4vw, 30px); }
+.dash-main .card { border-radius: 18px; border-color: #E3E9E6; box-shadow: var(--shadow-sm); }
+
+/* ট্যাবলেট ও মোবাইল: বাম মেনু → উপরে লোগো বার + আড়াআড়ি স্ক্রল করা মেনু */
+@media (max-width: 900px) {
+  .dash { flex-direction: column; }
+  .dash-side { position: sticky; top: 0; z-index: 20; height: auto; flex: 0 0 auto; padding: 0; overflow: visible; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15); }
+  .dash-side .brand, .dash-side .who, .dash-nav-label { display: none; }
+  .dash-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px 6px; }
+  .dash-top .brand-sm { display: flex; align-items: center; gap: 8px; color: #fff; font-weight: 700; font-size: 18px; }
+  .dash-top .who-out { min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.25); background: transparent; color: #fff; font: inherit; font-size: 13px; }
+  .dash-top .who-name { font-size: 12px; color: var(--side-ink); max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dash-nav { flex-direction: row; gap: 6px; overflow-x: auto; padding: 4px 14px 12px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .dash-nav::-webkit-scrollbar { display: none; }
+  .dash-side a.nav { min-height: 38px; padding: 0 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); font-size: 14px; }
+  .dash-side a.nav svg { display: none; }
+  .dash-side a.nav.active { background: var(--mint); color: var(--side-bg); box-shadow: none; }
+  .dash-main { padding: 16px 14px 40px; gap: 16px; }
 }
