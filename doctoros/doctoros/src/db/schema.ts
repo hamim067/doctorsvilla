@@ -119,6 +119,8 @@ export const patients = pgTable(
     name: text("name").notNull(),
     gender: text("gender"),
     birthYear: integer("birth_year"),
+    /** অ্যাকাউন্টধারীর সাথে সম্পর্ক: নিজে, মা, বাবা, স্ত্রী, ছেলে… */
+    relation: text("relation"),
     createdAt: createdAt(),
   },
   (t) => [index("patients_name").on(t.name)],
@@ -181,6 +183,21 @@ export const followUps = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("follow_ups_due_status").on(t.dueDate, t.status), index("follow_ups_doctor_status").on(t.doctorId, t.status)],
+);
+
+/** রোগীর লগইনের এককালীন কোড (OTP) — কোডটা হ্যাশ করে রাখা হয় */
+export const otpCodes = pgTable(
+  "otp_codes",
+  {
+    id: id(),
+    phone: text("phone").notNull(),
+    codeHash: text("code_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("otp_phone_created").on(t.phone, t.createdAt)],
 );
 
 /** পাঠানো সব মেসেজের হিসাব — এসএমএস খরচ গোনার জন্যও */

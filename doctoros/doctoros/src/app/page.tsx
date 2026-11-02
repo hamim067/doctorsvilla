@@ -74,7 +74,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
             <a href="#for-doctors">ডাক্তারদের জন্য</a>
           </nav>
           <Link href="/login" className="btn-o">ডাক্তার লগইন</Link>
-          <a href="#track" className="btn-d"><span className="dot" />আমার সিরিয়াল</a>
+          <Link href="/me" className="btn-d"><span className="dot" />আমার সিরিয়াল</Link>
         </header>
 
         <section className="hd-wrap">
@@ -219,7 +219,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
           <div className="foot-top">
             <div className="col gap8" style={{ maxWidth: 320 }}><span className="baloo" style={{ fontSize: 24 }}>DoctorOS</span><span className="muted">বাংলাদেশের ডাক্তার ও রোগীদের জন্য সিরিয়াল আর চেম্বার ব্যবস্থাপনা।</span></div>
             <div className="foot-links">
-              <div className="col gap8"><b>রোগীদের জন্য</b><a href="#results">ডাক্তার খুঁজুন</a><a href="#track">আমার সিরিয়াল</a></div>
+              <div className="col gap8"><b>রোগীদের জন্য</b><a href="#results">ডাক্তার খুঁজুন</a><Link href="/me">আমার সিরিয়াল ও ফাইল</Link></div>
               <div className="col gap8"><b>ডাক্তারদের জন্য</b><Link href="/register">অ্যাকাউন্ট খুলুন</Link><Link href="/login">লগইন</Link></div>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
         <div className="hm-top">
           <header className="row-sb">
             <span className="hm-logo"><span className="hm-mark"><Icon name="plus" size={16} stroke={2.8} color="#5BD6A4" /></span>DoctorOS</span>
-            <Link href="/login" className="hm-login">লগইন</Link>
+            <Link href="/me" className="hm-login">আমার সিরিয়াল</Link>
           </header>
           {liveCount > 0 && <span className="hm-live"><span className="dot" />এখন {bn(liveCount)}টি চেম্বারে লাইভ সিরিয়াল</span>}
           <h1>সঠিক ডাক্তার।<br /><span>সঠিক সময়ে।</span></h1>
@@ -288,7 +288,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
           <span>অনলাইন সিরিয়াল, লাইভ কিউ আর ফলোআপ রিমাইন্ডার।</span>
           <Link href="/register">ফ্রি শুরু করুন</Link>
         </section>
-        <footer className="hm-foot"><b>DoctorOS</b> · জরুরি অবস্থায় নিকটস্থ হাসপাতালে যোগাযোগ করুন</footer>
+        <footer className="hm-foot"><b>DoctorOS</b> · <Link href="/login">ডাক্তার লগইন</Link> · জরুরি অবস্থায় নিকটস্থ হাসপাতালে যোগাযোগ করুন</footer>
       </div>
     </main>
   );

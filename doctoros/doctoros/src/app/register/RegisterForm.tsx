@@ -2,11 +2,12 @@
 import { useActionState } from "react";
 import { registerDoctor } from "@/app/auth-actions";
 import { SubmitButton } from "@/components/SubmitButton";
+import { keepValues } from "@/components/keepValues";
 
 export function RegisterForm() {
-  const [state, action] = useActionState(registerDoctor, undefined);
+  const [state, action, pending] = useActionState(registerDoctor, undefined);
   return (
-    <form action={action} className="card stack">
+    <form onSubmit={keepValues(action)} className="card stack">
       {state?.error && <p className="alert alert-error" role="alert">{state.error}</p>}
       <label className="field">ডাক্তারের নাম
         <input className="input" name="name" placeholder="ডা. তানভীর আহমেদ" required />
@@ -36,7 +37,7 @@ export function RegisterForm() {
           <input className="input" name="password" type="password" autoComplete="new-password" minLength={8} required />
         </label>
       </div>
-      <SubmitButton className="btn btn-primary btn-block">অ্যাকাউন্ট খুলুন</SubmitButton>
+      <SubmitButton pending={pending} className="btn btn-primary btn-block">অ্যাকাউন্ট খুলুন</SubmitButton>
       <p className="muted small">BMDC নাম্বার যাচাই হলে প্রোফাইলে &quot;যাচাইকৃত&quot; ব্যাজ দেখাবে।</p>
     </form>
   );

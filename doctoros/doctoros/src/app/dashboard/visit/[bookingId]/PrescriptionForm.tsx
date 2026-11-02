@@ -1,6 +1,7 @@
 "use client";
 import { useActionState, useState } from "react";
 import { SubmitButton } from "@/components/SubmitButton";
+import { keepValues } from "@/components/keepValues";
 import type { Medicine } from "@/db/schema";
 import { savePrescription } from "../actions";
 
@@ -15,13 +16,13 @@ type Props = {
 };
 
 export function PrescriptionForm({ bookingId, initial, suggestions, minDate }: Props) {
-  const [state, action] = useActionState(savePrescription, undefined);
+  const [state, action, pending] = useActionState(savePrescription, undefined);
   const [meds, setMeds] = useState<Medicine[]>(initial.medicines.length ? initial.medicines : [blank]);
   const [fu, setFu] = useState<string>(initial.followUpDate ? "date" : "");
   const update = (i: number, k: keyof Medicine, v: string) => setMeds((m) => m.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
 
   return (
-    <form action={action} className="row" style={{ alignItems: "flex-start", gap: 20 }}>
+    <form onSubmit={keepValues(action)} className="row" style={{ alignItems: "flex-start", gap: 20 }}>
       <input type="hidden" name="bookingId" value={bookingId} />
       <datalist id="med-suggest">{suggestions.map((s) => <option key={s} value={s} />)}</datalist>
       <datalist id="dose-suggest">{["১+০+১", "১+১+১", "০+০+১", "১+০+০", "০+১+০", "প্রয়োজনে"].map((s) => <option key={s} value={s} />)}</datalist>
@@ -62,8 +63,8 @@ export function PrescriptionForm({ bookingId, initial, suggestions, minDate }: P
           {fu === "date" && <label className="field">তারিখ<input className="input" type="date" name="followUpDate" min={minDate} defaultValue={initial.followUpDate ?? ""} required /></label>}
           <p className="alert alert-ok small">{fu ? "ফলোআপের আগের দিন রোগীর কাছে বুকিং লিংকসহ রিমাইন্ডার যাবে।" : "কোনো রিমাইন্ডার যাবে না।"}</p>
         </fieldset>
-        <SubmitButton className="btn btn-primary btn-big btn-block" name="next" value="1">সেভ করে পরের রোগী</SubmitButton>
-        <SubmitButton className="btn btn-block">শুধু সেভ করুন</SubmitButton>
+        <SubmitButton pending={pending} className="btn btn-primary btn-big btn-block" name="next" value="1">সেভ করে পরের রোগী</SubmitButton>
+        <SubmitButton pending={pending} className="btn btn-block">শুধু সেভ করুন</SubmitButton>
         <button type="button" className="btn btn-block no-print" onClick={() => window.print()}>প্রিন্ট</button>
       </div>
     </form>

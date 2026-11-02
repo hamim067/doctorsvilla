@@ -1,6 +1,7 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { SubmitButton } from "@/components/SubmitButton";
+import { keepValues } from "@/components/keepValues";
 import type { FormState } from "@/lib/form";
 
 const DAYS = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
@@ -13,33 +14,37 @@ type Chamber = {
 };
 
 export function ChamberForm({ action, chamber, submitLabel }: { action: (s: FormState, fd: FormData) => Promise<FormState>; chamber?: Chamber; submitLabel: string }) {
-  const [state, formAction] = useActionState(action, undefined);
+  const [state, formAction, pending] = useActionState(action, undefined);
   const sched = new Map((chamber?.schedules ?? []).map((s) => [s.weekday, s]));
   const isNew = !chamber?.id;
+  // বাটনের পাশে ফলাফল দেখাই আর সেখানে স্ক্রল করি — যাতে লম্বা ফর্মে error চোখ এড়িয়ে না যায়
+  const msgRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (state) msgRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [state]);
   return (
-    <form action={formAction} className="stack">
+    <form onSubmit={keepValues(formAction)} className="stack">
       {chamber?.id && <input type="hidden" name="id" value={chamber.id} />}
-      {state?.error && <p className="alert alert-error" role="alert">{state.error}</p>}
-      {state?.ok && <p className="alert alert-ok" role="status">{state.ok}</p>}
 
       <div className="card stack">
         <h2>চেম্বারের তথ্য</h2>
         <div className="grid">
           <label className="field">চেম্বারের নাম<input className="input" name="name" defaultValue={chamber?.name} placeholder="শাপলা মেডিকেয়ার" required /></label>
-          <label className="field">চেম্বার কোড (সিরিয়াল কোডে বসবে)<input className="input" name="code" defaultValue={chamber?.code} placeholder="RAJ" maxLength={5} style={{ textTransform: "uppercase" }} required /></label>
+          <label className="field">চেম্বার কোড (ঐচ্ছিক)<input className="input" name="code" defaultValue={chamber?.code} placeholder="যেমন RAJ — খালি রাখলে নিজে তৈরি হবে" maxLength={5} style={{ textTransform: "uppercase" }} />
+            <span className="muted small" style={{ fontWeight: 400 }}>রোগীর সিরিয়াল কোডে বসে: RAJ-1102-07</span></label>
         </div>
         <div className="grid">
           <label className="field">ঠিকানা<input className="input" name="address" defaultValue={chamber?.address} required /></label>
           <label className="field">শহর<input className="input" name="city" defaultValue={chamber?.city} placeholder="রাজশাহী" required /></label>
         </div>
         <div className="grid">
-          <label className="field">নতুন রোগীর ফি (৳)<input className="input" name="feeNew" type="number" min={0} defaultValue={chamber?.feeNew} required /></label>
-          <label className="field">ফলোআপ ফি (৳)<input className="input" name="feeFollowUp" type="number" min={0} defaultValue={chamber?.feeFollowUp} required /></label>
-          <label className="field">প্রতি রোগী গড় সময় (মিনিট)<input className="input" name="avgMinutes" type="number" min={1} max={120} defaultValue={chamber?.avgMinutes ?? 10} /></label>
+          <label className="field">নতুন রোগীর ফি (৳)<input className="input" name="feeNew" type="text" inputMode="numeric" defaultValue={chamber?.feeNew} required /></label>
+          <label className="field">ফলোআপ ফি (৳)<input className="input" name="feeFollowUp" type="text" inputMode="numeric" defaultValue={chamber?.feeFollowUp} required /></label>
+          <label className="field">প্রতি রোগী গড় সময় (মিনিট)<input className="input" name="avgMinutes" type="text" inputMode="numeric" defaultValue={chamber?.avgMinutes ?? 10} /></label>
         </div>
         <div className="grid">
-          <label className="field">দিনে সর্বোচ্চ রোগী<input className="input" name="dailyLimit" type="number" min={1} defaultValue={chamber?.dailyLimit ?? 30} /></label>
-          <label className="field">অনলাইন সিরিয়ালের অংশ (%)<input className="input" name="onlineSharePct" type="number" min={0} max={100} defaultValue={chamber?.onlineSharePct ?? 60} />
+          <label className="field">দিনে সর্বোচ্চ রোগী<input className="input" name="dailyLimit" type="text" inputMode="numeric" defaultValue={chamber?.dailyLimit ?? 30} /></label>
+          <label className="field">অনলাইন সিরিয়ালের অংশ (%)<input className="input" name="onlineSharePct" type="text" inputMode="numeric" defaultValue={chamber?.onlineSharePct ?? 60} />
             <span className="muted small" style={{ fontWeight: 400 }}>বাকিটা সরাসরি আসা রোগীদের জন্য থাকবে</span></label>
         </div>
       </div>
@@ -60,7 +65,11 @@ export function ChamberForm({ action, chamber, submitLabel }: { action: (s: Form
           );
         })}
       </div>
-      <div><SubmitButton className="btn btn-primary btn-big">{submitLabel}</SubmitButton></div>
+      <div ref={msgRef} className="stack-sm">
+        {state?.error && <p className="alert alert-error" role="alert">⚠ {state.error}</p>}
+        {state?.ok && <p className="alert alert-ok" role="status">✓ {state.ok}</p>}
+        <div><SubmitButton pending={pending} className="btn btn-primary btn-big">{submitLabel}</SubmitButton></div>
+      </div>
     </form>
   );
 }

@@ -2,6 +2,7 @@
 import { useActionState, useState } from "react";
 import { bookOnline } from "@/app/dr/actions";
 import { SubmitButton } from "@/components/SubmitButton";
+import { keepValues } from "@/components/keepValues";
 
 type Day = {
   date: string; open: boolean; onlineLeft: number; nextSerial: number;
@@ -19,19 +20,26 @@ function addMinutes(hhmm: string, min: number) {
   return `${part} ${bn(H % 12 === 0 ? 12 : H % 12)}:${bn(String(M).padStart(2, "0"))}`;
 }
 
-export function BookForm({ chamberId, days, avgMinutes, summary }: {
+type Family = { id: string; name: string; relation: string | null }[];
+
+export function BookForm({ chamberId, days, avgMinutes, summary, patient }: {
   chamberId: string; days: Day[]; avgMinutes: number;
+  patient: { phone: string; family: Family } | null;
   summary: { doctor: string; chamber: string; feeNew: number; feeFollowUp: number };
 }) {
-  const [state, action] = useActionState(bookOnline, undefined);
+  const [state, action, pending] = useActionState(bookOnline, undefined);
   const firstOpen = days.find((d) => d.open && d.onlineLeft > 0)?.date ?? "";
   const [picked, setPicked] = useState(firstOpen);
+  const fam = patient?.family ?? [];
+  const [member, setMember] = useState(fam[0]?.id ?? "new");
   const [name, setName] = useState("");
+  const chosen = fam.find((f) => f.id === member);
+  const shownName = chosen ? chosen.name : name;
   const day = days.find((d) => d.date === picked);
   const eta = day?.startTime ? `${addMinutes(day.startTime, (day.nextSerial - 1) * avgMinutes)} – ${addMinutes(day.startTime, (day.nextSerial - 1) * avgMinutes + 20)}` : "";
 
   return (
-    <form action={action} className="pt-stack">
+    <form onSubmit={keepValues(action)} className="pt-stack">
       <input type="hidden" name="chamberId" value={chamberId} />
 
       <fieldset className="pt-sec" style={{ border: 0, padding: 0, margin: 0 }}>
@@ -66,21 +74,43 @@ export function BookForm({ chamberId, days, avgMinutes, summary }: {
       )}
 
       <section className="pt-card pt-stack-sm">
-        <h2 className="pt-h2">রোগীর তথ্য</h2>
-        <label className="field">রোগীর নাম<input className="input" name="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required /></label>
-        <label className="field">মোবাইল নাম্বার<input className="input" name="phone" type="tel" inputMode="numeric" autoComplete="tel" placeholder="01XXXXXXXXX" required />
-          <span className="muted small" style={{ fontWeight: 400 }}>এই নাম্বারে সিরিয়াল ও রিমাইন্ডার যাবে। পরিবারের অন্য কারও জন্যও একই নাম্বার দিতে পারেন।</span></label>
-        <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
-          <label className="field">লিঙ্গ<select className="input" name="gender" defaultValue=""><option value="">—</option><option>পুরুষ</option><option>মহিলা</option><option>অন্যান্য</option></select></label>
-          <label className="field">বয়স<input className="input" name="age" type="number" min={0} max={120} inputMode="numeric" /></label>
-        </div>
+        <h2 className="pt-h2">{fam.length ? "কার জন্য?" : "রোগীর তথ্য"}</h2>
+        {fam.length > 0 && (
+          <div className="pt-who" role="radiogroup" aria-label="কার জন্য">
+            {fam.map((f) => (
+              <label key={f.id} className={member === f.id ? "on" : ""}>
+                <input type="radio" name="patientId" value={f.id} checked={member === f.id} onChange={() => setMember(f.id)} />
+                {f.name}{f.relation ? ` (${f.relation})` : ""}
+              </label>
+            ))}
+            <label className={member === "new" ? "on new" : "new"}>
+              <input type="radio" name="patientId" value="new" checked={member === "new"} onChange={() => setMember("new")} />+ নতুন
+            </label>
+          </div>
+        )}
+        {member === "new" && (
+          <>
+            <label className="field">রোগীর নাম<input className="input" name="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required /></label>
+            {patient ? (
+              <input type="hidden" name="phone" value={patient.phone} />
+            ) : (
+              <label className="field">মোবাইল নাম্বার<input className="input" name="phone" type="tel" inputMode="numeric" autoComplete="tel" placeholder="01XXXXXXXXX" required />
+                <span className="muted small" style={{ fontWeight: 400 }}>এই নাম্বারে সিরিয়াল ও রিমাইন্ডার যাবে। পরিবারের অন্য কারও জন্যও একই নাম্বার দিতে পারেন।</span></label>
+            )}
+            <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+              <label className="field">লিঙ্গ<select className="input" name="gender" defaultValue=""><option value="">—</option><option>পুরুষ</option><option>মহিলা</option><option>অন্যান্য</option></select></label>
+              <label className="field">বয়স<input className="input" name="age" type="text" inputMode="numeric" /></label>
+            </div>
+          </>
+        )}
+        {patient && <span className="small muted">এসএমএস যাবে {patient.phone} নাম্বারে।</span>}
       </section>
 
       {day && (
         <section className="pt-summary">
           <div className="pt-summary-top"><b>{summary.doctor}</b><span className="small muted">{summary.chamber}</span></div>
           <div className="pt-summary-grid">
-            <span><small>রোগী</small><b>{name.trim() || "—"}</b></span>
+            <span><small>রোগী</small><b>{shownName.trim() || "—"}</b></span>
             <span><small>তারিখ</small><b>{day.long}</b></span>
             <span><small>সিরিয়াল</small><b className="teal">আনুমানিক {bn(day.nextSerial)}</b></span>
             <span><small>ফি (চেম্বারে)</small><b>৳{bn(summary.feeNew)}</b></span>
@@ -92,7 +122,7 @@ export function BookForm({ chamberId, days, avgMinutes, summary }: {
       {state?.error && <p className="alert alert-error" role="alert">{state.error}</p>}
       <div className="pt-bottom">
         <div className="pt-wrap">
-          <SubmitButton className="pt-cta" disabled={!firstOpen}>সিরিয়াল কনফার্ম করুন</SubmitButton>
+          <SubmitButton pending={pending} className="pt-cta" disabled={!firstOpen}>সিরিয়াল কনফার্ম করুন</SubmitButton>
         </div>
       </div>
     </form>

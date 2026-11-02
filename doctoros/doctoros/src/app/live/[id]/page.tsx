@@ -89,7 +89,7 @@ export default async function LivePage({ params, searchParams }: { params: Promi
           <a className="lv-btn-o" href={`https://maps.google.com/?q=${encodeURIComponent(`${d.chamber.address}, ${d.chamber.city}`)}`} target="_blank" rel="noreferrer">
             <Icon name="pin" size={18} />চেম্বারের লোকেশন
           </a>
-          <Link className="lv-btn" href={`/dr/${d.doctor.slug}`}>ডাক্তারের প্রোফাইল</Link>
+          <Link className="lv-btn" href="/me">আমার সব সিরিয়াল</Link>
         </div>
       </div>
     </main>

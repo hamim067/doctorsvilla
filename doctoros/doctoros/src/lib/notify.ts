@@ -13,7 +13,7 @@ import { db, schema } from "@/db";
  *   "http"    — বাংলাদেশি এসএমএস গেটওয়ের HTTP API (SMS_API_URL, SMS_API_KEY, SMS_SENDER_ID)
  *               গেটওয়ে ভেদে প্যারামিটারের নাম আলাদা হতে পারে — sendHttpSms() মিলিয়ে নিন।
  */
-type Purpose = "booking" | "followup" | "holiday" | "queue";
+type Purpose = "booking" | "followup" | "holiday" | "queue" | "otp";
 
 export async function notifyPatient(opts: { doctorId: string | null; phone: string; body: string; purpose: Purpose }) {
   const provider = process.env.SMS_PROVIDER ?? "console";

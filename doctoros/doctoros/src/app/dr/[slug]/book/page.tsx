@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { db, schema } from "@/db";
 import { Icon } from "@/components/Icons";
 import { upcomingDays } from "@/lib/booking";
+import { familyOf, getPatientSession } from "@/lib/patient-auth";
 import { addDays, bn, formatDateBn, formatTimeBn, today, WEEKDAYS_SHORT_BN, weekday } from "@/lib/time";
 import "../../patient.css";
 import { BookForm } from "./BookForm";
@@ -23,6 +24,9 @@ export default async function BookPage({ params, searchParams }: { params: Promi
   });
   const chamber = chambers.find((c) => c.id === wanted) ?? chambers[0];
   if (!chamber) notFound();
+
+  const ps = await getPatientSession();
+  const family = ps ? (await familyOf(ps.accountId)).map((p) => ({ id: p.id, name: p.name, relation: p.relation })) : [];
 
   const t = today();
   const days = (await upcomingDays(chamber)).map((d) => ({
@@ -47,6 +51,9 @@ export default async function BookPage({ params, searchParams }: { params: Promi
       </header>
 
       <div className="pt-wrap pt-stack" style={{ paddingTop: 18 }}>
+        {!ps && (
+          <p className="small muted">আগে সিরিয়াল নিয়েছেন? <Link href={`/me/login?next=${encodeURIComponent(`/dr/${slug}/book?chamber=${chamber.id}`)}`}>মোবাইল নাম্বারে লগইন করুন</Link> — পরিবারের সবার নাম আর নাম্বার আর লিখতে হবে না।</p>
+        )}
         <section className="pt-sec">
           <h2>চেম্বার বেছে নিন</h2>
           {chambers.map((c) => {
@@ -67,6 +74,7 @@ export default async function BookPage({ params, searchParams }: { params: Promi
           chamberId={chamber.id}
           days={days}
           avgMinutes={chamber.avgMinutes}
+          patient={ps ? { phone: ps.phone, family } : null}
           summary={{ doctor: doctor.name, chamber: `${chamber.name}, ${chamber.city}`, feeNew: chamber.feeNew, feeFollowUp: chamber.feeFollowUp }}
         />
       </div>

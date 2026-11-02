@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "tsx src/db/migrate.ts && next build",
+    "build": "tsx src/db/migrate.ts && tsx src/db/demo.ts && next build",
     "start": "next start",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
     "typecheck": "tsc --noEmit",
-    "build:local": "next build"
+    "build:local": "next build",
+    "db:demo": "tsx src/db/demo.ts"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^3.3.0",

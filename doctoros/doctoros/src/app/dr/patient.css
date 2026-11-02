@@ -92,3 +92,9 @@
 .lv-btn-o { border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; }
 .lv-btn-o:hover { color: #fff; }
 .lv .alert-ok { background: #E3F1EE; color: #08463D; }
+.pt-who { display: flex; flex-wrap: wrap; gap: 8px; }
+.pt-who label { position: relative; min-height: 42px; padding: 0 14px; border-radius: 999px; border: 1px solid #DCE3E0; background: #fff; display: flex; align-items: center; font-size: 15px; cursor: pointer; }
+.pt-who label.on { border: 1.5px solid #0B6E5F; background: #E3F1EE; color: #0B6E5F; font-weight: 600; }
+.pt-who label.new { border-style: dashed; color: #55635F; }
+.pt-who input { position: absolute; opacity: 0; pointer-events: none; }
+.pt-who label:has(input:focus-visible) { outline: 2px solid #0B6E5F; outline-offset: 2px; }

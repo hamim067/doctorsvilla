@@ -1,0 +1,39 @@
+/* রোগীর নিজের অংশ (/me) — ক্যানভাসের মোবাইল ডিজাইন অনুযায়ী */
+.me { min-height: 100vh; background: var(--ground); padding-bottom: 96px; }
+.me-wrap { max-width: 600px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
+.me-head { background: #fff; border-bottom: 1px solid var(--line); padding: 10px 0; }
+.me-main { padding-top: 20px; }
+.me-main h1 { font-size: 24px; }
+.me-main h2 { font-size: 17px; margin-top: 6px; }
+.me-logo { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 700; color: #fff; }
+.me-logo:hover { color: #fff; }
+.me-logo.dark, .me-logo.dark:hover { color: var(--ink); }
+.me-mark { width: 32px; height: 32px; border-radius: 16px; border: 2px solid #5BD6A4; background: var(--night); display: flex; align-items: center; justify-content: center; }
+.me-card { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+.me-today { display: flex; flex-direction: column; gap: 8px; background: #fff; border: 1.5px solid var(--teal); border-radius: 18px; padding: 16px; color: var(--ink); }
+.me-today:hover { color: var(--ink); }
+.me-fu { background: var(--orange-soft); border-color: #f3c9a8; }
+.me-appt { display: flex; gap: 12px; align-items: center; }
+.me-date { width: 54px; flex: 0 0 54px; display: flex; flex-direction: column; align-items: center; background: var(--teal-soft); color: var(--teal); border-radius: 12px; padding: 6px 0; }
+.me-date span { font-size: 12px; }
+.me-date b { font-size: 20px; line-height: 1.1; }
+.me-date.muted-date { background: var(--ground); color: var(--muted); }
+.me-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.me-chips a { min-height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink); display: flex; align-items: center; font-size: 14px; }
+.me-chips a.on { background: var(--ink); color: #fff; border-color: var(--ink); font-weight: 600; }
+.me-rx { display: flex; flex-direction: column; gap: 6px; background: var(--ground); border-radius: 12px; padding: 10px 12px; }
+.me-member { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.me-av { width: 52px; height: 52px; flex: 0 0 52px; border-radius: 26px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; }
+.me-nav { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 6px 0 calc(8px + env(safe-area-inset-bottom)); z-index: 10; }
+.me-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 50px; justify-content: center; font-size: 12px; color: var(--muted); }
+.me-nav a.on { color: var(--teal); font-weight: 700; }
+
+.me-login { min-height: 100vh; background: var(--ground); padding-bottom: 40px; }
+.me-login-top { background: var(--night); color: #fff; padding: 20px 20px 80px; display: flex; flex-direction: column; gap: 14px; }
+.me-login-top > * { max-width: 568px; width: 100%; margin-left: auto; margin-right: auto; }
+.me-login-top h1 { font-family: "Noto Serif Bengali", serif; font-size: 32px; line-height: 1.3; margin-top: 20px; }
+.me-login-top p { color: #c9ddd8; }
+.me-big { font-size: 20px !important; min-height: 56px !important; }
+.me-code { letter-spacing: 8px; text-align: center; }
+.me-demo { background: #fff4ec; border: 1px dashed #f3b48a; color: #6e2e0c; border-radius: 12px; padding: 12px; font-size: 14px; }
+.me-demo b { font-size: 20px; letter-spacing: 3px; }

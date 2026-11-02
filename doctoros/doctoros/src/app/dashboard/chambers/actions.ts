@@ -13,20 +13,29 @@ import { formatDateBn, today } from "@/lib/time";
 
 const chamberSchema = z.object({
   name: z.string().min(2, "চেম্বারের নাম দিন"),
-  code: z.string().regex(/^[A-Z]{2,5}$/, "চেম্বার কোড: ২–৫টি ইংরেজি বড় হাতের অক্ষর (যেমন RAJ)"),
-  address: z.string().min(3, "ঠিকানা দিন"),
+  code: z.string().regex(/^[A-Z]{2,5}$/, "চেম্বার কোড: ২–৫টি ইংরেজি অক্ষর (যেমন RAJ), অথবা ঘরটা খালি রাখুন"),
+  address: z.string().min(2, "ঠিকানা দিন"),
   city: z.string().min(2, "শহর দিন"),
   feeNew: z.number({ message: "নতুন রোগীর ফি দিন" }).int().min(0),
   feeFollowUp: z.number({ message: "ফলোআপ ফি দিন" }).int().min(0),
-  avgMinutes: z.number().int().min(1).max(120),
-  dailyLimit: z.number().int().min(1).max(500),
-  onlineSharePct: z.number().int().min(0).max(100),
+  avgMinutes: z.number().int().min(1, "গড় সময় কমপক্ষে ১ মিনিট").max(120, "গড় সময় ১২০ মিনিটের কম দিন"),
+  dailyLimit: z.number().int().min(1, "দিনে কমপক্ষে ১ জন রোগী").max(500, "দিনে সর্বোচ্চ ৫০০ জন"),
+  onlineSharePct: z.number().int().min(0, "অনলাইনের অংশ ০–১০০ এর মধ্যে দিন").max(100, "অনলাইনের অংশ ০–১০০ এর মধ্যে দিন"),
 });
+
+/** কোড খালি বা বাংলায় দিলে নাম/শহর থেকে বানিয়ে নিই: "Shapla Medicare" → "SHM", না পেলে "CHA" */
+function cleanCode(raw: string, name: string, city: string) {
+  const fromRaw = raw.toUpperCase().replace(/[^A-Z]/g, "");
+  if (fromRaw.length >= 2) return fromRaw.slice(0, 5);
+  const words = `${name} ${city}`.toUpperCase().replace(/[^A-Z ]/g, " ").split(/\s+/).filter(Boolean);
+  const guess = words.length >= 2 ? words.map((w) => w[0]).join("").slice(0, 3) : (words[0] ?? "").slice(0, 3);
+  return guess.length >= 2 ? guess : "CHA";
+}
 
 function readChamber(fd: FormData) {
   return chamberSchema.safeParse({
     name: str(fd, "name"),
-    code: str(fd, "code").toUpperCase(),
+    code: cleanCode(str(fd, "code"), str(fd, "name"), str(fd, "city")),
     address: str(fd, "address"),
     city: str(fd, "city"),
     feeNew: int(fd, "feeNew") ?? undefined,
@@ -58,12 +67,13 @@ export async function createChamber(_: FormState, fd: FormData): Promise<FormSta
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const sch = readSchedule(fd);
   if ("error" in sch) return { error: sch.error };
-  const [dup] = await db
-    .select({ id: schema.chambers.id })
-    .from(schema.chambers)
-    .where(and(eq(schema.chambers.doctorId, s.doctorId), eq(schema.chambers.code, parsed.data.code)))
-    .limit(1);
-  if (dup) return { error: "এই কোডের চেম্বার আগেই আছে" };
+  // একই কোড আগে থাকলে শেষে অক্ষর বদলে নতুন কোড (RAJ → RAJB)
+  const taken = new Set(
+    (await db.select({ code: schema.chambers.code }).from(schema.chambers).where(eq(schema.chambers.doctorId, s.doctorId))).map((r) => r.code),
+  );
+  let code = parsed.data.code;
+  for (let i = 0; taken.has(code) && i < 26; i++) code = parsed.data.code.slice(0, 4) + String.fromCharCode(66 + i);
+  parsed.data.code = code;
 
   const id = await db.transaction(async (tx) => {
     const [c] = await tx.insert(schema.chambers).values({ ...parsed.data, doctorId: s.doctorId }).returning();
