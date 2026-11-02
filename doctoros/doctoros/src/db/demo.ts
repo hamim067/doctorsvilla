@@ -4,7 +4,7 @@
 // প্রতিদিন প্রথম build-এ ডেমো চেম্বারে "আজকের" কিছু সিরিয়াল তৈরি হয়, যাতে লাইভ কিউ দেখানো যায়।
 import "dotenv/config";
 import bcrypt from "bcryptjs";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as s from "./schema";
@@ -175,6 +175,14 @@ async function main() {
       if (rows.length) await db.insert(s.bookings).values(rows).onConflictDoNothing();
     }
   }
+
+  // ---- পুরনো ডেমো ভিজিটে "শেষ হওয়ার সময়" না থাকলে বসিয়ে দিই (ঘণ্টাভিত্তিক ভিড়ের চার্টের জন্য) ----
+  await db.execute(sql`
+    update bookings b set completed_at = (b.date || ' ' || s.start_time)::timestamp at time zone 'Asia/Dhaka'
+      + make_interval(mins => (b.serial_no * 11) % 230)
+    from schedules s, doctors d
+    where b.status = 'DONE' and b.completed_at is null and b.doctor_id = d.id and d.slug like 'demo-%'
+      and s.chamber_id = b.chamber_id and s.weekday = extract(dow from b.date::date)`);
 
   // ---- আজকের লাইভ কিউ (প্রতিদিন একবার) ----
   const todayQueue: [string, string, string[]][] = [

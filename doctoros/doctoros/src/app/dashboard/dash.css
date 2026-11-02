@@ -1,0 +1,65 @@
+/* ডাক্তারের ড্যাশবোর্ড — Stripe/Linear ধাঁচের কার্ড, বড় সংখ্যা, শান্ত গ্রিড */
+.db { display: flex; flex-direction: column; gap: 18px; }
+.db h1 { font-family: "Baloo Da 2", "Hind Siliguri", sans-serif; font-size: 32px; font-weight: 800; color: var(--night); }
+.db h2 { font-size: 17px; font-weight: 700; }
+.db .card { border-radius: 20px; padding: 20px; box-shadow: 0 1px 2px rgba(13, 47, 42, 0.04); }
+.db-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; }
+.db-empty { max-width: 640px; }
+
+/* লাইভ প্যানেল */
+.db-live { display: flex; flex-wrap: wrap; gap: 0; border-radius: 24px; overflow: hidden; background: var(--night); color: #fff; }
+.db-live-now { flex: 2 1 420px; padding: 22px 26px; display: flex; flex-direction: column; gap: 14px; background: radial-gradient(circle at 0% 0%, rgba(14, 138, 114, 0.45), transparent 55%); }
+.db-live-tag { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; background: rgba(255, 255, 255, 0.1); padding: 5px 12px; border-radius: 999px; }
+.db-live-num { font-family: "Baloo Da 2", sans-serif; font-size: 84px; font-weight: 800; line-height: 0.9; }
+.db .soft { color: #B9D3CD; }
+.db-prog { height: 10px; border-radius: 5px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+.db-prog span { display: block; height: 100%; border-radius: 5px; background: #5BD6A4; }
+.db-live-stats { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; color: #C9DDD8; }
+.db-live-stats b { color: #fff; font-size: 16px; }
+.db-live-side { flex: 1 1 260px; padding: 22px; background: rgba(255, 255, 255, 0.04); border-left: 1px solid rgba(255, 255, 255, 0.08); display: flex; flex-direction: column; gap: 10px; }
+.db-q { display: flex; gap: 10px; align-items: center; }
+.db-q b { font-size: 14px; font-weight: 600; }
+.db-q-n { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.db-q-n.on { background: #C2551A; }
+
+/* KPI */
+.db-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.kpi { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 1px 2px rgba(13, 47, 42, 0.04); }
+.kpi-label { font-size: 14px; color: var(--muted); font-weight: 600; }
+.kpi-ic { width: 34px; height: 34px; border-radius: 10px; background: var(--teal-soft); color: var(--teal); display: flex; align-items: center; justify-content: center; flex: 0 0 34px; }
+.kpi-ic.warn { background: var(--orange-soft); color: var(--orange); }
+.kpi-value { font-size: 34px; font-weight: 700; line-height: 1.05; color: var(--ink); letter-spacing: -0.5px; }
+.kpi-delta { font-size: 13px; font-weight: 700; color: var(--muted); }
+.kpi-delta span { font-weight: 400; color: var(--muted); }
+.kpi-delta.up { color: #0B6E5F; }
+.kpi-delta.down { color: #A33F10; }
+.kpi-sub { font-size: 13px; color: var(--muted); }
+
+/* চার্ট গ্রিড */
+.db-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+.db-grid.three { grid-template-columns: 1.2fr 1fr 0.9fr; }
+@media (max-width: 1100px) { .db-grid, .db-grid.three { grid-template-columns: 1fr; } }
+.db-chart { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.db-big { font-size: 30px; font-weight: 700; color: var(--ink); }
+.db-big small { font-size: 14px; color: var(--muted); font-weight: 400; }
+.ch { position: relative; }
+.ch-tip { position: absolute; top: 0; transform: translate(-50%, -6px); background: var(--night); color: #fff; border-radius: 10px; padding: 6px 10px; font-size: 12px; display: flex; flex-direction: column; pointer-events: none; white-space: nowrap; box-shadow: 0 6px 16px rgba(13, 47, 42, 0.25); }
+.ch-tip b { font-size: 14px; }
+.split { display: flex; gap: 2px; height: 14px; border-radius: 7px; overflow: hidden; background: #E6EBE8; }
+.split span { display: block; height: 100%; }
+.leg { display: inline-flex; align-items: center; gap: 6px; }
+.leg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+.db-alert { display: flex; gap: 14px; align-items: center; color: var(--ink); }
+.db-alert:hover { color: var(--ink); border-color: var(--teal); }
+.db-cta { background: var(--teal-soft); border-color: #C3E0D9; }
+
+/* আজকের সিরিয়াল চিপ */
+.db-today { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.db-chip { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); color: var(--ink); font-size: 14px; }
+.db-chip:hover { color: var(--ink); border-color: var(--teal); }
+.db-chip b { width: 30px; height: 30px; flex: 0 0 30px; border-radius: 9px; background: var(--ground); display: flex; align-items: center; justify-content: center; }
+.db-chip span:nth-of-type(1) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.db-chip.in_progress { border-color: #F3C9A8; background: #FFFAF5; }
+.db-chip.done b { background: var(--teal-soft); color: var(--teal); }
+.ch-empty { pointer-events: none; position: absolute; inset: 20% 8% auto 8%; text-align: center; font-size: 14px; color: var(--muted); background: rgba(255, 255, 255, 0.92); padding: 10px; border-radius: 12px; }
