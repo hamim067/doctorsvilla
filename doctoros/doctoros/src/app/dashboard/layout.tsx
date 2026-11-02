@@ -1,6 +1,8 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { logout } from "@/app/auth-actions";
+import Link from "next/link";
+import { Icon } from "@/components/Icons";
 import { NavLink } from "@/components/NavLink";
 import { requireStaff } from "@/lib/auth";
 
@@ -11,7 +13,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="dash">
       <aside className="dash-side">
-        <span className="brand">DoctorOS</span>
+        <Link href="/dashboard" className="brand"><span className="brand-mark"><Icon name="pulse" size={20} stroke={2.4} color="#fff" /></span>DoctorOS</Link>
         <NavLink href="/dashboard">ড্যাশবোর্ড</NavLink>
         <NavLink href="/dashboard/queue">সিরিয়াল কিউ</NavLink>
         <NavLink href="/dashboard/patients">রোগী খোঁজা</NavLink>

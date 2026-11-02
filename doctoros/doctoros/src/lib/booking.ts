@@ -209,13 +209,13 @@ export async function upcomingDays(chamber: typeof chambers.$inferSelect & { sch
     db.select().from(holidays).where(and(eq(holidays.chamberId, chamber.id), sql`${holidays.date} between ${t} and ${last}`)),
   ]);
   const onlineCap = Math.floor((chamber.dailyLimit * chamber.onlineSharePct) / 100);
-  const days: { date: string; open: boolean; onlineLeft: number; startTime?: string; endTime?: string; note?: string }[] = [];
+  const days: { date: string; open: boolean; onlineLeft: number; nextSerial: number; startTime?: string; endTime?: string; note?: string }[] = [];
   for (let i = 0; i <= ONLINE_BOOKING_DAYS; i++) {
     const date = addDays(t, i);
     const sch = chamber.schedules.find((s) => s.weekday === weekday(date));
     const hol = hols.find((h) => h.date === date);
     if (!sch || hol) {
-      if (sch && hol) days.push({ date, open: false, onlineLeft: 0, note: hol.note ?? "ছুটি" });
+      if (sch && hol) days.push({ date, open: false, onlineLeft: 0, nextSerial: 0, note: hol.note ?? "ছুটি" });
       continue;
     }
     const online = counts.find((c) => c.date === date && c.source === "ONLINE")?.n ?? 0;
@@ -224,6 +224,8 @@ export async function upcomingDays(chamber: typeof chambers.$inferSelect & { sch
       date,
       open: true,
       onlineLeft: Math.max(0, Math.min(onlineCap - online, chamber.dailyLimit - total)),
+      // পরের খালি সিরিয়াল (বাতিল হওয়াগুলো বাদ দিয়ে আনুমানিক) — বুকিং পেজে প্রিভিউ দেখাতে
+      nextSerial: total + 1,
       startTime: sch.startTime,
       endTime: sch.endTime,
     });

@@ -1,0 +1,94 @@
+/* রোগীর পেজ (প্রোফাইল, বুকিং, লাইভ) — ক্যানভাসের মোবাইল ডিজাইন অনুযায়ী, ডেস্কটপে মাঝখানে */
+.pt { min-height: 100vh; background: #F4F6F3; padding-bottom: 110px; }
+.pt-wrap { max-width: 640px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
+.pt-stack { display: flex; flex-direction: column; gap: 22px; }
+.pt-stack-sm { display: flex; flex-direction: column; gap: 14px; }
+.pt h1 { font-size: 22px; }
+.pt h2, .pt-h2 { font-size: 17px; font-weight: 700; margin: 0; padding: 0; }
+
+.pt-band { background: #0B6E5F; padding: 20px 0 76px; }
+.pt-back { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; color: #fff; font-weight: 600; }
+.pt-back:hover { color: #fff; }
+.pt-back svg { transform: rotate(180deg); }
+.pt-lift { margin-top: -56px; }
+
+.pt-card { background: #fff; border: 1px solid #DCE3E0; border-radius: 20px; padding: 18px; }
+.pt-doc { display: flex; gap: 14px; align-items: center; }
+.pt-av { width: 80px; height: 80px; flex: 0 0 80px; border-radius: 20px; background: #D5E6E1; color: #0B6E5F; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; }
+.pt-verified { align-self: flex-start; margin-top: 6px; display: inline-flex; align-items: center; gap: 4px; background: #E3F1EE; color: #0B6E5F; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.pt-chip { align-self: flex-start; margin-top: 6px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #EEF1EF; color: #3A4845; }
+.pt-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 16px; text-align: center; }
+.pt-stats div { background: #F4F6F3; border-radius: 12px; padding: 10px 4px; display: flex; flex-direction: column; }
+.pt-stats b { font-size: 18px; }
+.pt-stats span { font-size: 12px; color: #55635F; }
+
+.pt-sec { display: flex; flex-direction: column; gap: 10px; }
+.pt-bio { font-size: 15px; line-height: 1.7; color: #3A4845; }
+.pt-chamber { display: flex; flex-direction: column; gap: 6px; background: #fff; border: 1px solid #DCE3E0; border-radius: 16px; padding: 14px 16px; color: #10231F; }
+.pt-chamber:hover { color: #10231F; border-color: #0B6E5F; }
+.pt-chamber b { font-size: 16px; }
+.pt-fee { font-size: 17px; font-weight: 700; text-align: right; display: flex; flex-direction: column; }
+.pt-fee small { font-size: 12px; font-weight: 400; color: #55635F; }
+.pt-status { font-size: 14px; font-weight: 600; }
+.pt-status.ok { color: #0B6E5F; }
+.pt-status.warn { color: #8A3A10; }
+.pt-status.muted { color: #55635F; }
+
+.pt-bottom { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid #DCE3E0; padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); z-index: 10; }
+.pt-cta { width: 100%; min-height: 54px; border-radius: 14px; border: 0; background: #0B6E5F; color: #fff; display: flex; align-items: center; justify-content: center; font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; }
+.pt-cta:hover { color: #fff; background: #08564A; }
+.pt-cta:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* বুকিং */
+.pt-top { background: #fff; border-bottom: 1px solid #DCE3E0; padding: 12px 0; position: sticky; top: 0; z-index: 5; }
+.pt-iconbtn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #10231F; }
+.pt-iconbtn svg { transform: rotate(180deg); }
+.pt-radio { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; background: #fff; border: 1px solid #DCE3E0; color: #10231F; }
+.pt-radio:hover { color: #10231F; border-color: #0B6E5F; }
+.pt-radio.on { background: #E3F1EE; border: 1.5px solid #0B6E5F; }
+.pt-dot { width: 20px; height: 20px; flex: 0 0 20px; border-radius: 10px; border: 2px solid #9AAAA5; display: flex; align-items: center; justify-content: center; }
+.pt-radio.on .pt-dot { border-color: #0B6E5F; }
+.pt-dot span { width: 10px; height: 10px; border-radius: 5px; }
+.pt-radio.on .pt-dot span { background: #0B6E5F; }
+.pt-days { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; margin-top: 10px; }
+.pt-day { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 78px; border-radius: 14px; border: 1px solid #DCE3E0; background: #fff; cursor: pointer; padding: 6px 2px; }
+.pt-day b { font-size: 20px; line-height: 1.2; }
+.pt-day input { position: absolute; opacity: 0; pointer-events: none; }
+.pt-day:has(input:checked) { background: #0B6E5F; border-color: #0B6E5F; color: #fff; }
+.pt-day:has(input:disabled) { background: #EEF1EF; color: #6B7875; cursor: not-allowed; }
+.pt-day:has(input:focus-visible) { outline: 2px solid #0B6E5F; outline-offset: 2px; }
+.pt-serial { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid #DCE3E0; border-radius: 16px; padding: 16px; }
+.pt-serial-n { width: 60px; height: 60px; flex: 0 0 60px; border-radius: 14px; background: #E3F1EE; color: #0B6E5F; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; }
+.pt-summary { background: #fff; border: 1px solid #DCE3E0; border-radius: 18px; overflow: hidden; }
+.pt-summary-top { padding: 14px 16px; border-bottom: 1px dashed #C9D3CF; display: flex; flex-direction: column; }
+.pt-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px 16px; }
+.pt-summary-grid span { display: flex; flex-direction: column; }
+.pt-summary-grid small { font-size: 12px; color: #55635F; }
+.pt .teal { color: #0B6E5F; }
+.pt .xs, .lv .xs { font-size: 12px; }
+
+/* লাইভ সিরিয়াল */
+.lv { min-height: 100vh; background: #0D2F2A; color: #fff; padding-bottom: 32px; }
+.lv-wrap { display: flex; flex-direction: column; gap: 16px; padding-top: 12px; max-width: 480px; }
+.lv-pill { display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.12); padding: 6px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.lv-dot { width: 8px; height: 8px; border-radius: 4px; background: #5BD6A4; }
+.lv-sub { text-align: center; color: #B9D3CD; font-size: 15px; }
+.lv-num { font-size: 120px; font-weight: 700; line-height: 1; }
+.lv-wait { font-size: 26px; font-weight: 600; margin: 10px 0; }
+.lv-card { background: #fff; color: #10231F; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+.lv-mine { font-size: 40px; font-weight: 700; color: #0B6E5F; line-height: 1.1; }
+.lv-eta { font-size: 28px; font-weight: 700; color: #C2551A; line-height: 1.2; }
+.lv-bar { display: grid; gap: 4px; }
+.lv-bar span { height: 8px; border-radius: 4px; }
+.lv-note { border-radius: 12px; padding: 12px; font-size: 14px; line-height: 1.5; }
+.lv-note.ok { background: #E3F1EE; color: #08463D; }
+.lv-note.warn { background: #FFF4EC; color: #6E2E0C; }
+.lv-note.bad { background: #FDECEC; color: #A12C2C; }
+.lv-row { display: flex; justify-content: space-between; background: rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 10px 14px; font-size: 14px; }
+.lv-actions { display: flex; gap: 10px; margin-top: 8px; }
+.lv-btn, .lv-btn-o { flex: 1; min-height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 700; }
+.lv-btn { background: #5BD6A4; color: #0D2F2A; }
+.lv-btn:hover { color: #0D2F2A; }
+.lv-btn-o { border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; }
+.lv-btn-o:hover { color: #fff; }
+.lv .alert-ok { background: #E3F1EE; color: #08463D; }

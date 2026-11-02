@@ -1,45 +1,100 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { bookOnline } from "@/app/dr/actions";
 import { SubmitButton } from "@/components/SubmitButton";
 
-type Day = { date: string; open: boolean; onlineLeft: number; label: string; sub: string };
+type Day = {
+  date: string; open: boolean; onlineLeft: number; nextSerial: number;
+  startTime?: string; top: string; num: string; sub: string; long: string; startLabel: string;
+};
 
-export function BookForm({ chamberId, days }: { chamberId: string; days: Day[] }) {
+const bn = (n: number | string) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]);
+
+/** "18:00" + মিনিট → "সন্ধ্যা ৭:২০" */
+function addMinutes(hhmm: string, min: number) {
+  const [h, m] = hhmm.split(":").map(Number);
+  const tot = h * 60 + m + min;
+  const H = Math.floor(tot / 60) % 24, M = tot % 60;
+  const part = H < 12 ? "সকাল" : H < 15 ? "দুপুর" : H < 18 ? "বিকাল" : H < 20 ? "সন্ধ্যা" : "রাত";
+  return `${part} ${bn(H % 12 === 0 ? 12 : H % 12)}:${bn(String(M).padStart(2, "0"))}`;
+}
+
+export function BookForm({ chamberId, days, avgMinutes, summary }: {
+  chamberId: string; days: Day[]; avgMinutes: number;
+  summary: { doctor: string; chamber: string; feeNew: number; feeFollowUp: number };
+}) {
   const [state, action] = useActionState(bookOnline, undefined);
-  const firstOpen = days.find((d) => d.open && d.onlineLeft > 0)?.date;
+  const firstOpen = days.find((d) => d.open && d.onlineLeft > 0)?.date ?? "";
+  const [picked, setPicked] = useState(firstOpen);
+  const [name, setName] = useState("");
+  const day = days.find((d) => d.date === picked);
+  const eta = day?.startTime ? `${addMinutes(day.startTime, (day.nextSerial - 1) * avgMinutes)} – ${addMinutes(day.startTime, (day.nextSerial - 1) * avgMinutes + 20)}` : "";
+
   return (
-    <form action={action} className="stack">
+    <form action={action} className="pt-stack">
       <input type="hidden" name="chamberId" value={chamberId} />
-      {state?.error && <p className="alert alert-error" role="alert">{state.error}</p>}
-      <fieldset className="card stack-sm" style={{ border: "1px solid var(--line)" }}>
-        <legend style={{ fontWeight: 700, padding: "0 4px" }}>তারিখ বেছে নিন</legend>
+
+      <fieldset className="pt-sec" style={{ border: 0, padding: 0, margin: 0 }}>
+        <legend className="pt-h2">তারিখ বেছে নিন</legend>
         {!firstOpen && <p className="muted">আগামী ১৪ দিনে এই চেম্বারে অনলাইন সিরিয়াল খালি নেই।</p>}
-        <div className="chip-row">
+        <div className="pt-days">
           {days.map((d) => {
             const disabled = !d.open || d.onlineLeft <= 0;
             return (
-              <label key={d.date} className="chip">
-                <input type="radio" name="date" value={d.date} defaultChecked={d.date === firstOpen} disabled={disabled} required />
-                <span className="small">{d.label}</span>
-                <span className="small" style={{ fontSize: 12, opacity: 0.85 }}>{d.sub}</span>
+              <label key={d.date} className="pt-day">
+                <input type="radio" name="date" value={d.date} checked={picked === d.date} onChange={() => setPicked(d.date)} disabled={disabled} required />
+                <span className="xs">{d.top}</span>
+                <b>{d.num}</b>
+                <span className="xs">{d.sub}</span>
               </label>
             );
           })}
         </div>
       </fieldset>
-      <div className="card stack">
-        <strong>রোগীর তথ্য</strong>
-        <label className="field">রোগীর নাম<input className="input" name="name" autoComplete="name" required /></label>
+
+      {day && (
+        <section className="pt-sec">
+          <div className="row-sb"><h2>সিরিয়াল</h2><span className="small muted">পরের খালি সিরিয়াল আপনার</span></div>
+          <div className="pt-serial">
+            <span className="pt-serial-n">{bn(day.nextSerial)}</span>
+            <span className="col" style={{ gap: 2 }}>
+              <b>আপনার সিরিয়াল হবে আনুমানিক {bn(day.nextSerial)}</b>
+              {eta && <span className="small muted">আনুমানিক ডাক পড়বে {eta}</span>}
+            </span>
+          </div>
+        </section>
+      )}
+
+      <section className="pt-card pt-stack-sm">
+        <h2 className="pt-h2">রোগীর তথ্য</h2>
+        <label className="field">রোগীর নাম<input className="input" name="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required /></label>
         <label className="field">মোবাইল নাম্বার<input className="input" name="phone" type="tel" inputMode="numeric" autoComplete="tel" placeholder="01XXXXXXXXX" required />
-          <span className="muted small" style={{ fontWeight: 400 }}>এই নাম্বারে সিরিয়াল নাম্বার ও রিমাইন্ডার যাবে। পরিবারের অন্য কারও জন্যও একই নাম্বার দিতে পারেন।</span></label>
-        <div className="grid">
+          <span className="muted small" style={{ fontWeight: 400 }}>এই নাম্বারে সিরিয়াল ও রিমাইন্ডার যাবে। পরিবারের অন্য কারও জন্যও একই নাম্বার দিতে পারেন।</span></label>
+        <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
           <label className="field">লিঙ্গ<select className="input" name="gender" defaultValue=""><option value="">—</option><option>পুরুষ</option><option>মহিলা</option><option>অন্যান্য</option></select></label>
           <label className="field">বয়স<input className="input" name="age" type="number" min={0} max={120} inputMode="numeric" /></label>
         </div>
+      </section>
+
+      {day && (
+        <section className="pt-summary">
+          <div className="pt-summary-top"><b>{summary.doctor}</b><span className="small muted">{summary.chamber}</span></div>
+          <div className="pt-summary-grid">
+            <span><small>রোগী</small><b>{name.trim() || "—"}</b></span>
+            <span><small>তারিখ</small><b>{day.long}</b></span>
+            <span><small>সিরিয়াল</small><b className="teal">আনুমানিক {bn(day.nextSerial)}</b></span>
+            <span><small>ফি (চেম্বারে)</small><b>৳{bn(summary.feeNew)}</b></span>
+          </div>
+          <p className="small muted" style={{ padding: "0 16px 14px" }}>কনফার্ম করলে এসএমএসে সিরিয়াল নাম্বার আর লাইভ ট্র্যাকিং লিংক যাবে। অনলাইন পেমেন্ট (bKash/Nagad) শীঘ্রই আসছে।</p>
+        </section>
+      )}
+
+      {state?.error && <p className="alert alert-error" role="alert">{state.error}</p>}
+      <div className="pt-bottom">
+        <div className="pt-wrap">
+          <SubmitButton className="pt-cta" disabled={!firstOpen}>সিরিয়াল কনফার্ম করুন</SubmitButton>
+        </div>
       </div>
-      <p className="muted small">ফি চেম্বারে পরিশোধ করবেন। অনলাইন পেমেন্ট (bKash/Nagad) পরের ভার্সনে আসছে।</p>
-      <SubmitButton className="btn btn-primary btn-big btn-block" disabled={!firstOpen}>সিরিয়াল কনফার্ম করুন</SubmitButton>
     </form>
   );
 }

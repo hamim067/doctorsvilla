@@ -35,6 +35,11 @@ export async function bookingLive(id: string) {
       .slice(-4)
       .reverse()
       .map((r) => ({ serialNo: r.serialNo, status: r.status })),
+    // লাইভ পেজের প্রগ্রেস বার: আমার সিরিয়াল পর্যন্ত (শেষ ১২টা) প্রতিটির অবস্থা
+    segments: state.rows
+      .filter((r) => r.serialNo <= row.b.serialNo)
+      .slice(-12)
+      .map((r) => (r.serialNo === row.b.serialNo ? "ME" : r.status)),
     updatedAt: clockDhaka(new Date()),
   };
 }

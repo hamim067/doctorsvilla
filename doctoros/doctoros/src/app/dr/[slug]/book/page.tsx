@@ -2,8 +2,10 @@ import { and, asc, eq } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, schema } from "@/db";
+import { Icon } from "@/components/Icons";
 import { upcomingDays } from "@/lib/booking";
-import { addDays, bn, formatDateBn, today, WEEKDAYS_SHORT_BN, weekday } from "@/lib/time";
+import { addDays, bn, formatDateBn, formatTimeBn, today, WEEKDAYS_SHORT_BN, weekday } from "@/lib/time";
+import "../../patient.css";
 import { BookForm } from "./BookForm";
 
 export const metadata = { title: "সিরিয়াল নিন" };
@@ -25,24 +27,49 @@ export default async function BookPage({ params, searchParams }: { params: Promi
   const t = today();
   const days = (await upcomingDays(chamber)).map((d) => ({
     ...d,
-    label: d.date === t ? "আজ" : d.date === addDays(t, 1) ? "কাল" : `${WEEKDAYS_SHORT_BN[weekday(d.date)]} ${formatDateBn(d.date, false).split(" ")[0]}`,
+    top: d.date === t ? "আজ" : d.date === addDays(t, 1) ? "কাল" : WEEKDAYS_SHORT_BN[weekday(d.date)],
+    num: formatDateBn(d.date, false).split(" ")[0],
     sub: !d.open ? (d.note ?? "বন্ধ") : d.onlineLeft > 0 ? `${bn(d.onlineLeft)} খালি` : "পূর্ণ",
+    long: formatDateBn(d.date),
+    startLabel: d.startTime ? formatTimeBn(d.startTime) : "",
   }));
 
   return (
-    <main className="narrow stack" style={{ maxWidth: 640 }}>
-      <Link href={`/dr/${slug}`} className="small">← {doctor.name}</Link>
-      <h1>সিরিয়াল নিন</h1>
-      <p className="muted">{doctor.name} · {doctor.specialty}</p>
-      {chambers.length > 1 && (
-        <nav className="row" aria-label="চেম্বার">
-          {chambers.map((c) => (
-            <Link key={c.id} href={`?chamber=${c.id}`} className={c.id === chamber.id ? "btn btn-primary" : "btn"} aria-current={c.id === chamber.id ? "page" : undefined}>{c.name}</Link>
-          ))}
-        </nav>
-      )}
-      <div className="card small">{chamber.name} · {chamber.address}, {chamber.city} · নতুন ৳{bn(chamber.feeNew)} / ফলোআপ ৳{bn(chamber.feeFollowUp)}</div>
-      <BookForm chamberId={chamber.id} days={days} />
+    <main className="pt pt-plain">
+      <header className="pt-top">
+        <div className="pt-wrap row" style={{ gap: 8 }}>
+          <Link href={`/dr/${slug}`} className="pt-iconbtn" aria-label="পেছনে"><Icon name="chevron" size={22} stroke={2.2} /></Link>
+          <span className="col" style={{ gap: 0 }}>
+            <b style={{ fontSize: 17 }}>সিরিয়াল বুকিং</b>
+            <span className="small muted">{doctor.name} · {doctor.specialty}</span>
+          </span>
+        </div>
+      </header>
+
+      <div className="pt-wrap pt-stack" style={{ paddingTop: 18 }}>
+        <section className="pt-sec">
+          <h2>চেম্বার বেছে নিন</h2>
+          {chambers.map((c) => {
+            const on = c.id === chamber.id;
+            return (
+              <Link key={c.id} href={`?chamber=${c.id}`} className={`pt-radio${on ? " on" : ""}`} aria-current={on ? "page" : undefined}>
+                <span className="pt-dot" aria-hidden="true"><span /></span>
+                <span className="col grow" style={{ gap: 0 }}>
+                  <b>{c.name}, {c.city}</b>
+                  <span className="small muted">{c.address} · নতুন ৳{bn(c.feeNew)} / ফলোআপ ৳{bn(c.feeFollowUp)}</span>
+                </span>
+              </Link>
+            );
+          })}
+        </section>
+
+        <BookForm
+          chamberId={chamber.id}
+          days={days}
+          avgMinutes={chamber.avgMinutes}
+          summary={{ doctor: doctor.name, chamber: `${chamber.name}, ${chamber.city}`, feeNew: chamber.feeNew, feeFollowUp: chamber.feeFollowUp }}
+        />
+      </div>
     </main>
   );
 }
