@@ -1,0 +1,71 @@
+"use server";
+import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { db, schema } from "@/db";
+import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
+import { normalizePhone } from "@/lib/booking";
+import { type FormState, str } from "@/lib/form";
+
+const registerSchema = z.object({
+  name: z.string().min(3, "ডাক্তারের নাম দিন"),
+  degrees: z.string().min(2, "ডিগ্রি দিন (যেমন MBBS, FCPS)"),
+  specialty: z.string().min(2, "বিশেষজ্ঞতা দিন"),
+  bmdcNo: z.string().regex(/^[A-Za-z]?-?\d{3,7}$/, "সঠিক BMDC নাম্বার দিন"),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9][a-z0-9-]{2,40}$/, "প্রোফাইল লিংক: ইংরেজি ছোট হাতের অক্ষর, সংখ্যা ও - (কমপক্ষে ৩ অক্ষর)"),
+  password: z.string().min(8, "পাসওয়ার্ড কমপক্ষে ৮ অক্ষর"),
+});
+
+export async function registerDoctor(_: FormState, fd: FormData): Promise<FormState> {
+  const phone = normalizePhone(str(fd, "phone"));
+  if (!phone) return { error: "সঠিক মোবাইল নাম্বার দিন" };
+  const parsed = registerSchema.safeParse({
+    name: str(fd, "name"),
+    degrees: str(fd, "degrees"),
+    specialty: str(fd, "specialty"),
+    bmdcNo: str(fd, "bmdcNo"),
+    slug: str(fd, "slug").toLowerCase(),
+    password: str(fd, "password"),
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const v = parsed.data;
+
+  const [taken] = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.phone, phone)).limit(1);
+  if (taken) return { error: "এই নাম্বারে আগেই অ্যাকাউন্ট আছে — লগইন করুন" };
+  const [slugTaken] = await db.select({ id: schema.doctors.id }).from(schema.doctors).where(eq(schema.doctors.slug, v.slug)).limit(1);
+  if (slugTaken) return { error: "এই প্রোফাইল লিংক আগেই নেওয়া হয়েছে, অন্যটা দিন" };
+
+  const { user, doctor } = await db.transaction(async (tx) => {
+    const [user] = await tx
+      .insert(schema.users)
+      .values({ name: v.name, phone, passwordHash: await hashPassword(v.password), role: "DOCTOR" })
+      .returning();
+    const [doctor] = await tx
+      .insert(schema.doctors)
+      .values({ slug: v.slug, name: v.name, degrees: v.degrees, specialty: v.specialty, bmdcNo: v.bmdcNo, ownerId: user.id })
+      .returning();
+    await tx.update(schema.users).set({ doctorId: doctor.id }).where(eq(schema.users.id, user.id));
+    return { user, doctor };
+  });
+
+  await createSession({ uid: user.id, role: "DOCTOR", doctorId: doctor.id, name: user.name });
+  redirect("/dashboard/chambers?welcome=1");
+}
+
+export async function login(_: FormState, fd: FormData): Promise<FormState> {
+  const phone = normalizePhone(str(fd, "phone"));
+  const password = str(fd, "password");
+  if (!phone || !password) return { error: "মোবাইল নাম্বার ও পাসওয়ার্ড দিন" };
+  const [user] = await db.select().from(schema.users).where(eq(schema.users.phone, phone)).limit(1);
+  if (!user || !(await verifyPassword(password, user.passwordHash)) || !user.doctorId)
+    return { error: "মোবাইল নাম্বার বা পাসওয়ার্ড ভুল" };
+  await createSession({ uid: user.id, role: user.role, doctorId: user.doctorId, name: user.name });
+  redirect(user.role === "ASSISTANT" ? "/dashboard/queue" : "/dashboard");
+}
+
+export async function logout() {
+  await destroySession();
+  redirect("/login");
+}
