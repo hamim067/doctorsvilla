@@ -232,6 +232,8 @@ export type SiteText = {
 export type SiteSections = {
   topbar: boolean; stats: boolean; services: boolean; about: boolean;
   chambers: boolean; booking: boolean; faq: boolean; emergency: boolean;
+  /** আজকের লাইভ সিরিয়াল তালিকা আর "আমার সিরিয়াল খুঁজুন" */
+  queue: boolean;
 };
 export type SiteContent = {
   theme: "navy" | "green" | "plum";

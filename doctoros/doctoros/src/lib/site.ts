@@ -32,7 +32,7 @@ const emptyText = (): SiteText => ({
 export function defaultContent(d: { specialty: string; bio: string | null }): SiteContent {
   return {
     theme: "navy",
-    sections: { topbar: true, stats: true, services: true, about: true, chambers: true, booking: true, faq: true, emergency: true },
+    sections: { topbar: true, stats: true, services: true, about: true, chambers: true, booking: true, faq: true, emergency: true, queue: true },
     stats: { experience: true, patients: true, chambers: true },
     hotline: "", whatsapp: "", email: "", facebook: "", youtube: "", linkedin: "",
     bn: {
@@ -79,7 +79,7 @@ const textSchema = z.object({
 const flag = z.boolean().default(true);
 export const contentSchema = z.object({
   theme: z.enum(["navy", "green", "plum"]).catch("navy"),
-  sections: z.object({ topbar: flag, stats: flag, services: flag, about: flag, chambers: flag, booking: flag, faq: flag, emergency: flag }),
+  sections: z.object({ topbar: flag, stats: flag, services: flag, about: flag, chambers: flag, booking: flag, faq: flag, emergency: flag, queue: flag }),
   stats: z.object({ experience: flag, patients: flag, chambers: flag }),
   hotline: s(20), whatsapp: s(20), email: z.string().trim().max(120).default("").refine((v) => !v || /^\S+@\S+\.\S+$/.test(v), "সঠিক ইমেইল দিন"),
   facebook: url, youtube: url, linkedin: url,

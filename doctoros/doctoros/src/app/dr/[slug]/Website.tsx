@@ -43,7 +43,15 @@ const UI = {
     faqEyebrow: "সাধারণ জিজ্ঞাসা", faqTitle: "রোগীরা যা জানতে চান",
     fChambers: "চেম্বারসমূহ", fLinks: "প্রয়োজনীয় লিংক", fContact: "যোগাযোগ ও সিরিয়াল", emergency: "জরুরি সতর্কবার্তা:",
     rights: "সর্বস্বত্ব সংরক্ষিত।", made: "DoctorsVilla দিয়ে তৈরি", menu: "মেনু",
-    draft: "প্রিভিউ — ওয়েবসাইট এখনো প্রকাশ হয়নি। শুধু আপনি দেখছেন।", plan: "প্রিভিউ — Premium চালু না থাকায় রোগীরা সাধারণ প্রোফাইল দেখছেন।",
+    draft: "প্রিভিউ — ওয়েবসাইট এখনো প্রকাশ হয়নি। শুধু আপনি দেখছেন।",
+    queue: "লাইভ সিরিয়াল", queueEyebrow: "আজকের সিরিয়াল", queueTitle: "এখন কত নম্বর চলছে, কতজন অপেক্ষায়",
+    nowServing: "এখন চলছে", qTotal: "আজ মোট", qWaiting: "অপেক্ষায়", qDone: "দেখা হয়েছে", perPt: "মিনিট/রোগী (গড়)",
+    notStarted: "এখনো শুরু হয়নি", closedToday: "আজ এই চেম্বার বন্ধ", noSerial: "আজ এখনো কোনো সিরিয়াল নেই",
+    lgWait: "অপেক্ষায়", lgNow: "চলছে", lgDone: "দেখা হয়েছে", lgAbsent: "অনুপস্থিত", updated: "আপডেট",
+    findTitle: "আমার সিরিয়াল খুঁজুন", findText: "মোবাইল নম্বর আর সিরিয়াল কোড দিন (এসএমএস-এ পাঠানো, যেমন RAJ-1102-07)।",
+    findPhone: "মোবাইল নম্বর", findCode: "সিরিয়াল কোড", findBtn: "খুঁজুন", finding: "খোঁজা হচ্ছে…",
+    findNo: "এই নম্বর আর কোড মিলিয়ে কোনো সিরিয়াল পাওয়া যায়নি।", findFmt: "সঠিক মোবাইল নম্বর ও কোড দিন।",
+    close: "বন্ধ", theme: "লাইট/ডার্ক", language: "ভাষা", plan: "প্রিভিউ — Premium চালু না থাকায় রোগীরা সাধারণ প্রোফাইল দেখছেন।",
   },
   en: {
     home: "Home", about: "About", services: "Services", chambers: "Chambers & Hours", faq: "FAQ",
@@ -59,7 +67,15 @@ const UI = {
     faqEyebrow: "FAQ", faqTitle: "Questions patients often ask",
     fChambers: "Chambers", fLinks: "Quick links", fContact: "Contact & serial", emergency: "Emergency:",
     rights: "All rights reserved.", made: "Made with DoctorsVilla", menu: "Menu",
-    draft: "Preview — not published yet. Only you can see this.", plan: "Preview — Premium is off, patients see the basic profile.",
+    draft: "Preview — not published yet. Only you can see this.",
+    queue: "Live queue", queueEyebrow: "Today's queue", queueTitle: "Which serial is running, how many are waiting",
+    nowServing: "Now serving", qTotal: "Today total", qWaiting: "Waiting", qDone: "Seen", perPt: "min/patient (avg)",
+    notStarted: "Not started yet", closedToday: "Closed today", noSerial: "No serials yet today",
+    lgWait: "Waiting", lgNow: "Now", lgDone: "Seen", lgAbsent: "Absent", updated: "Updated",
+    findTitle: "Find my serial", findText: "Enter your mobile number and serial code (sent by SMS, e.g. RAJ-1102-07).",
+    findPhone: "Mobile number", findCode: "Serial code", findBtn: "Find", finding: "Searching…",
+    findNo: "No serial found for this number and code.", findFmt: "Enter a valid mobile number and code.",
+    close: "Close", theme: "Light/Dark", language: "Language", plan: "Preview — Premium is off, patients see the basic profile.",
   },
 };
 
@@ -98,10 +114,98 @@ function BookingForm({ chambers, t, lang, live }: { chambers: WsChamber[]; t: ty
   );
 }
 
+type QChamber = { id: string; name: string; city: string; open: boolean; start: string | null; current: number | null; total: number; waiting: number; done: number; avg: number; list: { n: number; s: string }[] };
+
+/** আজকের লাইভ সিরিয়াল — ৩০ সেকেন্ড পরপর নিজে থেকে আপডেট; শুধু নম্বর, কারো নাম নয় */
+function LiveQueue({ slug, t, lang, live }: { slug: string; t: typeof UI.bn; lang: Lang; live?: boolean }) {
+  const [data, setData] = useState<{ chambers: QChamber[]; at: string } | null>(null);
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
+  const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    let stop = false;
+    const load = () => fetch(`/api/site/${slug}/queue`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((j) => { if (!stop && j) setData(j); }).catch(() => {});
+    load();
+    const id = setInterval(() => { if (!document.hidden) load(); }, 30_000);
+    return () => { stop = true; clearInterval(id); };
+  }, [slug]);
+  const n = (x: number) => fmt(x, lang);
+  async function find(e: React.FormEvent) {
+    e.preventDefault();
+    if (live) return;
+    setBusy(true); setMsg("");
+    try {
+      const r = await fetch("/api/site/track", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone, code }) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.url) { location.href = j.url; return; }
+      setMsg(r.status === 400 ? t.findFmt : t.findNo);
+    } catch { setMsg(t.findNo); }
+    setBusy(false);
+  }
+  return (
+    <div className="ws-q">
+      <div className="ws-q-list">
+        {!data && <div className="ws-q-card ws-q-skel" aria-busy="true" />}
+        {data?.chambers.map((c) => (
+          <article key={c.id} className="ws-q-card">
+            <header className="ws-q-h">
+              <span className="col"><b>{c.name}</b><span className="ws-mut">{c.city}</span></span>
+              <span className={`ws-q-live${c.current ? " on" : ""}`}><i />{c.current ? t.lgNow : c.open ? t.notStarted : t.closedToday}</span>
+            </header>
+            <div className="ws-q-main">
+              <div className="ws-q-now">
+                <span>{t.nowServing}</span>
+                <b>{c.current ? n(c.current) : "—"}</b>
+              </div>
+              <div className="ws-q-stats">
+                <span><b>{n(c.total)}</b>{t.qTotal}</span>
+                <span><b>{n(c.waiting)}</b>{t.qWaiting}</span>
+                <span><b>{n(c.done)}</b>{t.qDone}</span>
+                <span><b>~{n(c.avg)}</b>{t.perPt}</span>
+              </div>
+            </div>
+            {c.list.length > 0 ? (
+              <>
+                <div className="ws-q-chips" aria-label={t.queue}>
+                  {c.list.map((x) => <span key={x.n} className={`ws-qc ${x.s.toLowerCase()}`} title={x.s}>{n(x.n)}</span>)}
+                </div>
+                <div className="ws-q-legend">
+                  <span><i className="waiting" />{t.lgWait}</span><span><i className="in_progress" />{t.lgNow}</span>
+                  <span><i className="done" />{t.lgDone}</span><span><i className="absent" />{t.lgAbsent}</span>
+                </div>
+              </>
+            ) : <p className="ws-mut">{c.open ? t.noSerial : t.closedToday}</p>}
+          </article>
+        ))}
+        {data && <span className="ws-q-at">{t.updated}: {lang === "bn" ? D(data.at) : data.at}</span>}
+      </div>
+      <form className="ws-q-find" onSubmit={find}>
+        <span className="ws-q-find-ic"><Icon name="search" size={22} /></span>
+        <h3>{t.findTitle}</h3>
+        <p>{t.findText}</p>
+        <label><span className="sr">{t.findPhone}</span><input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" maxLength={16} placeholder={t.findPhone} required autoComplete="tel" /></label>
+        <label><span className="sr">{t.findCode}</span><input value={code} onChange={(e) => setCode(e.target.value)} maxLength={16} placeholder={`${t.findCode} — RAJ-1102-07`} required style={{ textTransform: "uppercase" }} /></label>
+        {msg && <p className="ws-form-err" role="alert">⚠ {msg}</p>}
+        <button className="ws-btn ws-btn-p ws-block" disabled={busy}><Icon name="search" size={18} />{busy ? t.finding : t.findBtn}</button>
+      </form>
+    </div>
+  );
+}
+
 export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolean; forceLang?: Lang }) {
   const [lang0, setLang] = useState<Lang>("bn");
   const lang: Lang = forceLang ?? lang0;
   const [menu, setMenu] = useState(false);
+  // মেনু খোলা থাকলে পেছনের পেজ স্ক্রল হবে না, Esc চাপলে বন্ধ
+  useEffect(() => {
+    if (!menu) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setMenu(false); };
+    window.addEventListener("keydown", esc);
+    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", esc); };
+  }, [menu]);
   useEffect(() => {
     try {
       const saved = localStorage.getItem("ws_lang");
@@ -138,6 +242,7 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
     booking: S.booking && hasCh,
     faq: S.faq && faqs.length > 0,
     emergency: S.emergency && Boolean(tx("emergency").trim()),
+    queue: S.queue !== false && hasCh,
   };
   const tel = c.hotline ? `tel:${c.hotline.replace(/[^\d+]/g, "")}` : null;
   const wa = c.whatsapp ? `https://wa.me/${c.whatsapp.startsWith("0") ? `88${c.whatsapp}` : c.whatsapp}` : null;
@@ -150,9 +255,11 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
     { id: "about", label: t.about, on: show.about },
     { id: "services", label: t.services, on: show.services },
     { id: "chambers", label: t.chambers, on: show.chambers },
+    { id: "queue", label: t.queue, on: show.queue },
     { id: "faq", label: t.faq, on: show.faq },
   ].filter((n) => n.on);
 
+  const NAV_IC: Record<string, keyof typeof ICON> = { top: "layout", about: "user", services: "steth", chambers: "pin", queue: "pulse", faq: "help" };
   const stats = [
     c.stats.experience && d.stats.experience ? { v: `${fmt(d.stats.experience, lang)}+`, l: t.exp } : null,
     c.stats.patients && d.stats.patients >= 10 ? { v: `${fmt(d.stats.patients >= 100 ? Math.floor(d.stats.patients / 10) * 10 : d.stats.patients, lang)}+`, l: t.pts } : null,
@@ -200,14 +307,40 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
             {LangSwitch}
             {!live && <ThemeToggle className="ws-mode" label={false} />}
             {bookHref && <a href={bookHref} className="ws-btn ws-btn-p ws-nav-cta"><Icon name="calendar" size={18} />{show.booking || hasCh ? t.book : t.call}</a>}
-            {nav.length > 1 && (
-              <button type="button" className="ws-burger" aria-expanded={menu} aria-label={t.menu} onClick={() => setMenu(!menu)}>
-                <Icon name={menu ? "x" : "menu"} size={22} />
-              </button>
-            )}
+            <button type="button" className="ws-burger" aria-expanded={menu} aria-controls="ws-drawer" aria-label={t.menu} onClick={() => setMenu(true)}>
+              <Icon name="menu" size={22} />
+            </button>
           </div>
         </div>
       </header>
+
+      {/* মোবাইল/ট্যাবলেটের মেনু — ডান দিক থেকে আসা প্যানেল */}
+      <div className={`ws-drawer-bg${menu ? " open" : ""}`} onClick={() => setMenu(false)} aria-hidden="true" />
+      <aside id="ws-drawer" className={`ws-drawer${menu ? " open" : ""}`} aria-label={t.menu} aria-hidden={!menu} inert={!menu}>
+        <div className="ws-drawer-h">
+          <span className="ws-logo sm2"><Icon name="heart" size={20} color="#fff" /></span>
+          <span className="col grow"><b>{name}</b><span className="ws-mut">{tx("designation")}</span></span>
+          <button type="button" className="ws-burger show" onClick={() => setMenu(false)} aria-label={t.close}><Icon name="x" size={22} /></button>
+        </div>
+        <nav className="ws-drawer-nav">
+          {nav.map((n) => (
+            <a key={n.id} href={`#${n.id}`} onClick={() => setMenu(false)}>
+              <span className="ws-dn-ic"><Icon name={NAV_IC[n.id] ?? "chevron"} size={19} /></span>
+              <span className="grow">{n.label}</span>
+              <Icon name="chevron" size={18} />
+            </a>
+          ))}
+        </nav>
+        <div className="ws-drawer-opts">
+          {d.english && <div className="ws-drawer-row"><span>{t.language}</span>{LangSwitch}</div>}
+          {!live && <div className="ws-drawer-row"><span>{t.theme}</span><ThemeToggle className="ws-mode" label={false} /></div>}
+        </div>
+        <div className="ws-drawer-cta">
+          {bookHref && <a href={bookHref} className="ws-btn ws-btn-p ws-block" onClick={() => setMenu(false)}><Icon name="calendar" size={18} />{hasCh ? t.bookNow : t.call}</a>}
+          {tel && <a href={tel} className="ws-btn ws-btn-o ws-block"><Icon name="phone" size={18} />{t.hotline}: {num(c.hotline)}</a>}
+        </div>
+        <p className="ws-drawer-f"><Icon name="shield" size={14} />{t.bmdc}: {num(d.bmdcNo)}</p>
+      </aside>
 
       <main>
         {/* ---------- আর্টবোর্ড ২ · হিরো ---------- */}
@@ -312,6 +445,18 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
                   </article>
                 ))}
               </div>
+            </div>
+          </section>
+        )}
+
+        {show.queue && (
+          <section className="ws-sec ws-sec-alt" id="queue">
+            <div className="ws-wrap">
+              <div className="ws-sec-h">
+                <span className="ws-eyebrow">{t.queueEyebrow}</span>
+                <h2>{t.queueTitle}</h2>
+              </div>
+              <LiveQueue slug={d.slug} t={t} lang={lang} live={live} />
             </div>
           </section>
         )}

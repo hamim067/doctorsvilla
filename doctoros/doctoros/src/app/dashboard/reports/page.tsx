@@ -1,5 +1,6 @@
 import { and, eq, gte, lte, sql } from "drizzle-orm";
 import Link from "next/link";
+import { Icon } from "@/components/Icons";
 import { db, schema } from "@/db";
 import { requireDoctor } from "@/lib/auth";
 import { addDays, bn, formatDateBn, today } from "@/lib/time";
@@ -100,6 +101,7 @@ export default async function Reports({ searchParams }: { searchParams: Promise<
           <span className="muted">{formatDateBn(from, false)} – {formatDateBn(to, false)} · আগের {r.label}ের সাথে তুলনা</span>
         </div>
         <nav className="row" aria-label="সময়">
+          <Link href="/dashboard/reports/calendar" className="btn"><Icon name="calendar" size={18} />ক্যালেন্ডার</Link>
           {RANGES.map((x) => <Link key={x.key} href={`?range=${x.key}`} className={x.key === r.key ? "btn btn-primary" : "btn"} aria-current={x.key === r.key ? "page" : undefined}>{x.label}</Link>)}
         </nav>
       </div>

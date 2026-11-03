@@ -219,7 +219,7 @@ async function main() {
   }
 
   // ---- Premium ওয়েবসাইট (ডেমো) — আগে থেকে থাকলে ডাক্তারের বদলানো লেখা রেখে দেয় ----
-  const sec = { topbar: true, stats: true, services: true, about: true, chambers: true, booking: true, faq: true, emergency: true };
+  const sec = { topbar: true, stats: true, services: true, about: true, chambers: true, booking: true, faq: true, emergency: true, queue: true };
   const blank = { designation: "", topNote: "", heroTitle: "", heroText: "", about: "", servicesTitle: "", services: [], faqs: [], emergency: "" };
   const sites: { slug: string; content: s.SiteContent }[] = [
     {

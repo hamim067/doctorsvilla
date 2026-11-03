@@ -382,6 +382,10 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
                   <span className="col grow" style={{ gap: 0 }}><b>অনলাইন সিরিয়াল ফর্ম</b><span className="we-hint">রোগী ফর্ম পূরণ করলেই সাথে সাথে সিরিয়াল নম্বর পাবেন</span></span>
                   <Switch {...sec("booking")} label="সিরিয়াল ফর্ম দেখাবে" />
                 </div>
+                <div className="we-sub">
+                  <span className="col grow" style={{ gap: 0 }}><b>আজকের লাইভ সিরিয়াল ও &quot;আমার সিরিয়াল খুঁজুন&quot;</b><span className="we-hint">কত নম্বর চলছে, কতজন অপেক্ষায় (শুধু নম্বর, কারো নাম দেখায় না); রোগী মোবাইল নম্বর + কোড দিয়ে নিজের সিরিয়াল খুঁজতে পারবেন</span></span>
+                  <Switch {...sec("queue")} label="লাইভ সিরিয়াল দেখাবে" />
+                </div>
               </>
             )}
           </>
