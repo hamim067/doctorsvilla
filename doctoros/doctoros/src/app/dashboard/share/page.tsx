@@ -6,8 +6,12 @@ import { doctorChambers } from "@/lib/chambers";
 import { qrPng, qrSvg, siteOrigin } from "@/lib/qr";
 import { doctorAssetUrls } from "@/lib/assets";
 import { normalizePad, sampleData } from "@/lib/rxpad";
+import { normalizeCard } from "@/lib/vcard";
+import { buildCardData } from "@/lib/vcard-data";
+import { CardDesigner } from "./CardDesigner";
 import { PadDesigner } from "./PadDesigner";
 import "../../print/rxpad.css";
+import "../../print/vcard.css";
 import "./share.css";
 
 export const metadata = { title: "শেয়ার ও QR কোড" };
@@ -22,6 +26,9 @@ export default async function SharePage() {
   const fb = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
 
   const sample = { ...sampleData({ name: d.name, degrees: d.degrees, specialty: d.specialty, bmdcNo: d.bmdcNo }, chambers[0] ? { name: chambers[0].name, address: chambers[0].address, city: chambers[0].city } : null), qrSvg: svg, url, ...(await doctorAssetUrls(d.id, d.slug)) };
+  const pad = normalizePad(d.rxPad);
+  const card = d.card ? normalizeCard(d.card) : { ...normalizeCard(null), color: pad.color };
+  const cardData = await buildCardData(d);
   return (
     <>
       <div className="stack-sm" style={{ gap: 2 }}>
@@ -53,7 +60,15 @@ export default async function SharePage() {
           <h2>প্রেসক্রিপশন প্যাডের ডিজাইন</h2>
           <span className="muted small">ফরম্যাট বাছুন, রং আর কোন অংশ থাকবে ঠিক করুন — প্রেসক্রিপশন প্রিন্ট আর রোগীর PDF দুটোই এই ডিজাইনে হবে।</span>
         </div>
-        <PadDesigner initial={normalizePad(d.rxPad)} sample={sample} />
+        <PadDesigner key={`${pad.phone}|${pad.website}`} initial={pad} sample={sample} />
+      </section>
+
+      <section className="stack" id="card">
+        <div className="stack-sm" style={{ gap: 2 }}>
+          <h2>ভিজিটিং কার্ড</h2>
+          <span className="muted small">ফরম্যাট আর রং বাছুন — আপনার নাম, ডিগ্রি, চেম্বার, সময়, লোগো আর QR নিজে থেকেই বসে যাবে। সেভ করে এক পাতায় ১০টি প্রিন্ট করুন বা PDF করে প্রেসে দিন।</span>
+        </div>
+        <CardDesigner key={`${pad.phone}|${pad.website}`} initial={card} data={cardData} contact={{ phone: pad.phone, website: pad.website, email: pad.email, hospital: pad.hospital }} />
       </section>
 
       <div className="card stack">
@@ -70,9 +85,9 @@ export default async function SharePage() {
             <strong>খালি প্রেসক্রিপশন প্যাড</strong>
             <span className="muted small">আপনার বাছা ডিজাইনে — ছাপিয়ে হাতে লেখার জন্য</span>
           </a>
-          <a className="card stack-sm" href="/print/poster?card=1" target="_blank" rel="noreferrer" style={{ color: "inherit", background: "var(--ground)" }}>
+          <a className="card stack-sm" href="/print/card" target="_blank" rel="noreferrer" style={{ color: "inherit", background: "var(--ground)" }}>
             <strong>ভিজিটিং কার্ড</strong>
-            <span className="muted small">এক পাতায় ১০টি কার্ড, QR সহ</span>
+            <span className="muted small">আপনার বাছা ডিজাইনে — এক পাতায় ১০টি</span>
           </a>
         </div>
       </div>

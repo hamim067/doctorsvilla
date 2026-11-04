@@ -50,6 +50,13 @@
       "when": 1793766983437,
       "tag": "0006_doctor_assets",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793768205161,
+      "tag": "0007_visiting_card",
+      "breakpoints": true
     }
   ]
 }

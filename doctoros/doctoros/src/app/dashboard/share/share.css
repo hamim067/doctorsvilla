@@ -50,3 +50,13 @@
 .pd-ok { color: var(--teal-ink); font-weight: 600; }
 .pd-err { color: var(--red); font-weight: 600; }
 .pd-pv .t-custom .rp-area { outline: 1.2mm dashed rgba(226, 86, 30, 0.75); outline-offset: -1mm; }
+
+/* ভিজিটিং কার্ড ডিজাইনার */
+.cd-tpls { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.cd-thumb { border-radius: 8px; overflow: hidden; border: 1px solid var(--line-2); pointer-events: none; margin-bottom: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.cd-fit { position: relative; overflow: hidden; width: 100%; }
+.cd-fit > div { position: absolute; top: 0; left: 0; }
+.cd-pv { border-radius: 10px; overflow: hidden; box-shadow: var(--shadow-md); border: 1px solid var(--line-2); max-width: 480px; }
+.cd-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px 16px; }
+.btn.disabled { opacity: .5; pointer-events: auto; cursor: not-allowed; }
+@media (max-width: 480px) { .cd-tpls { grid-template-columns: 1fr 1fr; gap: 8px; } .cd-tpls .pd-tpl small { display: none; } }

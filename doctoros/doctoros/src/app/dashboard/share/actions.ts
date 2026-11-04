@@ -3,7 +3,9 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/db";
 import { requireDoctor } from "@/lib/auth";
-import { padSchema } from "@/lib/rxpad";
+import { normalizePad, padSchema } from "@/lib/rxpad";
+import { z } from "zod";
+import { cardSchema } from "@/lib/vcard";
 
 export type PadState = { ok?: string; error?: string; at?: number } | undefined;
 
@@ -40,4 +42,23 @@ export async function removeAsset(kind: "logo" | "pad"): Promise<PadState> {
   await db.delete(schema.doctorAssets).where(and(eq(schema.doctorAssets.doctorId, s.doctorId), eq(schema.doctorAssets.kind, kind)));
   revalidatePath("/dashboard/share");
   return { ok: "সরানো হয়েছে", at: Date.now() };
+}
+
+const cs = (n: number) => z.string().trim().max(n);
+const contactSchema = z.object({ phone: cs(40), website: cs(80), email: cs(80), hospital: cs(80) });
+
+/** ভিজিটিং কার্ডের ডিজাইন সেভ */
+export async function saveCard(_: PadState, fd: FormData): Promise<PadState> {
+  const s = await requireDoctor();
+  let raw: unknown;
+  try { raw = JSON.parse(String(fd.get("card") ?? "")); } catch { return { error: "তথ্য পড়া যায়নি, আবার চেষ্টা করুন" }; }
+  const r = cardSchema.safeParse((raw as { card?: unknown })?.card);
+  const c = contactSchema.safeParse((raw as { contact?: unknown })?.contact);
+  if (!r.success || !c.success) return { error: "কিছু ঘর ঠিক নেই, দেখে আবার সেভ করুন" };
+  // ফোন/ওয়েবসাইট/ইমেইল একটাই জায়গায় থাকে (প্যাডের যোগাযোগ) — কার্ড আর প্যাড দুটোতেই একই তথ্য
+  const [d] = await db.select({ rxPad: schema.doctors.rxPad }).from(schema.doctors).where(eq(schema.doctors.id, s.doctorId)).limit(1);
+  const pad = { ...normalizePad(d?.rxPad), ...c.data };
+  await db.update(schema.doctors).set({ card: r.data, rxPad: pad }).where(eq(schema.doctors.id, s.doctorId));
+  revalidatePath("/dashboard/share");
+  return { ok: "কার্ডের ডিজাইন সেভ হয়েছে", at: Date.now() };
 }

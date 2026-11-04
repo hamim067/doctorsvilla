@@ -23,7 +23,7 @@ function timeEn(hhmm: string) {
   const [h, m] = hhmm.split(":").map(Number);
   return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
 }
-function linesFor(list: { weekday: number; startTime: string; endTime: string }[], lang: "bn" | "en") {
+export function linesFor(list: { weekday: number; startTime: string; endTime: string }[], lang: "bn" | "en") {
   const groups = new Map<string, number[]>();
   for (const s of [...list].sort(sortWeek)) {
     const k = `${s.startTime}-${s.endTime}`;

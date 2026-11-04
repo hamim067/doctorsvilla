@@ -56,6 +56,8 @@ export const doctors = pgTable("doctors", {
   assistantRxAccess: boolean("assistant_rx_access").notNull().default(false),
   /** প্রেসক্রিপশন প্যাডের ডিজাইন (ফরম্যাট, রং, কাগজ, কোন অংশ দেখাবে) — lib/rxpad.ts */
   rxPad: jsonb("rx_pad").$type<Record<string, unknown>>(),
+  /** ভিজিটিং কার্ডের ডিজাইন — lib/vcard.ts */
+  card: jsonb("card").$type<Record<string, unknown>>(),
   ownerId: text("owner_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   createdAt: createdAt(),
 });

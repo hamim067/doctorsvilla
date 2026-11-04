@@ -1,0 +1,89 @@
+/* ভিজিটিং কার্ড — ৮৫×৫৫ মিমি */
+.vk { position: relative; width: 85mm; height: 55mm; box-sizing: border-box; overflow: hidden; background: #fff; color: #17232B; font-family: "Hind Siliguri", system-ui, sans-serif; font-size: 7.4pt; line-height: 1.35; display: flex; }
+.vk * { box-sizing: border-box; }
+.vk svg { display: block; }
+.vk-name { font-size: 12.5pt; line-height: 1.15; font-weight: 700; color: var(--vc-b); }
+.vk-deg { font-size: 7.6pt; font-weight: 600; color: #2A3640; }
+.vk-spec { font-size: 7.4pt; color: var(--vc-a); font-weight: 600; }
+.vk-tag { font-size: 6.8pt; color: #5B6870; font-style: italic; }
+.vk-bmdc { display: inline-flex; align-items: center; gap: 1mm; font-size: 6.4pt; color: #5B6870; }
+.vk-bmdc svg { width: 2.6mm; height: 2.6mm; }
+.vk-who { display: flex; flex-direction: column; gap: 0.5mm; min-width: 0; }
+.vk-info { display: flex; flex-direction: column; gap: 0.9mm; min-width: 0; }
+.vk-info span { display: flex; align-items: flex-start; gap: 1.4mm; font-size: 6.9pt; }
+.vk-info svg { width: 2.8mm; height: 2.8mm; flex: 0 0 auto; margin-top: 0.3mm; color: var(--vc-a); }
+.vk-logo { width: 13mm; height: 13mm; object-fit: contain; flex: 0 0 auto; }
+.vk-mark { width: 11mm; height: 11mm; color: var(--vc-a); flex: 0 0 auto; }
+.vk-mark svg { width: 100%; height: 100%; }
+.vk-qr { width: 15mm; height: 15mm; flex: 0 0 auto; }
+.vk-qr svg { width: 100%; height: 100%; }
+.vk-rule { display: block; height: 0.6mm; border-radius: 1mm; background: linear-gradient(90deg, var(--vc-a), transparent); }
+
+/* রঙিন কোণ */
+.t-corner .vk-side { width: 22mm; flex: 0 0 22mm; background: var(--vc-b); clip-path: polygon(0 0, 100% 0, 72% 100%, 0 100%); display: flex; align-items: center; justify-content: center; padding-right: 5mm; }
+.t-corner .vk-side .vk-logo { background: #fff; border-radius: 2.5mm; padding: 1mm; }
+.t-corner .vk-side .vk-mark { color: #fff; }
+.t-corner .vk-main { flex: 1; padding: 4.5mm 3.5mm 4mm 1mm; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+.t-corner .vk-qr-s { position: absolute; right: 3mm; bottom: 3mm; }
+.t-corner .vk-qr-s .vk-qr { width: 13mm; height: 13mm; }
+.t-corner .vk-info { padding-right: 15mm; }
+.t-corner::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.2mm; background: var(--vc-a); }
+
+/* সাদা মিনিমাল */
+.t-minimal { flex-direction: column; padding: 5mm 5mm 4mm; gap: 2.2mm; }
+.t-minimal .vk-top { display: flex; gap: 3mm; align-items: center; }
+.t-minimal .vk-bot { display: flex; justify-content: space-between; align-items: flex-end; gap: 3mm; margin-top: auto; }
+.t-minimal .vk-qr { width: 13mm; height: 13mm; }
+
+/* গাঢ় রঙ */
+.t-dark { background: var(--vc-b); color: #fff; }
+.t-dark .vk-main { flex: 1; padding: 4.5mm 5mm; display: flex; flex-direction: column; gap: 1.6mm; min-width: 0; }
+.t-dark .vk-main > .vk-logo, .t-dark .vk-main > .vk-mark { position: absolute; right: 4mm; top: 4mm; width: 10mm; height: 10mm; }
+.t-dark .vk-logo { background: #fff; border-radius: 2mm; padding: 0.8mm; }
+.t-dark .vk-mark { color: rgba(255,255,255,.85); }
+.t-dark .vk-name, .t-dark .vk-deg { color: #fff; }
+.t-dark .vk-spec { color: color-mix(in srgb, var(--vc-a) 55%, #fff); }
+.t-dark .vk-bmdc, .t-dark .vk-tag { color: rgba(255,255,255,.75); }
+.t-dark .vk-info svg { color: color-mix(in srgb, var(--vc-a) 55%, #fff); }
+.t-dark .vk-rule { background: linear-gradient(90deg, color-mix(in srgb, var(--vc-a) 60%, #fff), transparent); width: 60%; }
+.t-dark .vk-qr-s { position: absolute; right: 3.5mm; bottom: 3.5mm; background: #fff; padding: 0.8mm; border-radius: 1.5mm; }
+.t-dark .vk-qr-s .vk-qr { width: 12mm; height: 12mm; }
+.t-dark .vk-info { padding-right: 15mm; }
+
+/* বড় QR */
+.t-qr .vk-main { flex: 1; padding: 4.5mm 3mm 4mm 5mm; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+.t-qr .vk-qrpanel { width: 27mm; flex: 0 0 27mm; background: var(--vc-soft); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5mm; border-left: 0.8mm solid var(--vc-a); }
+.t-qr .vk-qrpanel .vk-qr { width: 20mm; height: 20mm; background: #fff; padding: 1mm; border-radius: 1.5mm; }
+.t-qr .vk-qrpanel small { font-size: 6pt; text-align: center; color: var(--vc-b); font-weight: 600; }
+
+/* উপরে ব্যান্ড */
+.t-band { flex-direction: column; }
+.t-band .vk-bandtop { display: flex; gap: 3mm; align-items: center; padding: 3.5mm 5mm; background: linear-gradient(110deg, var(--vc-b), var(--vc-a)); color: #fff; }
+.t-band .vk-bandtop .vk-name, .t-band .vk-bandtop .vk-deg { color: #fff; }
+.t-band .vk-bandtop .vk-spec { color: rgba(255,255,255,.9); }
+.t-band .vk-bandtop .vk-bmdc, .t-band .vk-bandtop .vk-tag { color: rgba(255,255,255,.8); }
+.t-band .vk-bandtop .vk-logo { background: #fff; border-radius: 2mm; padding: 0.8mm; width: 11mm; height: 11mm; }
+.t-band .vk-bandtop .vk-mark { color: #fff; }
+.t-band .vk-bot { flex: 1; display: flex; justify-content: space-between; align-items: center; gap: 3mm; padding: 2.5mm 5mm 3mm; }
+.t-band .vk-qr { width: 13mm; height: 13mm; }
+
+/* পেছনের দিক */
+.vk-back { padding: 4mm 4mm 4mm 5mm; gap: 3mm; border-top: 1.6mm solid var(--vc-b); }
+.vk-back-l { flex: 1; display: flex; flex-direction: column; gap: 1.6mm; min-width: 0; }
+.vk-back-t { font-size: 8pt; color: var(--vc-b); }
+.vk-ch { display: flex; flex-direction: column; gap: 0.4mm; }
+.vk-ch b { font-size: 7.4pt; color: var(--vc-a); }
+.vk-ch span, .vk-back-phone { display: flex; align-items: flex-start; gap: 1.2mm; font-size: 6.6pt; color: #2A3640; }
+.vk-ch svg, .vk-back-phone svg { width: 2.6mm; height: 2.6mm; flex: 0 0 auto; margin-top: 0.3mm; color: var(--vc-a); }
+.vk-back-phone { margin-top: auto; font-weight: 700; font-size: 7.2pt; color: var(--vc-b); }
+.vk-back-r { width: 22mm; flex: 0 0 22mm; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.2mm; }
+.vk-back-r .vk-qr { width: 20mm; height: 20mm; }
+.vk-back-r small { font-size: 6pt; text-align: center; color: #5B6870; }
+
+/* প্রিন্টের শিট: A4-এ ২×৫ = ১০টা */
+.vk-sheet { width: 210mm; height: 297mm; overflow: hidden; padding: 11mm 15mm 0; display: grid; grid-template-columns: repeat(2, 85mm); grid-auto-rows: 55mm; gap: 0 10mm; justify-content: center; align-content: start; background: #fff; box-sizing: border-box; }
+.vk-sheet .vk { outline: 0.15mm dashed #C9D3CF; }
+.vk-sheet.back { direction: rtl; } /* দুই পাশে ছাপাতে পেছনের কলাম উল্টো */
+.vk-sheet.back .vk { direction: ltr; }
+.vk-page + .vk-page { page-break-before: always; break-before: page; }
+.pr-desk .vk-page + .vk-page { margin-top: 24px; } @media print { .pr-desk .vk-page + .vk-page { margin-top: 0; } }
