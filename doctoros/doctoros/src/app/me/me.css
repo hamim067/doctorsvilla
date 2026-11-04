@@ -134,3 +134,42 @@
 :root[data-theme="dark"] .md-ic.t3 { background: #3B1E1E; color: #F5A3A3; }
 :root[data-theme="dark"] .md-ic.t4 { background: #1C2B3F; color: #9CC0EE; }
 :root[data-theme="dark"] .md-today-n { background: #14937A; }
+
+/* ---- পড়তে সহজ: রোগীর অংশ ---- */
+.me { font-size: 17px; }
+.me-head { padding: 10px 0; position: sticky; top: 0; z-index: 15; }
+.me-head .me-wrap { flex-wrap: nowrap; }
+.me-head-r { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+.me-out { min-height: 42px; padding: 0 16px; }
+.me-logo { font-size: 21px; white-space: nowrap; }
+.md-live, .md-greet, .md-sub { font-size: 15px; }
+.md-members small, .md-date small, .md-today-n small { font-size: 13px; }
+.md-card-h h2 { font-size: 19px; }
+.md-meds li { font-size: 15.5px; }
+.md-quick a { font-size: 15px; }
+.md-privacy { font-size: 14px; }
+.me-nav a { font-size: 13px; gap: 3px; min-height: 58px; }
+.me-nav a.on { font-weight: 700; }
+.me-nav a.on svg { stroke-width: 2.4; }
+.me-chips a { min-height: 44px; font-size: 15.5px; padding: 0 16px; }
+.me-date span { font-size: 13px; }
+.me-member { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; }
+.me-member-rel { display: flex; align-items: center; gap: 8px; }
+.me-member-rel .input { width: 120px; min-height: 46px; }
+.me-rel-l { position: absolute; left: -9999px; }
+.me-av { width: 56px; height: 56px; flex: 0 0 56px; font-size: 22px; }
+@media (max-width: 600px) {
+  .me-phone { display: none; }
+  .me-member { grid-template-columns: auto minmax(0, 1fr); }
+  .me-member-rel { grid-column: 1 / -1; padding-top: 10px; border-top: 1px solid var(--line); }
+  .me-rel-l { position: static; font-size: 15px; font-weight: 600; color: var(--muted); }
+  .me-member-rel .input { flex: 1; width: auto; }
+  .me-main h1, .md h1 { font-size: 25px; }
+  .me-card { padding: 16px; }
+  .me-appt { gap: 12px; }
+}
+@media (max-width: 380px) {
+  .me-logo { font-size: 18px; }
+  .me-out { padding: 0 12px; }
+  .md-quick { gap: 8px; }
+}

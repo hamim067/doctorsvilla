@@ -23,18 +23,18 @@ export default async function Family() {
       {fam.map((p, i) => (
         <div key={p.id} className="me-card me-member">
           <span className="me-av" style={{ background: TINTS[i % 4][0], color: TINTS[i % 4][1] }}>{p.name.slice(0, 1)}</span>
-          <div className="col grow" style={{ gap: 0 }}>
-            <b style={{ fontSize: 16 }}>{p.name}</b>
+          <div className="col grow me-member-info" style={{ gap: 0 }}>
+            <b style={{ fontSize: 18 }}>{p.name}</b>
             <span className="small muted">{[p.gender, p.birthYear ? `${bn(year - p.birthYear)} বছর` : null].filter(Boolean).join(" · ") || "—"}</span>
             <span className="xs muted">আইডি {patientCode(p.number)}</span>
           </div>
-          <form action={updateRelation} className="row" style={{ gap: 6 }}>
+          <form action={updateRelation} className="me-member-rel">
             <input type="hidden" name="id" value={p.id} />
-            <label className="sr" htmlFor={`rel-${p.id}`}>সম্পর্ক</label>
-            <select id={`rel-${p.id}`} name="relation" defaultValue={p.relation ?? ""} className="input" style={{ minHeight: 38, width: 96, padding: "4px 8px" }}>
+            <label className="me-rel-l" htmlFor={`rel-${p.id}`}>সম্পর্ক</label>
+            <select id={`rel-${p.id}`} name="relation" defaultValue={p.relation ?? ""} className="input">
               <option value="">—</option>{RELATIONS.map((r) => <option key={r}>{r}</option>)}
             </select>
-            <button className="btn" style={{ minHeight: 38, padding: "0 10px" }}>সেভ</button>
+            <button className="btn">সেভ</button>
           </form>
         </div>
       ))}

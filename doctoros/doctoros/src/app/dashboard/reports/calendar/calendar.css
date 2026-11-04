@@ -59,10 +59,10 @@ a.cal-cell:hover { border-color: var(--teal); color: var(--ink); transform: tran
   .cal-card { padding: 8px !important; }
   .cal-cell { min-height: 56px; padding: 5px; border-radius: 9px; align-items: center; }
   .cal-i, .cal-n small { display: none; }
-  .cal-n { font-size: 16px; }
-  .cal-d { font-size: 11px; align-self: flex-start; }
+  .cal-n { font-size: 17px; }
+  .cal-d { font-size: 12.5px; align-self: flex-start; }
   .cal-cell .cal-dot { top: 5px; right: 5px; width: 6px; height: 6px; }
-  .cal-wd { font-size: 11px; }
+  .cal-wd { font-size: 12.5px; }
   .cal-month { min-width: 0; font-size: 16px; }
   .cal-nav { width: 100%; justify-content: space-between; flex-wrap: nowrap; }
   .cal-nav .btn { flex: 0 0 auto; }

@@ -9,6 +9,7 @@ import { db, schema } from "@/db";
 import { logout } from "@/app/auth-actions";
 import { Icon, type ICON } from "@/components/Icons";
 import { NavLink } from "@/components/NavLink";
+import { ResponsiveTables } from "@/components/ResponsiveTables";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { requireStaff } from "@/lib/auth";
 
@@ -67,6 +68,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </aside>
       <main className="dash-main">{children}</main>
+      <ResponsiveTables />
     </div>
   );
 }

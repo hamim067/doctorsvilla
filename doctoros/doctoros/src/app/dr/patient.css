@@ -121,3 +121,15 @@
 :root[data-theme="dark"] .lv { background: #061210; }
 :root[data-theme="dark"] .lv-card { background: #13201E; color: #E4ECE9; }
 :root[data-theme="dark"] .lv-mine { color: #6FDDB8; }
+
+/* ---- পড়তে সহজ: রোগীর পাবলিক পেজ ---- */
+.pt { font-size: 17px; }
+.pt-chip, .pt-verified { font-size: 13.5px; }
+.pt-stats span, .pt-fee small, .pt-summary-grid small { font-size: 14px; }
+.pt .xs, .lv .xs { font-size: 14px; }
+.pt-status { font-size: 15.5px; }
+.pt-day { min-height: 84px; }
+.pt-day b { font-size: 22px; }
+.lv-pill { font-size: 14.5px; }
+.lv-row { font-size: 15.5px; }
+.lv-note { font-size: 15.5px; }

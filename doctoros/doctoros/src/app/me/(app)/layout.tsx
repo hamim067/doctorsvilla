@@ -1,3 +1,4 @@
+import { ResponsiveTables } from "@/components/ResponsiveTables";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import Link from "next/link";
 import { Icon } from "@/components/Icons";
@@ -13,16 +14,17 @@ export default async function MeLayout({ children }: { children: React.ReactNode
       <header className="me-head">
         <div className="me-wrap row-sb">
           <Link href="/" className="me-logo dark"><span className="me-mark"><Icon name="plus" size={16} stroke={2.8} color="#5BD6A4" /></span>DoctorOS</Link>
-          <form action={patientLogout} className="row" style={{ gap: 10 }}>
+          <form action={patientLogout} className="me-head-r">
             <ThemeToggle className="home-mode" label={false} />
             <span className="small muted me-phone">{s.phone}</span>
-            <button className="btn" style={{ minHeight: 38 }}>লগআউট</button>
+            <button className="btn me-out">লগআউট</button>
           </form>
         </div>
       </header>
       <div className="me-wrap me-tabs-wrap"><MeNav variant="top" /></div>
       <main className="me-wrap me-main">{children}</main>
       <MeNav />
+      <ResponsiveTables />
     </div>
   );
 }
