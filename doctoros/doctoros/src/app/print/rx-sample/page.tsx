@@ -30,7 +30,7 @@ export default async function RxSample({ searchParams }: { searchParams: Promise
     <>
       <style>{`@page { size: ${pad.paper}; margin: 0; }`}</style>
       <div className="pr-bar">
-        <Link href="/dashboard/share#pad">← ডিজাইনে ফিরুন</Link>
+        <Link href="/dashboard/share?tab=pad">← ডিজাইনে ফিরুন</Link>
         <span className="small muted">{blank ? "খালি প্যাড — ছাপিয়ে হাতে লেখার জন্য" : "নমুনা রোগী দিয়ে দেখানো"}</span>
         <PrintButton />
       </div>

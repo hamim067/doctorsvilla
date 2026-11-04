@@ -36,7 +36,7 @@ export default async function RxPrint({ params, searchParams }: { params: Promis
       <style>{`@page { size: ${pad.paper}; margin: 0; }`}</style>
       <div className="pr-bar">
         <Link href={`/dashboard/visit/${bookingId}`}>← প্রেসক্রিপশনে ফিরুন</Link>
-        <span className="small muted">{v ? `${pad.paper} প্রেসক্রিপশন` : "এখনো সেভ করা প্রেসক্রিপশন নেই"} · <Link href="/dashboard/share#pad">ডিজাইন বদলান</Link></span>
+        <span className="small muted">{v ? `${pad.paper} প্রেসক্রিপশন` : "এখনো সেভ করা প্রেসক্রিপশন নেই"} · <Link href="/dashboard/share?tab=pad">ডিজাইন বদলান</Link></span>
         <PrintButton />
       </div>
       {auto && <script dangerouslySetInnerHTML={{ __html: "window.addEventListener('load',()=>setTimeout(()=>window.print(),400))" }} />}

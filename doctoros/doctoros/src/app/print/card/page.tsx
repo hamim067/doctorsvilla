@@ -23,7 +23,7 @@ export default async function CardPrint() {
     <>
       <style>{`@page { size: A4; margin: 0; }`}</style>
       <div className="pr-bar">
-        <Link href="/dashboard/share#card">← কার্ডের ডিজাইনে ফিরুন</Link>
+        <Link href="/dashboard/share?tab=card">← কার্ডের ডিজাইনে ফিরুন</Link>
         <span className="small muted">{card.back ? "২ পাতা: সামনে আর পেছন — প্রিন্টারে \"দুই পাশে (লম্বা দিকে উল্টে)\" বাছুন" : "এক পাতায় ১০টি — কাটার দাগ ধরে কাটুন"}</span>
         <PrintButton />
       </div>

@@ -4,6 +4,7 @@ import { Icon } from "@/components/Icons";
 import { RxPad } from "@/components/RxPad";
 import { COLORS, type ColorId, nearestColor, type PadData, type PadSections, type PadSettings, TEMPLATES } from "@/lib/rxpad";
 import { type AssetKind, removeAsset, saveAsset, savePad } from "./actions";
+import { Step } from "./Step";
 
 /** PDF-এর প্রথম পাতাকে ছবিতে বদলানো (ব্রাউজারেই, সার্ভারে PDF যায় না) */
 async function pdfToImage(file: File): Promise<File> {
@@ -154,71 +155,56 @@ export function PadDesigner({ initial, sample: sample0 }: { initial: PadSettings
     <label className="field">{label}<input className="input" value={p[k]} maxLength={k === "slogan" ? 120 : 80} placeholder={ph} onChange={(e) => up({ [k]: e.target.value } as Partial<PadSettings>)} /></label>
   );
 
+  const [open, setOpen] = useState<string>("tpl");
+  const tog = (k: string) => setOpen((o) => (o === k ? "" : k));
+  const fixed = p.template === "preprinted" || p.template === "custom";
+  const tplName = TEMPLATES.find((t) => t.id === p.template)?.name ?? "";
+  const have = [logoUrl && "লোগো", padUrl && "নিজের প্যাড", signUrl && "স্বাক্ষর", sealUrl && "সিল"].filter(Boolean).join(" · ");
+  const onCount = (Object.keys(SECTION_LABEL) as (keyof PadSections)[]).filter((k) => p.sections[k]).length;
+  let n = 0;
+  const uploadBox = (k: AssetKind, label: string, url: string | null, help: string, icon: "camera" | "layout" | "edit") => (
+    <div key={k} className="pd-up">
+      <div className={`pd-up-box ${k}`}>{url ? <img src={url} alt={label} /> : <Icon name={icon} size={26} />}</div>
+      <div className="col" style={{ gap: 6, minWidth: 0 }}>
+        <b>{label}</b>
+        <span className="small muted">{help}</span>
+        <div className="row" style={{ gap: 6 }}>
+          <label className="btn btn-sm2 pd-file">{busy === k ? "আপলোড হচ্ছে…" : url ? "বদলান" : "আপলোড"}<input type="file" accept={k === "logo" ? "image/png,image/jpeg,image/webp" : "image/png,image/jpeg,image/webp,application/pdf,.pdf"} hidden onChange={(e) => { upload(k, e.target.files?.[0]); e.target.value = ""; }} /></label>
+          {url && <button type="button" className="btn btn-sm2" onClick={() => remove(k)}>সরান</button>}
+        </div>
+        {k === "logo" && logoUrl && <label className="pd-inline"><input type="checkbox" checked={p.showLogo} onChange={(e) => up({ showLogo: e.target.checked })} />প্যাডে লোগো দেখাবে</label>}
+        {upMsg?.k === k && <span className={`small ${upMsg.err ? "pd-err" : "pd-ok"}`}>{upMsg.t}</span>}
+      </div>
+    </div>
+  );
+
   return (
     <form action={act} className="pd">
       <input type="hidden" name="pad" value={JSON.stringify(p)} />
       <div className="pd-left">
-        <section className="card stack-sm">
-          <h3 className="pd-h">লোগো, নিজের প্যাড, স্বাক্ষর ও সিল (ঐচ্ছিক)</h3>
-          <div className="pd-ups">
-            <div className="pd-up">
-              <div className="pd-up-box logo">{logoUrl ? <img src={logoUrl} alt="লোগো" /> : <Icon name="camera" size={28} />}</div>
-              <div className="col" style={{ gap: 6, minWidth: 0 }}>
-                <b>লোগো</b>
-                <span className="small muted">আপলোড করলেই সব ফরম্যাটে লোগো বসে যাবে, রংও লোগোর সাথে মিলিয়ে নেওয়া হবে। স্বচ্ছ পটভূমির PNG সবচেয়ে ভালো।</span>
-                <div className="row" style={{ gap: 6 }}>
-                  <label className="btn btn-sm2 pd-file">{busy === "logo" ? "আপলোড হচ্ছে…" : logoUrl ? "লোগো বদলান" : "লোগো আপলোড"}<input type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={(e) => { upload("logo", e.target.files?.[0]); e.target.value = ""; }} /></label>
-                  {logoUrl && <button type="button" className="btn btn-sm2" onClick={() => remove("logo")}>সরান</button>}
-                </div>
-                {logoUrl && <label className="pd-inline"><input type="checkbox" checked={p.showLogo} onChange={(e) => up({ showLogo: e.target.checked })} />প্যাডে লোগো দেখাবে</label>}
-                {upMsg?.k === "logo" && <span className={`small ${upMsg.err ? "pd-err" : "pd-ok"}`}>{upMsg.t}</span>}
-              </div>
-            </div>
-            <div className="pd-up">
-              <div className="pd-up-box pad">{padUrl ? <img src={padUrl} alt="নিজের প্যাড" /> : <Icon name="layout" size={28} />}</div>
-              <div className="col" style={{ gap: 6, minWidth: 0 }}>
-                <b>নিজের প্যাড</b>
-                <span className="small muted">প্রেস থেকে পাওয়া প্যাডের <b>PDF</b> দিন, অথবা ছবি (স্ক্যান করা বা সোজা করে তোলা, চারপাশ কেটে)। PDF-এর প্রথম পাতা নেওয়া হবে। সাদা কাগজেই পুরো প্যাডসহ প্রেসক্রিপশন প্রিন্ট হবে।</span>
-                <div className="row" style={{ gap: 6 }}>
-                  <label className="btn btn-sm2 pd-file">{busy === "pad" ? "আপলোড হচ্ছে…" : padUrl ? "প্যাড বদলান" : "প্যাড আপলোড"}<input type="file" accept="image/png,image/jpeg,image/webp,application/pdf,.pdf" hidden onChange={(e) => { upload("pad", e.target.files?.[0]); e.target.value = ""; }} /></label>
-                  {padUrl && <button type="button" className="btn btn-sm2" onClick={() => remove("pad")}>সরান</button>}
-                </div>
-                {upMsg?.k === "pad" && <span className={`small ${upMsg.err ? "pd-err" : "pd-ok"}`}>{upMsg.t}</span>}
-              </div>
-            </div>
-            {([["sign", "স্বাক্ষর", signUrl, "সাদা কাগজে কালো/নীল কালিতে সই করে ছবি তুলুন (কাছ থেকে, আলোয়)। সাদা অংশ নিজে থেকেই সরে যাবে।"], ["seal", "সিল", sealUrl, "সাদা কাগজে সিল মেরে ছবি তুলুন — স্বাক্ষরের পাশে বসবে।"]] as const).map(([k, label, url, help]) => (
-              <div key={k} className="pd-up">
-                <div className={`pd-up-box ${k}`}>{url ? <img src={url} alt={label} /> : <Icon name="edit" size={26} />}</div>
-                <div className="col" style={{ gap: 6, minWidth: 0 }}>
-                  <b>{label}</b>
-                  <span className="small muted">{help}</span>
-                  <div className="row" style={{ gap: 6 }}>
-                    <label className="btn btn-sm2 pd-file">{busy === k ? "আপলোড হচ্ছে…" : url ? `${label} বদলান` : `${label} আপলোড`}<input type="file" accept="image/png,image/jpeg,image/webp,application/pdf,.pdf" hidden onChange={(e) => { upload(k, e.target.files?.[0]); e.target.value = ""; }} /></label>
-                    {url && <button type="button" className="btn btn-sm2" onClick={() => remove(k)}>সরান</button>}
-                  </div>
-                  {upMsg?.k === k && <span className={`small ${upMsg.err ? "pd-err" : "pd-ok"}`}>{upMsg.t}</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="card stack-sm">
-          <h3 className="pd-h">১. ফরম্যাট বাছুন</h3>
+        <Step n={++n} title="ফরম্যাট" hint={tplName} open={open === "tpl"} onToggle={() => tog("tpl")}>
           <div className="pd-tpls" role="radiogroup" aria-label="ফরম্যাট">
             {TEMPLATES.map((t) => (
               <button key={t.id} type="button" role="radio" aria-checked={p.template === t.id} className={`pd-tpl${p.template === t.id ? " on" : ""}`}
-                onClick={() => { if (t.id === "custom" && !padUrl) { setUpMsg({ k: "pad", t: "আগে উপরে \"প্যাড আপলোড\" চাপুন", err: true }); return; } up({ template: t.id }); }}>
+                onClick={() => { if (t.id === "custom" && !padUrl) { setOpen("assets"); setUpMsg({ k: "pad", t: "আগে এখানে নিজের প্যাডের ছবি বা PDF আপলোড করুন", err: true }); return; } up({ template: t.id }); }}>
                 <div className="pd-thumb" aria-hidden><Scaled s={{ ...p, template: t.id, paper: "A4" }} d={sample} maxW={150} /></div>
                 <b>{t.name}</b><small>{t.desc}</small>
                 {p.template === t.id && <span className="pd-tick"><Icon name="check" size={16} stroke={3} /></span>}
               </button>
             ))}
           </div>
-        </section>
+        </Step>
 
-        <section className="card stack-sm">
-          <h3 className="pd-h">২. রং, কাগজ ও ভাষা</h3>
+        <Step n={++n} title="লোগো, নিজের প্যাড, স্বাক্ষর ও সিল" hint={have || "ঐচ্ছিক — কিছু আপলোড করা নেই"} open={open === "assets"} onToggle={() => tog("assets")}>
+          <div className="pd-ups">
+            {uploadBox("logo", "লোগো", logoUrl, "সব ফরম্যাটে বসবে, রংও মিলিয়ে নেবে। স্বচ্ছ PNG সবচেয়ে ভালো।", "camera")}
+            {uploadBox("pad", "নিজের প্যাড", padUrl, "প্রেসের PDF বা প্যাডের ছবি (চারপাশ কেটে)। সাদা কাগজেই পুরো প্যাডসহ প্রিন্ট হবে।", "layout")}
+            {uploadBox("sign", "স্বাক্ষর", signUrl, "সাদা কাগজে সই করে ছবি তুলুন — সাদা অংশ নিজে থেকেই সরে যাবে।", "edit")}
+            {uploadBox("seal", "সিল", sealUrl, "সাদা কাগজে সিল মেরে ছবি তুলুন — স্বাক্ষরের পাশে বসবে।", "edit")}
+          </div>
+        </Step>
+
+        <Step n={++n} title="রং, কাগজ ও ভাষা" hint={`${p.template === "preprinted" ? "" : COLORS[p.color].name + " · "}${p.paper} · ${p.labels === "bn" ? "বাংলা" : "English"}`} open={open === "look"} onToggle={() => tog("look")}>
           {p.template !== "preprinted" && (
             <div className="pd-colors" role="radiogroup" aria-label="রং">
               {(Object.keys(COLORS) as ColorId[]).map((k) => (
@@ -250,11 +236,10 @@ export function PadDesigner({ initial, sample: sample0 }: { initial: PadSettings
               <label className="field">নিচে ফাঁকা (মিমি)<input className="input" type="number" min={0} max={80} value={p.bottomMm} onChange={(e) => up({ bottomMm: Math.max(0, Math.min(80, Number(e.target.value) || 0)) })} /></label>
             </div>
           )}
-        </section>
+        </Step>
 
-        {p.template !== "preprinted" && p.template !== "custom" && (
-          <section className="card stack-sm">
-            <h3 className="pd-h">৩. চেম্বার ও যোগাযোগ</h3>
+        {!fixed && (
+          <Step n={++n} title="চেম্বার ও যোগাযোগ" hint={[p.hospital, p.phone].filter(Boolean).join(" · ") || "ফোন নম্বর দেওয়া নেই"} open={open === "contact"} onToggle={() => tog("contact")}>
             <div className="grid">
               {text("hospital", "হাসপাতাল / চেম্বারের নাম", "খালি রাখলে চেম্বারের নাম বসবে")}
               {text("slogan", "স্লোগান (ঐচ্ছিক)", "যেমন: যত্নই আমাদের অঙ্গীকার")}
@@ -262,18 +247,17 @@ export function PadDesigner({ initial, sample: sample0 }: { initial: PadSettings
               {text("website", "ওয়েবসাইট (ঐচ্ছিক)", "খালি রাখলে আপনার প্রোফাইল লিংক")}
               {text("email", "ইমেইল (ঐচ্ছিক)", "dr.name@gmail.com")}
             </div>
-          </section>
+          </Step>
         )}
 
-        <section className="card stack-sm">
-          <h3 className="pd-h">{p.template === "preprinted" || p.template === "custom" ? "৩" : "৪"}. কোন অংশ থাকবে</h3>
+        <Step n={++n} title="কোন অংশ থাকবে" hint={`${onCount}টি অংশ চালু`} open={open === "sec"} onToggle={() => tog("sec")}>
           <div className="pd-checks">
             <span className="pd-always">সবসময় থাকে: ডাক্তারের নাম ও ডিগ্রি · রোগীর তথ্য · অভিযোগ (C/C) · রোগ নির্ণয় (D/E) · ওষুধ (Rx)</span>
-            {(Object.keys(SECTION_LABEL) as (keyof PadSections)[]).filter((k) => (p.template !== "preprinted" && p.template !== "custom") || !["qr", "watermark"].includes(k) && (k !== "signature" || signUrl || sealUrl)).map((k) => (
+            {(Object.keys(SECTION_LABEL) as (keyof PadSections)[]).filter((k) => !fixed || !["qr", "watermark"].includes(k) && (k !== "signature" || signUrl || sealUrl)).map((k) => (
               <label key={k}><input type="checkbox" checked={p.sections[k]} onChange={(e) => sec(k, e.target.checked)} />{k === "signature" && (signUrl || sealUrl) ? "স্বাক্ষর ও সিল (আপলোড করা ছবি)" : SECTION_LABEL[k]}</label>
             ))}
           </div>
-        </section>
+        </Step>
       </div>
 
       <div className="pd-right">
