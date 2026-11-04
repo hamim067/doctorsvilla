@@ -369,3 +369,46 @@
   .ws-mbar { display: flex; gap: 10px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: var(--nav-bg); backdrop-filter: blur(8px); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgba(15, 34, 54, 0.08); }
   .ws-mbar .ws-btn-o { width: 50px; padding: 0; flex: 0 0 50px; }
 }
+
+/* ---------- ভিডিও ---------- */
+.ws-vids, .ws-posts { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; }
+.ws-vids > *, .ws-posts > * { flex: 0 1 calc((100% - 44px) / 3); min-width: 280px; }
+.ws-vid { display: flex; flex-direction: column; gap: 10px; }
+.ws-vid h3 { font-size: 17px; margin: 0; color: var(--ink); line-height: 1.4; }
+.ws-vid-box { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r); overflow: hidden; background: linear-gradient(135deg, var(--p), var(--a)); box-shadow: var(--sh-sm); }
+.ws-vid-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.ws-vid-play { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; color: #fff; }
+.ws-vid-play img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ws-vid-play::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,.45)); }
+.ws-vid-btn { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1; width: 68px; height: 68px; border-radius: 50%; background: rgba(255,255,255,.95); color: var(--p); display: flex; align-items: center; justify-content: center; padding-left: 4px; box-shadow: 0 8px 24px rgba(0,0,0,.25); transition: transform .2s; }
+.ws-vid-play:hover .ws-vid-btn { transform: translate(-50%, -50%) scale(1.08); }
+.ws-vid-src { position: absolute; left: 12px; bottom: 10px; z-index: 1; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(0,0,0,.5); }
+
+/* ---------- ব্লগ ---------- */
+.ws-post { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; color: var(--ink) !important; text-decoration: none; box-shadow: var(--sh-sm); transition: transform .2s, box-shadow .2s, border-color .2s; }
+.ws-post:hover { transform: translateY(-3px); border-color: var(--a); }
+.ws-post-img { aspect-ratio: 16 / 9; background: var(--p-soft); color: var(--p); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.ws-post-img img { width: 100%; height: 100%; object-fit: cover; }
+.ws-post-b { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 6px; }
+.ws-post-b small { color: var(--mut); font-size: 13.5px; }
+.ws-post-b b { font-size: 18px; line-height: 1.4; }
+.ws-post-b span { color: var(--mut); font-size: 15px; line-height: 1.6; }
+.ws-post-b em { font-style: normal; color: var(--a-ink); font-weight: 700; font-size: 15px; margin-top: 4px; }
+
+/* ---------- ব্লগের পাতা ---------- */
+.ws-art { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+.ws-art-back { display: flex; width: fit-content; align-items: center; gap: 6px; font-weight: 600; color: var(--a-ink) !important; margin-bottom: 22px; }
+.ws-art-back svg { transform: rotate(180deg); }
+.ws-art .ws-eyebrow { display: block; }
+.ws-art-page .ws-nav-r { margin-left: auto; }
+.ws-art h1 { font-size: clamp(26px, 4vw, 38px); line-height: 1.3; margin: 6px 0 12px; color: var(--ink); }
+.ws-art-meta { color: var(--mut); font-size: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.ws-art-cover { margin: 22px 0; border-radius: var(--r); overflow: hidden; aspect-ratio: 16 / 9; background: var(--p-soft); }
+.ws-art-cover img { width: 100%; height: 100%; object-fit: cover; }
+.ws-art-body { font-size: 18px; line-height: 1.85; color: var(--body, var(--ink)); }
+.ws-art-body p { margin: 0 0 16px; }
+.ws-art-cta { margin-top: 30px; padding: 22px; border-radius: var(--r); background: var(--p-soft); display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.ws-art-cta b { font-size: 18px; color: var(--ink); }
+.ws-art-more { margin-top: 36px; display: grid; gap: 10px; }
+.ws-art-more a { padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink) !important; font-weight: 600; }
+@media (max-width: 640px) { .ws-vids > *, .ws-posts > * { flex-basis: 100%; min-width: 0; } .ws-art-body { font-size: 17px; } }

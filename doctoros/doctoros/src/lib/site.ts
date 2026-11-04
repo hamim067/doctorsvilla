@@ -3,7 +3,8 @@ import "server-only";
 import { and, count, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import type { SiteContent, SiteText } from "@/db/schema";
+import type { SiteBlock, SiteContent, SiteText } from "@/db/schema";
+import { parseVideo } from "@/lib/video";
 import { today } from "@/lib/time";
 
 /**
@@ -23,6 +24,15 @@ export function hasPremium(d: { plan: string; premiumUntil: string | null }) {
 /** সেবার আইকন — ডাক্তার এখান থেকে বেছে নেন */
 export const SERVICE_ICONS = ["heart", "pulse", "steth", "brain", "bone", "tooth", "eye", "ear", "child", "gyn", "skin", "drop", "pill", "syringe", "micro", "shield"] as const;
 
+/** সাজানো যায় এমন অংশ — শুরুর ক্রম */
+export const BLOCKS: SiteBlock[] = ["services", "about", "chambers", "queue", "booking", "videos", "blog", "faq"];
+/** ক্রমের তালিকা ঠিক রাখা: অজানা বাদ, দুবার নয়, নতুন অংশ শেষে যোগ */
+export function fixOrder(o: unknown): SiteBlock[] {
+  const list = Array.isArray(o) ? o.filter((x): x is SiteBlock => BLOCKS.includes(x as SiteBlock)) : [];
+  const uniq = [...new Set(list)];
+  return [...uniq, ...BLOCKS.filter((b) => !uniq.includes(b))];
+}
+
 const emptyText = (): SiteText => ({
   designation: "", topNote: "", heroTitle: "", heroText: "", about: "", servicesTitle: "",
   services: [], faqs: [], emergency: "",
@@ -32,7 +42,8 @@ const emptyText = (): SiteText => ({
 export function defaultContent(d: { specialty: string; bio: string | null }): SiteContent {
   return {
     theme: "navy",
-    sections: { topbar: true, stats: true, services: true, about: true, chambers: true, booking: true, faq: true, emergency: true, queue: true },
+    sections: { topbar: true, stats: true, services: true, about: true, chambers: true, booking: true, faq: true, emergency: true, queue: true, videos: true, blog: true },
+    order: [...BLOCKS], videos: [], posts: [],
     stats: { experience: true, patients: true, chambers: true },
     hotline: "", whatsapp: "", email: "", facebook: "", youtube: "", linkedin: "",
     bn: {
@@ -57,6 +68,7 @@ export function normalize(c: Partial<SiteContent> | null | undefined, d: { speci
   return {
     ...base, ...c,
     sections: { ...base.sections, ...c.sections },
+    order: fixOrder(c.order), videos: c.videos ?? [], posts: c.posts ?? [],
     stats: { ...base.stats, ...c.stats },
     bn: { ...emptyText(), ...c.bn },
     en: { ...emptyText(), ...c.en },
@@ -79,7 +91,16 @@ const textSchema = z.object({
 const flag = z.boolean().default(true);
 export const contentSchema = z.object({
   theme: z.enum(["navy", "green", "plum"]).catch("navy"),
-  sections: z.object({ topbar: flag, stats: flag, services: flag, about: flag, chambers: flag, booking: flag, faq: flag, emergency: flag, queue: flag }),
+  sections: z.object({ topbar: flag, stats: flag, services: flag, about: flag, chambers: flag, booking: flag, faq: flag, emergency: flag, queue: flag, videos: flag, blog: flag }),
+  order: z.array(z.string()).max(20).default([]).transform(fixOrder),
+  videos: z.array(z.object({
+    url: z.string().trim().max(400).refine((v) => !v || parseVideo(v), "ভিডিওর লিংক চেনা যায়নি — YouTube, Facebook বা Vimeo-র লিংক দিন"),
+    title: s(120), titleEn: s(120),
+  })).max(12, "সর্বোচ্চ ১২টি ভিডিও").default([]),
+  posts: z.array(z.object({
+    id: z.string().regex(/^[a-z0-9]{6,16}$/), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    title: s(140), titleEn: s(140), body: s(8000), bodyEn: s(8000), cover: z.number().int().min(0).default(0),
+  })).max(12, "সর্বোচ্চ ১২টি লেখা").default([]),
   stats: z.object({ experience: flag, patients: flag, chambers: flag }),
   hotline: s(20), whatsapp: s(20), email: z.string().trim().max(120).default("").refine((v) => !v || /^\S+@\S+\.\S+$/.test(v), "সঠিক ইমেইল দিন"),
   facebook: url, youtube: url, linkedin: url,
@@ -92,6 +113,9 @@ export function tidy(c: SiteContent): SiteContent {
   const keepF = c.bn.faqs.map((x, i) => ({ x, i })).filter(({ x }) => x.q.trim() && x.a.trim());
   return {
     ...c,
+    order: fixOrder(c.order),
+    videos: (c.videos ?? []).filter((v) => v.url.trim()),
+    posts: (c.posts ?? []).filter((p) => p.title.trim() || p.body.trim()),
     bn: { ...c.bn, services: keep.map(({ x }) => x), faqs: keepF.map(({ x }) => x) },
     en: {
       ...c.en,

@@ -1,10 +1,12 @@
 "use client";
-import { useActionState, useEffect, useState } from "react";
+import { Fragment, useActionState, useEffect, useState } from "react";
 import { bookOnline } from "@/app/dr/actions";
 import { Icon, type ICON } from "@/components/Icons";
 import { keepValues } from "@/components/keepValues";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import type { SiteContent, SiteText } from "@/db/schema";
+import type { SiteBlock, SiteContent, SiteText } from "@/db/schema";
+import { parseVideo } from "@/lib/video";
+import { postDate } from "@/lib/post-date";
 
 type Lang = "bn" | "en";
 export type WsDay = { date: string; bn: string; en: string };
@@ -44,7 +46,7 @@ const UI = {
     fChambers: "চেম্বারসমূহ", fLinks: "প্রয়োজনীয় লিংক", fContact: "যোগাযোগ ও সিরিয়াল", emergency: "জরুরি সতর্কবার্তা:",
     rights: "সর্বস্বত্ব সংরক্ষিত।", made: "DoctorsVilla দিয়ে তৈরি", menu: "মেনু",
     draft: "প্রিভিউ — ওয়েবসাইট এখনো প্রকাশ হয়নি। শুধু আপনি দেখছেন।",
-    queue: "লাইভ সিরিয়াল", queueEyebrow: "আজকের সিরিয়াল", queueTitle: "এখন কত নম্বর চলছে, কতজন অপেক্ষায়",
+    queue: "লাইভ সিরিয়াল", videos: "ভিডিও", blog: "স্বাস্থ্য টিপস", videosEyebrow: "দেখে জানুন", videosTitle: "স্বাস্থ্য বিষয়ক ভিডিও", blogEyebrow: "পড়ে জানুন", blogTitle: "স্বাস্থ্য টিপস ও লেখা", readMore: "পুরোটা পড়ুন", play: "ভিডিও চালান", queueEyebrow: "আজকের সিরিয়াল", queueTitle: "এখন কত নম্বর চলছে, কতজন অপেক্ষায়",
     nowServing: "এখন চলছে", qTotal: "আজ মোট", qWaiting: "অপেক্ষায়", qDone: "দেখা হয়েছে", perPt: "মিনিট/রোগী (গড়)",
     notStarted: "এখনো শুরু হয়নি", closedToday: "আজ এই চেম্বার বন্ধ", noSerial: "আজ এখনো কোনো সিরিয়াল নেই",
     lgWait: "অপেক্ষায়", lgNow: "চলছে", lgDone: "দেখা হয়েছে", lgAbsent: "অনুপস্থিত", updated: "আপডেট",
@@ -68,7 +70,7 @@ const UI = {
     fChambers: "Chambers", fLinks: "Quick links", fContact: "Contact & serial", emergency: "Emergency:",
     rights: "All rights reserved.", made: "Made with DoctorsVilla", menu: "Menu",
     draft: "Preview — not published yet. Only you can see this.",
-    queue: "Live queue", queueEyebrow: "Today's queue", queueTitle: "Which serial is running, how many are waiting",
+    queue: "Live queue", videos: "Videos", blog: "Health tips", videosEyebrow: "Watch & learn", videosTitle: "Health videos", blogEyebrow: "Read & learn", blogTitle: "Health tips & articles", readMore: "Read more", play: "Play video", queueEyebrow: "Today's queue", queueTitle: "Which serial is running, how many are waiting",
     nowServing: "Now serving", qTotal: "Today total", qWaiting: "Waiting", qDone: "Seen", perPt: "min/patient (avg)",
     notStarted: "Not started yet", closedToday: "Closed today", noSerial: "No serials yet today",
     lgWait: "Waiting", lgNow: "Now", lgDone: "Seen", lgAbsent: "Absent", updated: "Updated",
@@ -84,6 +86,28 @@ function shortDegrees(deg: string) {
   const parts = deg.split(/[,،;]/).map((p) => p.replace(/\(.*?\)/g, "").trim()).filter(Boolean);
   const top = parts.filter((p) => !/^(MBBS|এমবিবিএস|BDS|বিডিএস)$/i.test(p));
   return (top.length ? top : parts).slice(-2).join(" • ");
+}
+
+/** ভিডিও কার্ড — প্রথমে শুধু ছবি, চাপলে তবেই ভিডিও লোড (সাইট ধীর হয় না) */
+function VideoCard({ url, title, t }: { url: string; title: string; t: typeof UI.bn }) {
+  const [on, setOn] = useState(false);
+  const v = parseVideo(url);
+  if (!v) return null;
+  return (
+    <article className="ws-vid">
+      <div className={`ws-vid-box ${v.kind}`}>
+        {on ? <iframe src={v.embed} title={title || v.label} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" />
+          : (
+            <button type="button" className="ws-vid-play" onClick={() => setOn(true)} aria-label={`${t.play}: ${title || v.label}`}>
+              {v.thumb && <img src={v.thumb} alt="" loading="lazy" onError={(e) => e.currentTarget.remove()} />}
+              <span className="ws-vid-btn"><svg viewBox="0 0 24 24" width="30" height="30" aria-hidden><path d="M8 5.5v13l11-6.5z" fill="currentColor" /></svg></span>
+              <span className="ws-vid-src">{v.label}</span>
+            </button>
+          )}
+      </div>
+      {title && <h3>{title}</h3>}
+    </article>
+  );
 }
 
 function BookingForm({ chambers, t, lang, live }: { chambers: WsChamber[]; t: typeof UI.bn; lang: Lang; live?: boolean }) {
@@ -233,6 +257,11 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
     desc: (lang === "en" && c.en.services[i]?.desc) || s.desc,
   }));
   const faqs = c.bn.faqs.map((f, i) => ({ q: (lang === "en" && c.en.faqs[i]?.q) || f.q, a: (lang === "en" && c.en.faqs[i]?.a) || f.a }));
+  const videos = (c.videos ?? []).filter((v) => parseVideo(v.url)).map((v) => ({ url: v.url, title: (lang === "en" && v.titleEn) || v.title }));
+  const posts = (c.posts ?? []).filter((p) => p.title.trim()).map((p) => {
+    const title = (lang === "en" && p.titleEn) || p.title, body = (lang === "en" && p.bodyEn) || p.body;
+    return { id: p.id, date: p.date, cover: p.cover, title, excerpt: body.replace(/\s+/g, " ").slice(0, 130) + (body.length > 130 ? "…" : "") };
+  });
   const S = c.sections;
   const hasCh = d.chambers.length > 0;
   const show = {
@@ -243,6 +272,8 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
     faq: S.faq && faqs.length > 0,
     emergency: S.emergency && Boolean(tx("emergency").trim()),
     queue: S.queue !== false && hasCh,
+    videos: S.videos !== false && videos.length > 0,
+    blog: S.blog !== false && posts.length > 0,
   };
   const tel = c.hotline ? `tel:${c.hotline.replace(/[^\d+]/g, "")}` : null;
   const wa = c.whatsapp ? `https://wa.me/${c.whatsapp.startsWith("0") ? `88${c.whatsapp}` : c.whatsapp}` : null;
@@ -250,21 +281,176 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
   const num = (s: string) => (lang === "bn" ? D(s) : s);
   const initials = name.replace(/^(অধ্যাপক|সহযোগী অধ্যাপক|ডা\.?|ডাঃ|Dr\.?|Prof\.?)\s*/g, "").trim().slice(0, lang === "en" ? 1 : 2);
 
+  const NAV_LABEL: Partial<Record<SiteBlock, string>> = { about: t.about, services: t.services, chambers: t.chambers, queue: t.queue, videos: t.videos, blog: t.blog, faq: t.faq };
   const nav = [
     { id: "top", label: t.home, on: true },
-    { id: "about", label: t.about, on: show.about },
-    { id: "services", label: t.services, on: show.services },
-    { id: "chambers", label: t.chambers, on: show.chambers },
-    { id: "queue", label: t.queue, on: show.queue },
-    { id: "faq", label: t.faq, on: show.faq },
+    ...c.order.filter((k) => NAV_LABEL[k]).map((k) => ({ id: k, label: NAV_LABEL[k]!, on: show[k] })),
   ].filter((n) => n.on);
 
-  const NAV_IC: Record<string, keyof typeof ICON> = { top: "layout", about: "user", services: "steth", chambers: "pin", queue: "pulse", faq: "help" };
+  const NAV_IC: Record<string, keyof typeof ICON> = { top: "layout", about: "user", services: "steth", chambers: "pin", queue: "pulse", faq: "help", videos: "youtube", blog: "edit" };
   const stats = [
     c.stats.experience && d.stats.experience ? { v: `${fmt(d.stats.experience, lang)}+`, l: t.exp } : null,
     c.stats.patients && d.stats.patients >= 10 ? { v: `${fmt(d.stats.patients >= 100 ? Math.floor(d.stats.patients / 10) * 10 : d.stats.patients, lang)}+`, l: t.pts } : null,
     c.stats.chambers && d.stats.chambers ? { v: fmt(d.stats.chambers, lang), l: t.chs } : null,
   ].filter(Boolean) as { v: string; l: string }[];
+
+  // ---- সাজানো যায় এমন অংশ (ডাক্তার যে ক্রমে রেখেছেন) ----
+  const sec = (i: number) => `ws-sec${i % 2 === 1 ? " ws-sec-alt" : ""}`;
+  const BLOCK: Record<SiteBlock, (i: number) => React.ReactNode> = {
+    services: (i) => (
+          <section className={sec(i)} id="services">
+            <div className="ws-wrap">
+              <div className="ws-sec-h">
+                <span className="ws-eyebrow">{t.servicesEyebrow}</span>
+                <h2>{tx("servicesTitle") || t.services}</h2>
+              </div>
+              <div className="ws-cards">
+                {services.map((s, i) => (
+                  <article key={i} className="ws-card">
+                    <span className="ws-card-ic"><Icon name={s.icon} size={22} /></span>
+                    <h3>{s.title}</h3>
+                    {s.desc && <p>{s.desc}</p>}
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+    ),
+    about: (i) => (
+          <section className={sec(i)} id="about">
+            <div className="ws-wrap ws-about">
+              <div>
+                <span className="ws-eyebrow">{t.aboutEyebrow}</span>
+                <h2>{name}</h2>
+                <div className="ws-about-txt">{tx("about").split(/\n+/).map((p, i) => <p key={i}>{p}</p>)}</div>
+              </div>
+              <aside className="ws-quals">
+                <h3><Icon name="award" size={20} />{t.quals}</h3>
+                <ul>{degrees.split(/[,،;]/).map((x) => x.trim()).filter(Boolean).map((x) => <li key={x}><Icon name="check" size={16} stroke={2.6} />{x}</li>)}</ul>
+                {d.stats.experience ? <p><b>{t.experience}:</b> {fmt(d.stats.experience, lang)}+ {t.years}</p> : null}
+                <p><b>{t.bmdc}:</b> {num(d.bmdcNo)}{d.verified ? ` ✓` : ""}</p>
+              </aside>
+            </div>
+          </section>
+    ),
+    chambers: (i) => (
+          <section className={sec(i)} id="chambers">
+            <div className="ws-wrap">
+              <div className="ws-sec-h">
+                <span className="ws-eyebrow">{t.chambersEyebrow}</span>
+                <h2>{t.chambers}</h2>
+              </div>
+              <div className="ws-chs">
+                {d.chambers.map((ch, i) => (
+                  <article key={ch.id} className="ws-ch">
+                    <div className="ws-ch-h">
+                      <span className="ws-ch-n">{fmt(i + 1, lang)}</span>
+                      <span className="col">
+                        <h3>{ch.name}</h3>
+                        <span className="ws-mut"><Icon name="pin" size={15} />{ch.address}, {ch.city}</span>
+                      </span>
+                    </div>
+                    <ul className="ws-ch-time">
+                      {(lang === "bn" ? ch.schedBn : ch.schedEn).map((l) => <li key={l}><Icon name="clock" size={15} />{l}</li>)}
+                      {(lang === "bn" ? ch.offBn : ch.offEn) && <li className="ws-off"><Icon name="x" size={15} />{lang === "bn" ? ch.offBn : ch.offEn} {t.off}</li>}
+                    </ul>
+                    <div className="ws-fees">
+                      <span><small>{t.feeNew}</small><b>৳{fmt(ch.feeNew, lang)}</b></span>
+                      <span><small>{t.feeFu}</small><b>৳{fmt(ch.feeFollowUp, lang)}</b></span>
+                    </div>
+                    <span className={`ws-today ${ch.todayCls}`}>{lang === "bn" ? ch.todayBn : ch.todayEn}</span>
+                    <div className="ws-ch-act">
+                      <a className="ws-btn ws-btn-p ws-btn-sm" href={show.booking ? "#booking" : `/dr/${d.slug}/book?chamber=${ch.id}`}>{t.book}</a>
+                      <a className="ws-btn ws-btn-o ws-btn-sm" target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${ch.name}, ${ch.address}, ${ch.city}`)}`}><Icon name="pin" size={16} />{t.map}</a>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+    ),
+    queue: (i) => (
+          <section className={sec(i)} id="queue">
+            <div className="ws-wrap">
+              <div className="ws-sec-h">
+                <span className="ws-eyebrow">{t.queueEyebrow}</span>
+                <h2>{t.queueTitle}</h2>
+              </div>
+              <LiveQueue slug={d.slug} t={t} lang={lang} live={live} />
+            </div>
+          </section>
+    ),
+    booking: (i) => (
+          <section className={sec(i)} id="booking">
+            <div className="ws-wrap">
+              <div className="ws-book">
+                <div className="ws-book-txt">
+                  <span className="ws-eyebrow light">{t.bookEyebrow}</span>
+                  <h2>{t.bookTitle}</h2>
+                  <p>{t.bookText}</p>
+                  {c.hotline && <a href={tel!} className="ws-book-hot"><Icon name="phone" size={18} />{t.hotline}: {num(c.hotline)}</a>}
+                </div>
+                <BookingForm chambers={d.chambers} t={t} lang={lang} live={live} />
+              </div>
+            </div>
+          </section>
+    ),
+    faq: (i) => (
+          <section className={sec(i)} id="faq">
+            <div className="ws-wrap ws-faq-wrap">
+              <div className="ws-sec-h">
+                <span className="ws-eyebrow">{t.faqEyebrow}</span>
+                <h2>{t.faqTitle}</h2>
+              </div>
+              <div className="ws-faq">
+                {faqs.map((f, i) => (
+                  <details key={i} open={i === 0}>
+                    <summary>{f.q}<Icon name="down" size={20} /></summary>
+                    <p>{f.a}</p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          </section>
+    ),
+    videos: (i) => (
+      <section className={sec(i)} id="videos">
+        <div className="ws-wrap">
+          <div className="ws-sec-h">
+            <span className="ws-eyebrow">{t.videosEyebrow}</span>
+            <h2>{t.videosTitle}</h2>
+          </div>
+          <div className="ws-vids">
+            {videos.map((v, j) => <VideoCard key={v.url + j} url={v.url} title={v.title} t={t} />)}
+          </div>
+        </div>
+      </section>
+    ),
+    blog: (i) => (
+      <section className={sec(i)} id="blog">
+        <div className="ws-wrap">
+          <div className="ws-sec-h">
+            <span className="ws-eyebrow">{t.blogEyebrow}</span>
+            <h2>{t.blogTitle}</h2>
+          </div>
+          <div className="ws-posts">
+            {posts.map((p) => (
+              <a key={p.id} href={`/dr/${d.slug}/blog/${p.id}`} className="ws-post">
+                <span className="ws-post-img">{p.cover ? <img src={`/dr/${d.slug}/asset/post-${p.id}?v=${p.cover}`} alt="" loading="lazy" /> : <Icon name="steth" size={34} />}</span>
+                <span className="ws-post-b">
+                  <small>{postDate(p.date, lang)}</small>
+                  <b>{p.title}</b>
+                  <span>{p.excerpt}</span>
+                  <em>{t.readMore} →</em>
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    ),
+  };
+  const visible = c.order.filter((k) => show[k]);
 
   const LangSwitch = d.english ? (
     <div className="ws-lang" role="group" aria-label="Language">
@@ -374,127 +560,7 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
           </div>
         </section>
 
-        {show.services && (
-          <section className="ws-sec" id="services">
-            <div className="ws-wrap">
-              <div className="ws-sec-h">
-                <span className="ws-eyebrow">{t.servicesEyebrow}</span>
-                <h2>{tx("servicesTitle") || t.services}</h2>
-              </div>
-              <div className="ws-cards">
-                {services.map((s, i) => (
-                  <article key={i} className="ws-card">
-                    <span className="ws-card-ic"><Icon name={s.icon} size={22} /></span>
-                    <h3>{s.title}</h3>
-                    {s.desc && <p>{s.desc}</p>}
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {show.about && (
-          <section className="ws-sec ws-sec-alt" id="about">
-            <div className="ws-wrap ws-about">
-              <div>
-                <span className="ws-eyebrow">{t.aboutEyebrow}</span>
-                <h2>{name}</h2>
-                <div className="ws-about-txt">{tx("about").split(/\n+/).map((p, i) => <p key={i}>{p}</p>)}</div>
-              </div>
-              <aside className="ws-quals">
-                <h3><Icon name="award" size={20} />{t.quals}</h3>
-                <ul>{degrees.split(/[,،;]/).map((x) => x.trim()).filter(Boolean).map((x) => <li key={x}><Icon name="check" size={16} stroke={2.6} />{x}</li>)}</ul>
-                {d.stats.experience ? <p><b>{t.experience}:</b> {fmt(d.stats.experience, lang)}+ {t.years}</p> : null}
-                <p><b>{t.bmdc}:</b> {num(d.bmdcNo)}{d.verified ? ` ✓` : ""}</p>
-              </aside>
-            </div>
-          </section>
-        )}
-
-        {show.chambers && (
-          <section className="ws-sec" id="chambers">
-            <div className="ws-wrap">
-              <div className="ws-sec-h">
-                <span className="ws-eyebrow">{t.chambersEyebrow}</span>
-                <h2>{t.chambers}</h2>
-              </div>
-              <div className="ws-chs">
-                {d.chambers.map((ch, i) => (
-                  <article key={ch.id} className="ws-ch">
-                    <div className="ws-ch-h">
-                      <span className="ws-ch-n">{fmt(i + 1, lang)}</span>
-                      <span className="col">
-                        <h3>{ch.name}</h3>
-                        <span className="ws-mut"><Icon name="pin" size={15} />{ch.address}, {ch.city}</span>
-                      </span>
-                    </div>
-                    <ul className="ws-ch-time">
-                      {(lang === "bn" ? ch.schedBn : ch.schedEn).map((l) => <li key={l}><Icon name="clock" size={15} />{l}</li>)}
-                      {(lang === "bn" ? ch.offBn : ch.offEn) && <li className="ws-off"><Icon name="x" size={15} />{lang === "bn" ? ch.offBn : ch.offEn} {t.off}</li>}
-                    </ul>
-                    <div className="ws-fees">
-                      <span><small>{t.feeNew}</small><b>৳{fmt(ch.feeNew, lang)}</b></span>
-                      <span><small>{t.feeFu}</small><b>৳{fmt(ch.feeFollowUp, lang)}</b></span>
-                    </div>
-                    <span className={`ws-today ${ch.todayCls}`}>{lang === "bn" ? ch.todayBn : ch.todayEn}</span>
-                    <div className="ws-ch-act">
-                      <a className="ws-btn ws-btn-p ws-btn-sm" href={show.booking ? "#booking" : `/dr/${d.slug}/book?chamber=${ch.id}`}>{t.book}</a>
-                      <a className="ws-btn ws-btn-o ws-btn-sm" target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${ch.name}, ${ch.address}, ${ch.city}`)}`}><Icon name="pin" size={16} />{t.map}</a>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {show.queue && (
-          <section className="ws-sec ws-sec-alt" id="queue">
-            <div className="ws-wrap">
-              <div className="ws-sec-h">
-                <span className="ws-eyebrow">{t.queueEyebrow}</span>
-                <h2>{t.queueTitle}</h2>
-              </div>
-              <LiveQueue slug={d.slug} t={t} lang={lang} live={live} />
-            </div>
-          </section>
-        )}
-
-        {show.booking && (
-          <section className="ws-sec" id="booking">
-            <div className="ws-wrap">
-              <div className="ws-book">
-                <div className="ws-book-txt">
-                  <span className="ws-eyebrow light">{t.bookEyebrow}</span>
-                  <h2>{t.bookTitle}</h2>
-                  <p>{t.bookText}</p>
-                  {c.hotline && <a href={tel!} className="ws-book-hot"><Icon name="phone" size={18} />{t.hotline}: {num(c.hotline)}</a>}
-                </div>
-                <BookingForm chambers={d.chambers} t={t} lang={lang} live={live} />
-              </div>
-            </div>
-          </section>
-        )}
-
-        {show.faq && (
-          <section className="ws-sec ws-sec-alt" id="faq">
-            <div className="ws-wrap ws-faq-wrap">
-              <div className="ws-sec-h">
-                <span className="ws-eyebrow">{t.faqEyebrow}</span>
-                <h2>{t.faqTitle}</h2>
-              </div>
-              <div className="ws-faq">
-                {faqs.map((f, i) => (
-                  <details key={i} open={i === 0}>
-                    <summary>{f.q}<Icon name="down" size={20} /></summary>
-                    <p>{f.a}</p>
-                  </details>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+        {visible.map((k, i) => <Fragment key={k}>{BLOCK[k](i)}</Fragment>)}
       </main>
 
       {/* ---------- আর্টবোর্ড ৩ · ফুটার ---------- */}

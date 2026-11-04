@@ -247,10 +247,20 @@ export type SiteSections = {
   chambers: boolean; booking: boolean; faq: boolean; emergency: boolean;
   /** আজকের লাইভ সিরিয়াল তালিকা আর "আমার সিরিয়াল খুঁজুন" */
   queue: boolean;
+  videos: boolean; blog: boolean;
 };
+/** হেডার/মূল অংশ আর ফুটার বাদে যেসব অংশ উপর-নিচে সাজানো যায় */
+export type SiteBlock = "services" | "about" | "chambers" | "queue" | "booking" | "videos" | "blog" | "faq";
+/** ইউটিউব/ফেসবুক/ভিমিওর লিংক — ভিডিও আমাদের সার্ভারে থাকে না */
+export type SiteVideo = { url: string; title: string; titleEn: string };
+/** ব্লগ / স্বাস্থ্য টিপস — cover = ছবির সংস্করণ (০ = ছবি নেই), ছবি doctor_assets-এ "post-<id>" নামে */
+export type SitePost = { id: string; date: string; title: string; titleEn: string; body: string; bodyEn: string; cover: number };
 export type SiteContent = {
   theme: "navy" | "green" | "plum";
   sections: SiteSections;
+  order: SiteBlock[];
+  videos: SiteVideo[];
+  posts: SitePost[];
   stats: { experience: boolean; patients: boolean; chambers: boolean };
   hotline: string; whatsapp: string; email: string;
   facebook: string; youtube: string; linkedin: string;

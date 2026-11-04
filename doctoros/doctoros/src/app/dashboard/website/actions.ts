@@ -1,5 +1,5 @@
 "use server";
-import { eq } from "drizzle-orm";
+import { and, eq, like, notInArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/db";
 import { requireDoctor } from "@/lib/auth";
@@ -43,8 +43,31 @@ export async function saveSite(_: SiteState, fd: FormData): Promise<SiteState> {
   await db.insert(schema.doctorSites).values({ doctorId: s.doctorId, ...values })
     .onConflictDoUpdate({ target: schema.doctorSites.doctorId, set: values });
 
+  // মুছে ফেলা লেখার কভার ছবিও মুছে দিই — অকারণে জায়গা না নেয়
+  const keep = content.posts.map((p) => `post-${p.id}`);
+  await db.delete(schema.doctorAssets).where(and(eq(schema.doctorAssets.doctorId, s.doctorId), like(schema.doctorAssets.kind, "post-%"), ...(keep.length ? [notInArray(schema.doctorAssets.kind, keep)] : [])));
+
   revalidatePath("/dashboard/website");
   revalidatePath(`/dr/${doctor.slug}`);
   if (fd.get("published") === "1" && !premium) return { error: "লেখা সেভ হয়েছে, কিন্তু প্রকাশ করতে Premium লাগবে", at: Date.now() };
   return { ok: wantPublish ? "সেভ হয়েছে — ওয়েবসাইট প্রকাশিত" : "সেভ হয়েছে (এখনো প্রকাশ হয়নি)", at: Date.now() };
+}
+
+/** ব্লগের কভার ছবি — বেছে নিলেই সেভ হয় (ব্রাউজারে ছোট করা JPEG); ফেরত দেয় সংস্করণ নম্বর */
+export async function savePostCover(postId: string, dataUrl: string | null): Promise<{ v?: number; url?: string; error?: string }> {
+  const s = await requireDoctor();
+  if (!/^[a-z0-9]{6,16}$/.test(postId)) return { error: "ভুল লেখা" };
+  const kind = `post-${postId}`;
+  if (dataUrl === null) {
+    await db.delete(schema.doctorAssets).where(and(eq(schema.doctorAssets.doctorId, s.doctorId), eq(schema.doctorAssets.kind, kind)));
+    return { v: 0 };
+  }
+  if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(dataUrl)) return { error: "ছবিটা পড়া যায়নি — JPG বা PNG দিন" };
+  if (dataUrl.length > 600_000) return { error: "ছবিটা অনেক বড়, ছোট ছবি দিন" };
+  const v = Date.now();
+  const values = { data: dataUrl, width: null, height: null, updatedAt: new Date(v) };
+  await db.insert(schema.doctorAssets).values({ doctorId: s.doctorId, kind, ...values })
+    .onConflictDoUpdate({ target: [schema.doctorAssets.doctorId, schema.doctorAssets.kind], set: values });
+  const [d] = await db.select({ slug: schema.doctors.slug }).from(schema.doctors).where(eq(schema.doctors.id, s.doctorId)).limit(1);
+  return { v, url: `/dr/${d.slug}/asset/${kind}?v=${v}` };
 }

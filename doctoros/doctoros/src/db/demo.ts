@@ -219,13 +219,21 @@ async function main() {
   }
 
   // ---- Premium ওয়েবসাইট (ডেমো) — আগে থেকে থাকলে ডাক্তারের বদলানো লেখা রেখে দেয় ----
-  const sec = { topbar: true, stats: true, services: true, about: true, chambers: true, booking: true, faq: true, emergency: true, queue: true };
+  const sec = { topbar: true, stats: true, services: true, about: true, chambers: true, booking: true, faq: true, emergency: true, queue: true, videos: true, blog: true };
+  const order: s.SiteBlock[] = ["services", "about", "chambers", "queue", "booking", "videos", "blog", "faq"];
   const blank = { designation: "", topNote: "", heroTitle: "", heroText: "", about: "", servicesTitle: "", services: [], faqs: [], emergency: "" };
   const sites: { slug: string; content: s.SiteContent }[] = [
     {
       slug: "demo-tanvir",
       content: {
         theme: "navy", sections: sec, stats: { experience: true, patients: true, chambers: true },
+        order, videos: [],
+        posts: [
+          { id: "demobp01", date: "2026-10-20", title: "উচ্চ রক্তচাপ: ঘরে প্রেসার মাপার সঠিক নিয়ম", titleEn: "", cover: 0,
+            body: "অনেকে ঘরে প্রেসার মাপেন, কিন্তু ভুল নিয়মে মাপলে ভুল সংখ্যা আসে।\nমাপার আগে ৫ মিনিট চুপচাপ বসে থাকুন। চা-কফি বা ধূমপানের পর অন্তত ৩০ মিনিট অপেক্ষা করুন।\nহাত টেবিলে রেখে, হৃদপিণ্ডের সমান উচ্চতায় কাফ বাঁধুন। পরপর দুবার মেপে গড়টা লিখে রাখুন।\nপ্রতিদিন একই সময়ে মাপুন আর পরের ভিজিটে লেখা খাতাটা নিয়ে আসুন। (এটি একটি ডেমো লেখা)", bodyEn: "" },
+          { id: "demobp02", date: "2026-09-02", title: "বুকে ব্যথা হলে কখন দেরি করবেন না", titleEn: "", cover: 0,
+            body: "সব বুকে ব্যথা হার্টের নয়, কিন্তু কিছু লক্ষণে এক মিনিটও দেরি করা ঠিক নয়।\nবুকে চাপ বা ভারী লাগা, ব্যথা বাম হাত বা চোয়ালে ছড়িয়ে পড়া, সাথে ঘাম আর শ্বাসকষ্ট — এমন হলে সাথে সাথে নিকটস্থ হাসপাতালের ইমার্জেন্সিতে যান।\n(এটি একটি ডেমো লেখা)", bodyEn: "" },
+        ],
         hotline: "01700000011", whatsapp: "01700000011", email: "", facebook: "https://facebook.com", youtube: "", linkedin: "",
         bn: {
           designation: "হৃদরোগ ও উচ্চ রক্তচাপ বিশেষজ্ঞ",
@@ -278,6 +286,7 @@ async function main() {
       slug: "demo-nusrat",
       content: {
         theme: "green", sections: { ...sec, about: false }, stats: { experience: true, patients: true, chambers: false },
+        order, videos: [], posts: [],
         hotline: "01700000012", whatsapp: "", email: "", facebook: "", youtube: "", linkedin: "",
         bn: {
           designation: "দন্ত চিকিৎসক ও ওরাল সার্জন",
