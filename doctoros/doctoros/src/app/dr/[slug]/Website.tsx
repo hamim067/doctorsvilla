@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useActionState, useEffect, useState } from "react";
+import { Fragment, useActionState, useEffect, useRef, useState } from "react";
 import { bookOnline } from "@/app/dr/actions";
 import { Icon, type ICON } from "@/components/Icons";
 import { keepValues } from "@/components/keepValues";
@@ -32,7 +32,7 @@ const fmt = (n: number, lang: Lang) => (lang === "bn" ? D(n.toLocaleString("en-I
 
 const UI = {
   bn: {
-    home: "মূল পাতা", about: "পরিচিতি", services: "চিকিৎসা সেবাসমূহ", chambers: "চেম্বার ও সময়সূচি", faq: "জিজ্ঞাসা",
+    home: "মূল পাতা", short: { services: "সেবা", chambers: "চেম্বার", queue: "লাইভ সিরিয়াল", blog: "টিপস" } as Record<string, string>, about: "পরিচিতি", services: "চিকিৎসা সেবাসমূহ", chambers: "চেম্বার ও সময়সূচি", faq: "জিজ্ঞাসা",
     book: "সিরিয়াল নিন", bookNow: "অনলাইনে সিরিয়াল নিন", whatsapp: "WhatsApp-এ যোগাযোগ", call: "কল করুন",
     bmdc: "বিএমডিসি রেজি নং", verified: "BMDC যাচাইকৃত", hotline: "সিরিয়াল হটলাইন",
     open: "আজ চেম্বার খোলা • অনলাইন সিরিয়াল চলছে", full: "আজকের অনলাইন সিরিয়াল শেষ • আগামী দিনের সিরিয়াল নিন", closed: "অনলাইনে আগাম সিরিয়াল নেওয়া যায়",
@@ -46,7 +46,7 @@ const UI = {
     fChambers: "চেম্বারসমূহ", fLinks: "প্রয়োজনীয় লিংক", fContact: "যোগাযোগ ও সিরিয়াল", emergency: "জরুরি সতর্কবার্তা:",
     rights: "সর্বস্বত্ব সংরক্ষিত।", made: "DoctorsVilla দিয়ে তৈরি", menu: "মেনু",
     draft: "প্রিভিউ — ওয়েবসাইট এখনো প্রকাশ হয়নি। শুধু আপনি দেখছেন।",
-    queue: "লাইভ সিরিয়াল", videos: "ভিডিও", blog: "স্বাস্থ্য টিপস", videosEyebrow: "দেখে জানুন", videosTitle: "স্বাস্থ্য বিষয়ক ভিডিও", blogEyebrow: "পড়ে জানুন", blogTitle: "স্বাস্থ্য টিপস ও লেখা", readMore: "পুরোটা পড়ুন", play: "ভিডিও চালান", queueEyebrow: "আজকের সিরিয়াল", queueTitle: "এখন কত নম্বর চলছে, কতজন অপেক্ষায়",
+    queue: "লাইভ সিরিয়াল", videos: "ভিডিও", blog: "স্বাস্থ্য টিপস", videosEyebrow: "দেখে জানুন", videosTitle: "স্বাস্থ্য বিষয়ক ভিডিও", blogEyebrow: "পড়ে জানুন", blogTitle: "স্বাস্থ্য টিপস ও লেখা", readMore: "পুরোটা পড়ুন", play: "ভিডিও চালান", prev: "আগের ভিডিও", next: "পরের ভিডিও", queueEyebrow: "আজকের সিরিয়াল", queueTitle: "এখন কত নম্বর চলছে, কতজন অপেক্ষায়",
     nowServing: "এখন চলছে", qTotal: "আজ মোট", qWaiting: "অপেক্ষায়", qDone: "দেখা হয়েছে", perPt: "মিনিট/রোগী (গড়)",
     notStarted: "এখনো শুরু হয়নি", closedToday: "আজ এই চেম্বার বন্ধ", noSerial: "আজ এখনো কোনো সিরিয়াল নেই",
     lgWait: "অপেক্ষায়", lgNow: "চলছে", lgDone: "দেখা হয়েছে", lgAbsent: "অনুপস্থিত", updated: "আপডেট",
@@ -56,7 +56,7 @@ const UI = {
     close: "বন্ধ", theme: "লাইট/ডার্ক", language: "ভাষা", plan: "প্রিভিউ — Premium চালু না থাকায় রোগীরা সাধারণ প্রোফাইল দেখছেন।",
   },
   en: {
-    home: "Home", about: "About", services: "Services", chambers: "Chambers & Hours", faq: "FAQ",
+    home: "Home", short: { services: "Services", chambers: "Chambers", queue: "Live queue", blog: "Tips" } as Record<string, string>, about: "About", services: "Services", chambers: "Chambers & Hours", faq: "FAQ",
     book: "Book Serial", bookNow: "Book a serial online", whatsapp: "WhatsApp", call: "Call",
     bmdc: "BMDC Reg. No", verified: "BMDC Verified", hotline: "Serial Hotline",
     open: "Chamber open today • Online serials available", full: "Today's online serials are full • Book for another day", closed: "Advance serials available online",
@@ -70,7 +70,7 @@ const UI = {
     fChambers: "Chambers", fLinks: "Quick links", fContact: "Contact & serial", emergency: "Emergency:",
     rights: "All rights reserved.", made: "Made with DoctorsVilla", menu: "Menu",
     draft: "Preview — not published yet. Only you can see this.",
-    queue: "Live queue", videos: "Videos", blog: "Health tips", videosEyebrow: "Watch & learn", videosTitle: "Health videos", blogEyebrow: "Read & learn", blogTitle: "Health tips & articles", readMore: "Read more", play: "Play video", queueEyebrow: "Today's queue", queueTitle: "Which serial is running, how many are waiting",
+    queue: "Live queue", videos: "Videos", blog: "Health tips", videosEyebrow: "Watch & learn", videosTitle: "Health videos", blogEyebrow: "Read & learn", blogTitle: "Health tips & articles", readMore: "Read more", play: "Play video", prev: "Previous video", next: "Next video", queueEyebrow: "Today's queue", queueTitle: "Which serial is running, how many are waiting",
     nowServing: "Now serving", qTotal: "Today total", qWaiting: "Waiting", qDone: "Seen", perPt: "min/patient (avg)",
     notStarted: "Not started yet", closedToday: "Closed today", noSerial: "No serials yet today",
     lgWait: "Waiting", lgNow: "Now", lgDone: "Seen", lgAbsent: "Absent", updated: "Updated",
@@ -89,7 +89,7 @@ function shortDegrees(deg: string) {
 }
 
 /** ভিডিও কার্ড — প্রথমে শুধু ছবি, চাপলে তবেই ভিডিও লোড (সাইট ধীর হয় না) */
-function VideoCard({ url, title, t }: { url: string; title: string; t: typeof UI.bn }) {
+function VideoCard({ url, title, t, onPlay }: { url: string; title: string; t: typeof UI.bn; onPlay?: () => void }) {
   const [on, setOn] = useState(false);
   const [thumbOk, setThumbOk] = useState(false);
   const v = parseVideo(url);
@@ -99,7 +99,7 @@ function VideoCard({ url, title, t }: { url: string; title: string; t: typeof UI
       <div className={`ws-vid-box ${v.kind}`}>
         {on ? <iframe src={v.embed} title={title || v.label} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" />
           : (
-            <button type="button" className="ws-vid-play" onClick={() => setOn(true)} aria-label={`${t.play}: ${title || v.label}`}>
+            <button type="button" className="ws-vid-play" onClick={() => { setOn(true); onPlay?.(); }} aria-label={`${t.play}: ${title || v.label}`}>
               {v.thumb && <img src={v.thumb} alt="" loading="lazy" className={thumbOk ? "ok" : ""} ref={(el) => { if (el?.complete && el.naturalWidth > 0) setThumbOk(true); }} onLoad={() => setThumbOk(true)} />}
               <span className="ws-vid-btn"><svg viewBox="0 0 24 24" width="30" height="30" aria-hidden><path d="M8 5.5v13l11-6.5z" fill="currentColor" /></svg></span>
               <span className="ws-vid-src">{v.label}</span>
@@ -108,6 +108,70 @@ function VideoCard({ url, title, t }: { url: string; title: string; t: typeof UI
       </div>
       {title && <h3>{title}</h3>}
     </article>
+  );
+}
+
+/**
+ * ভিডিও ক্যারোসেল — ডান থেকে বামে নিজে নিজে সরে (মাউস রাখলে/ছুঁলে থামে),
+ * মাঝেরটা একটু বড়, মাউস রাখলে কার্ড একটু উঁচু হয়; আঙুলে সোয়াইপ, পাশে তীর, নিচে ফোঁটা
+ */
+function VideoCarousel({ videos, t }: { videos: { url: string; title: string }[]; t: typeof UI.bn }) {
+  const track = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [canMove, setCanMove] = useState(false);
+  const items = () => [...(track.current?.children ?? [])] as HTMLElement[];
+  const go = (i: number) => {
+    const el = track.current, list = items();
+    if (!el || !list.length) return;
+    const n = (i + list.length) % list.length;
+    const c = list[n].getBoundingClientRect(), tr = el.getBoundingClientRect();
+    // কার্ডের মাঝখান ট্র্যাকের মাঝখানে আনি (স্ক্রিনে আসল অবস্থান দেখে)
+    el.scrollTo({ left: el.scrollLeft + (c.left + c.width / 2) - (tr.left + el.clientWidth / 2), behavior: "smooth" });
+  };
+  // কোনটা মাঝে আছে
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    const upd = () => {
+      const tr = el.getBoundingClientRect(), mid = tr.left + el.clientWidth / 2;
+      let best = 0, bd = Infinity;
+      items().forEach((c, i) => { const r = c.getBoundingClientRect(); const d = Math.abs(r.left + r.width / 2 - mid); if (d < bd) { bd = d; best = i; } });
+      setActive(best);
+      setCanMove(el.scrollWidth > el.clientWidth + 4);
+    };
+    upd();
+    el.addEventListener("scroll", upd, { passive: true });
+    window.addEventListener("resize", upd);
+    const raf = requestAnimationFrame(upd);
+    return () => { cancelAnimationFrame(raf); el.removeEventListener("scroll", upd); window.removeEventListener("resize", upd); };
+  }, [videos.length, canMove]);
+  // নিজে নিজে সরা — পড়ার গতি কমানো সেটিং থাকলে বন্ধ
+  useEffect(() => {
+    if (paused || !canMove || videos.length < 2) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setInterval(() => go(active + 1), 4500);
+    return () => clearInterval(id);
+  }, [paused, canMove, active, videos.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <div className={`ws-vc${canMove ? " moving" : ""}`} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
+      onTouchStart={() => setPaused(true)} onFocusCapture={() => setPaused(true)} onBlurCapture={() => setPaused(false)}>
+      <div className="ws-vc-track" ref={track}>
+        {videos.map((v, j) => (
+          <div key={v.url + j} className={`ws-vc-item${j === active ? " on" : ""}`}><VideoCard url={v.url} title={v.title} t={t} onPlay={() => setPaused(true)} /></div>
+        ))}
+      </div>
+      {canMove && (
+        <>
+          <button type="button" className="ws-vc-arrow prev" onClick={() => go(active - 1)} aria-label={t.prev}><Icon name="chevron" size={22} stroke={2.6} /></button>
+          <button type="button" className="ws-vc-arrow next" onClick={() => go(active + 1)} aria-label={t.next}><Icon name="chevron" size={22} stroke={2.6} /></button>
+          <div className="ws-vc-dots" role="tablist" aria-label={t.videos}>
+            {videos.map((_, j) => <button key={j} type="button" role="tab" aria-selected={j === active} aria-label={`${j + 1}`} className={j === active ? "on" : ""} onClick={() => go(j)} />)}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -222,6 +286,23 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
   const [lang0, setLang] = useState<Lang>("bn");
   const lang: Lang = forceLang ?? lang0;
   const [menu, setMenu] = useState(false);
+  // মেনু আর নাম একসাথে না ধরলে ☰ বোতামে চলে যায় — নাম কখনো কাটা পড়ে না
+  const navRef = useRef<HTMLDivElement>(null);
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const check = () => {
+      const links = el.querySelector<HTMLElement>(".ws-links"), brand = el.querySelector<HTMLElement>(".ws-brand"), right = el.querySelector<HTMLElement>(".ws-nav-r");
+      if (!links || !brand || !right) return;
+      const need = brand.offsetWidth + links.scrollWidth + right.offsetWidth + 64;
+      setCompact(need > el.clientWidth);
+    };
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   // মেনু খোলা থাকলে পেছনের পেজ স্ক্রল হবে না, Esc চাপলে বন্ধ
   useEffect(() => {
     if (!menu) return;
@@ -421,9 +502,7 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
             <span className="ws-eyebrow">{t.videosEyebrow}</span>
             <h2>{t.videosTitle}</h2>
           </div>
-          <div className="ws-vids">
-            {videos.map((v, j) => <VideoCard key={v.url + j} url={v.url} title={v.title} t={t} />)}
-          </div>
+          <VideoCarousel videos={videos} t={t} />
         </div>
       </section>
     ),
@@ -479,16 +558,16 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
         </div>
       )}
       <header className="ws-nav">
-        <div className="ws-wrap ws-nav-in">
+        <div className={`ws-wrap ws-nav-in${compact ? " compact" : ""}`} ref={navRef}>
           <a href="#top" className="ws-brand">
             <span className="ws-logo"><Icon name="heart" size={24} color="#fff" /></span>
             <span className="ws-brand-t">
-              <span className="ws-brand-n">{name}{shortDegrees(degrees) && <em className="ws-chip">{shortDegrees(degrees)}</em>}</span>
+              <span className="ws-brand-n"><span className="ws-brand-nm">{name}</span>{shortDegrees(degrees) && <em className="ws-chip">{shortDegrees(degrees)}</em>}</span>
               <span className="ws-brand-s">{tx("designation")}</span>
             </span>
           </a>
           <nav className={`ws-links${menu ? " open" : ""}`} aria-label={t.menu}>
-            {nav.map((n, i) => <a key={n.id} href={`#${n.id}`} className={i === 0 ? "on" : ""} onClick={() => setMenu(false)}>{n.label}</a>)}
+            {nav.filter((n) => n.id !== "top").map((n) => <a key={n.id} href={`#${n.id}`} onClick={() => setMenu(false)}>{t.short[n.id] ?? n.label}</a>)}
           </nav>
           <div className="ws-nav-r">
             {LangSwitch}
