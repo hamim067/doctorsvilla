@@ -301,6 +301,16 @@ export const vitals = pgTable(
 export type Vital = typeof vitals.$inferSelect;
 
 /** ডাক্তারের লোগো আর নিজের প্যাডের ছবি — data URL হিসেবে (ফাইল রাখার আলাদা জায়গা ছাড়াই) */
+/** ডাক্তারের নিজের প্রেসক্রিপশন টেমপ্লেট — এক চাপে ওষুধ, পরামর্শ, পরীক্ষা বসানো */
+export type RxTemplateData = { complaint: string; diagnosis: string; medicines: Medicine[]; advice: string; investigations: string; followUp: string };
+export const rxTemplates = pgTable("rx_templates", {
+  id: id(),
+  doctorId: text("doctor_id").notNull().references(() => doctors.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  data: jsonb("data").$type<RxTemplateData>().notNull(),
+  createdAt: createdAt(),
+}, (t) => [uniqueIndex("rx_templates_doctor_name").on(t.doctorId, t.name)]);
+
 export const doctorAssets = pgTable(
   "doctor_assets",
   {

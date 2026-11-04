@@ -57,6 +57,13 @@
       "when": 1793768205161,
       "tag": "0007_visiting_card",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793784885337,
+      "tag": "0008_rx_templates",
+      "breakpoints": true
     }
   ]
 }
