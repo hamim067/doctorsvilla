@@ -227,7 +227,7 @@ async function main() {
       slug: "demo-tanvir",
       content: {
         theme: "navy", sections: sec, stats: { experience: true, patients: true, chambers: true },
-        order, videos: [],
+        order, videos: [], logo: { kind: "letters", text: "TA", shape: "rounded" }, font: "anek",
         posts: [
           { id: "demobp01", date: "2026-10-20", title: "উচ্চ রক্তচাপ: ঘরে প্রেসার মাপার সঠিক নিয়ম", titleEn: "", cover: 0,
             body: "অনেকে ঘরে প্রেসার মাপেন, কিন্তু ভুল নিয়মে মাপলে ভুল সংখ্যা আসে।\nমাপার আগে ৫ মিনিট চুপচাপ বসে থাকুন। চা-কফি বা ধূমপানের পর অন্তত ৩০ মিনিট অপেক্ষা করুন।\nহাত টেবিলে রেখে, হৃদপিণ্ডের সমান উচ্চতায় কাফ বাঁধুন। পরপর দুবার মেপে গড়টা লিখে রাখুন।\nপ্রতিদিন একই সময়ে মাপুন আর পরের ভিজিটে লেখা খাতাটা নিয়ে আসুন। (এটি একটি ডেমো লেখা)", bodyEn: "" },
@@ -286,7 +286,7 @@ async function main() {
       slug: "demo-nusrat",
       content: {
         theme: "green", sections: { ...sec, about: false }, stats: { experience: true, patients: true, chambers: false },
-        order, videos: [], posts: [],
+        order, videos: [], posts: [], logo: { kind: "icon", text: "", shape: "circle" }, font: "hind",
         hotline: "01700000012", whatsapp: "", email: "", facebook: "", youtube: "", linkedin: "",
         bn: {
           designation: "দন্ত চিকিৎসক ও ওরাল সার্জন",

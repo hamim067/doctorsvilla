@@ -5,6 +5,7 @@ import { siteOrigin } from "@/lib/qr";
 import { hasPremium, normalize, premiumFreeForAll, premiumOfferUntil } from "@/lib/site";
 import { formatDateBn } from "@/lib/time";
 import { WebsiteEditor } from "./WebsiteEditor";
+import { doctorAssetUrls } from "@/lib/assets";
 import "./website.css";
 
 export const metadata = { title: "আমার ওয়েবসাইট" };
@@ -24,6 +25,7 @@ export default async function WebsitePage() {
 
   return (
     <WebsiteEditor
+      logoUrl={(await doctorAssetUrls(doctor.id, doctor.slug)).logoUrl ?? null}
       initial={normalize(site?.content, doctor)}
       published={site?.published ?? false}
       photo={site?.photo ?? null}

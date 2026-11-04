@@ -3,6 +3,7 @@ import "server-only";
 import type { WsChamber, WsData } from "@/app/dr/[slug]/Website";
 import type { Chamber, Doctor } from "@/db/schema";
 import { upcomingDays } from "@/lib/booking";
+import { doctorAssetUrls } from "@/lib/assets";
 import { hasEnglish, normalize, patientsSeen } from "@/lib/site";
 import type { SiteContent } from "@/db/schema";
 import { addDays, bn, formatDateBn, formatTimeBn, today, WEEKDAYS_BN } from "@/lib/time";
@@ -46,7 +47,7 @@ export async function websiteData(data: SiteBundle, preview: WsData["preview"]):
   const content = normalize(site?.content, doctor);
   const t = today();
   const tomorrow = addDays(t, 1);
-  const [seen, ups] = await Promise.all([patientsSeen(doctor.id), Promise.all(chambers.map((c) => upcomingDays(c)))]);
+  const [seen, ups, assets] = await Promise.all([patientsSeen(doctor.id), Promise.all(chambers.map((c) => upcomingDays(c))), doctorAssetUrls(doctor.id, doctor.slug)]);
   const wsChambers: WsChamber[] = chambers.map((c, i) => {
     const days = ups[i];
     const td = days.find((x) => x.date === t);
@@ -77,7 +78,7 @@ export async function websiteData(data: SiteBundle, preview: WsData["preview"]):
   const photo = site?.hasPhoto ? `/dr/${doctor.slug}/photo?v=${site.updatedAt.getTime()}` : null;
   return {
     slug: doctor.slug, name: doctor.name, degrees: doctor.degrees, bmdcNo: doctor.bmdcNo, verified: doctor.bmdcVerified,
-    photo, content, english: hasEnglish(content),
+    photo, content, english: hasEnglish(content), logoUrl: assets.logoUrl ?? null,
     stats: { experience: doctor.experienceYears, patients: seen, chambers: chambers.length },
     chambers: wsChambers, openToday, preview, year: Number(t.slice(0, 4)),
   };

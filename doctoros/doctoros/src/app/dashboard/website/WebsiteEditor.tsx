@@ -83,9 +83,9 @@ async function shrink(file: File, maxSide = 720): Promise<string> {
   throw new Error("big");
 }
 
-export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium, offer, doctor, chambers, link }: {
+export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium, offer, doctor, chambers, link, logoUrl }: {
   initial: SiteContent; published: boolean; photo: string | null; premium: boolean; offer: string | null;
-  doctor: Doc; chambers: { id: string; name: string; city: string }[]; link: string;
+  doctor: Doc; chambers: { id: string; name: string; city: string }[]; link: string; logoUrl: string | null;
 }) {
   const [c, setC] = useState(initial);
   const [lang, setLang] = useState<Lang>("bn");
@@ -188,6 +188,12 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
   const setT = <K extends keyof SiteText>(k: K, v: SiteText[K]) => up((x) => ({ ...x, [lang]: { ...x[lang], [k]: v } }));
   const setRoot = (k: "hotline" | "whatsapp" | "email" | "facebook" | "youtube" | "linkedin", v: string) => up((x) => ({ ...x, [k]: v }));
   const en = lang === "en";
+  // নামের আদ্যক্ষর — ইংরেজি নাম থাকলে TA, নইলে বাংলার প্রথম অক্ষর
+  const autoLetters = (() => {
+    const enName = (c.en.name ?? "").replace(/^(Dr\.?|Prof\.?)\s*/i, "").trim();
+    if (enName) return enName.split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
+    return doctor.name.replace(/^(অধ্যাপক|সহযোগী অধ্যাপক|ডা\.?|ডাঃ)\s*/, "").trim().slice(0, 1);
+  })();
   /** ইংরেজি মোডে ঘরের নিচে বাংলাটা দেখায়, যেন অনুবাদ সহজ হয় */
   const ref = (v: string) => (en && v ? <span className="we-ref">বাংলায়: {v}</span> : null);
 
@@ -420,6 +426,48 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
         {c.sections.topbar && txt("topNote", "উপরের বারের ছোট লেখা (ঐচ্ছিক)", "যেমন: সিনিয়র কনসালট্যান্ট, রাজশাহী মেডিকেল কলেজ হাসপাতাল", 0, 140)}
         {!en && (
           <div className="field">
+            <span>ওয়েবসাইটের লোগো</span>
+            <div className="we-logos" role="radiogroup" aria-label="লোগো">
+              {([["icon", "আইকন"], ["letters", "অক্ষর"], ["image", "আমার লোগো"]] as const).map(([k, label]) => (
+                <button key={k} type="button" role="radio" aria-checked={c.logo.kind === k} className={`we-logo-opt${c.logo.kind === k ? " on" : ""}`}
+                  onClick={() => up((x) => ({ ...x, logo: { ...x.logo, kind: k, text: k === "letters" && !x.logo.text ? autoLetters : x.logo.text } }))}>
+                  <span className={`we-lg${c.logo.shape === "circle" ? " circle" : ""}${k === "letters" ? " txt" : ""}${k === "image" ? " img" : ""}`}>
+                    {k === "icon" ? <Icon name="heart" size={20} color="#fff" /> : k === "letters" ? (c.logo.text || autoLetters) : logoUrl ? <img src={logoUrl} alt="" /> : <Icon name="camera" size={18} />}
+                  </span>
+                  {label}
+                </button>
+              ))}
+            </div>
+            {c.logo.kind === "letters" && (
+              <div className="we-logo-row">
+                <label className="field">১ বা ২টি অক্ষর
+                  <input className="input we-logo-in" maxLength={2} value={c.logo.text} placeholder={autoLetters} onChange={(e) => { const v = e.target.value.slice(0, 2); up((x) => ({ ...x, logo: { ...x.logo, text: /^[a-z]+$/.test(v) ? v.toUpperCase() : v } })); }} />
+                </label>
+                <span className="we-hint">যেমন: TA, ডা, H — নামের আদ্যক্ষর ভালো দেখায়</span>
+              </div>
+            )}
+            {c.logo.kind === "image" && !logoUrl && <span className="we-err">এখনো লোগো আপলোড করা নেই — <Link href="/dashboard/share?tab=pad">শেয়ার ও QR → প্রেসক্রিপশন প্যাড</Link>-এ লোগো দিন, এখানে নিজে থেকেই বসবে।</span>}
+            {c.logo.kind !== "image" && (
+              <div className="we-seg sm" role="radiogroup" aria-label="লোগোর আকার" style={{ alignSelf: "flex-start" }}>
+                {([["rounded", "গোল কোণ"], ["circle", "পুরো গোল"]] as const).map(([k, l]) => <button key={k} type="button" role="radio" aria-checked={c.logo.shape === k} className={c.logo.shape === k ? "on" : ""} onClick={() => up((x) => ({ ...x, logo: { ...x.logo, shape: k } }))}>{l}</button>)}
+              </div>
+            )}
+          </div>
+        )}
+        {!en && (
+          <div className="field">
+            <span>লেখার ফন্ট</span>
+            <div className="we-fonts" role="radiogroup" aria-label="ফন্ট">
+              {([["anek", "Anek Bangla", "আধুনিক, পরিষ্কার"], ["hind", "Hind Siliguri", "চেনা, সাধারণ"]] as const).map(([k, n, h]) => (
+                <button key={k} type="button" role="radio" aria-checked={c.font === k} className={`we-font${c.font === k ? " on" : ""} f-${k}`} onClick={() => up((x) => ({ ...x, font: k }))}>
+                  <b>{doctor.name}</b><span>{n} · {h}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {!en && (
+          <div className="field">
             <span>ওয়েবসাইটের রং</span>
             <div className="we-themes">
               {THEMES.map((t) => (
@@ -638,8 +686,8 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
       <div className="we-right">
         <div className="we-pv-bar">
           <div className="we-seg sm" role="group" aria-label="প্রিভিউ মাপ">
-            <button type="button" className={device === "desktop" ? "on" : ""} aria-pressed={device === "desktop"} onClick={() => setDevice("desktop")}><Icon name="layout" size={16} />ডেস্কটপ</button>
-            <button type="button" className={device === "mobile" ? "on" : ""} aria-pressed={device === "mobile"} onClick={() => setDevice("mobile")}><Icon name="phone" size={16} />মোবাইল</button>
+            <button type="button" className={device === "desktop" ? "on" : ""} aria-pressed={device === "desktop"} onClick={() => setDevice("desktop")}><Icon name="monitor" size={16} />ডেস্কটপ</button>
+            <button type="button" className={device === "mobile" ? "on" : ""} aria-pressed={device === "mobile"} onClick={() => setDevice("mobile")}><Icon name="smartphone" size={16} />মোবাইল</button>
           </div>
           <span className="we-live"><i />লাইভ প্রিভিউ</span>
           <button type="button" className="we-ib" onClick={() => setPvDark(!pvDark)} aria-label={pvDark ? "লাইট প্রিভিউ" : "ডার্ক প্রিভিউ"} title={pvDark ? "লাইট প্রিভিউ" : "ডার্ক প্রিভিউ"}><Icon name={pvDark ? "sun" : "moon"} size={16} /></button>

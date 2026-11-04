@@ -43,7 +43,7 @@ export function defaultContent(d: { specialty: string; bio: string | null }): Si
   return {
     theme: "navy",
     sections: { topbar: true, stats: true, services: true, about: true, chambers: true, booking: true, faq: true, emergency: true, queue: true, videos: true, blog: true },
-    order: [...BLOCKS], videos: [], posts: [],
+    order: [...BLOCKS], videos: [], posts: [], logo: { kind: "icon", text: "", shape: "rounded" }, font: "anek",
     stats: { experience: true, patients: true, chambers: true },
     hotline: "", whatsapp: "", email: "", facebook: "", youtube: "", linkedin: "",
     bn: {
@@ -69,6 +69,7 @@ export function normalize(c: Partial<SiteContent> | null | undefined, d: { speci
     ...base, ...c,
     sections: { ...base.sections, ...c.sections },
     order: fixOrder(c.order), videos: c.videos ?? [], posts: c.posts ?? [],
+    logo: { ...base.logo, ...(c.logo ?? {}) }, font: c.font === "hind" ? "hind" : "anek",
     stats: { ...base.stats, ...c.stats },
     bn: { ...emptyText(), ...c.bn },
     en: { ...emptyText(), ...c.en },
@@ -93,6 +94,12 @@ export const contentSchema = z.object({
   theme: z.enum(["navy", "green", "plum"]).catch("navy"),
   sections: z.object({ topbar: flag, stats: flag, services: flag, about: flag, chambers: flag, booking: flag, faq: flag, emergency: flag, queue: flag, videos: flag, blog: flag }),
   order: z.array(z.string()).max(20).default([]).transform(fixOrder),
+  logo: z.object({
+    kind: z.enum(["icon", "letters", "image"]).catch("icon"),
+    text: z.string().trim().max(2, "লোগোতে সর্বোচ্চ ২টি অক্ষর").default(""),
+    shape: z.enum(["rounded", "circle"]).catch("rounded"),
+  }).default({ kind: "icon", text: "", shape: "rounded" }),
+  font: z.enum(["anek", "hind"]).catch("anek"),
   videos: z.array(z.object({
     url: z.string().trim().max(400).refine((v) => !v || parseVideo(v), "ভিডিওর লিংক চেনা যায়নি — YouTube, Facebook বা Vimeo-র লিংক দিন"),
     title: s(120), titleEn: s(120),

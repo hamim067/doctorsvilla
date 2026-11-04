@@ -20,6 +20,8 @@ export type WsChamber = {
 export type WsData = {
   slug: string; name: string; degrees: string; bmdcNo: string; verified: boolean;
   photo: string | null; content: SiteContent; english: boolean;
+  /** শেয়ার ও QR পেজে আপলোড করা লোগো (থাকলে) */
+  logoUrl: string | null;
   stats: { experience: number | null; patients: number; chambers: number };
   chambers: WsChamber[];
   openToday: "open" | "full" | "closed";
@@ -86,6 +88,18 @@ function shortDegrees(deg: string) {
   const parts = deg.split(/[,،;]/).map((p) => p.replace(/\(.*?\)/g, "").trim()).filter(Boolean);
   const top = parts.filter((p) => !/^(MBBS|এমবিবিএস|BDS|বিডিএস)$/i.test(p));
   return (top.length ? top : parts).slice(-2).join(" • ");
+}
+
+/** ওয়েবসাইটের লোগো — আইকন, ১-২ অক্ষর, বা আপলোড করা লোগো */
+export function SiteLogo({ logo, logoUrl, size = "lg", initials }: { logo: SiteContent["logo"] | undefined; logoUrl: string | null; size?: "lg" | "sm" | "sm2"; initials: string }) {
+  const l = logo ?? { kind: "icon", text: "", shape: "rounded" };
+  const cls = `ws-logo${size === "lg" ? "" : ` ${size}`}${l.shape === "circle" ? " circle" : ""}`;
+  if (l.kind === "image" && logoUrl) return <span className={`${cls} img`}><img src={logoUrl} alt="" /></span>;
+  if (l.kind === "letters") {
+    const txt = (l.text || initials).slice(0, 2);
+    return <span className={`${cls} txt${txt.length > 1 ? " two" : ""}`} aria-hidden>{txt}</span>;
+  }
+  return <span className={cls}><Icon name="heart" size={size === "lg" ? 24 : 20} color="#fff" /></span>;
 }
 
 /** ভিডিও কার্ড — প্রথমে শুধু ছবি, চাপলে তবেই ভিডিও লোড (সাইট ধীর হয় না) */
@@ -301,8 +315,11 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
     check();
     const ro = new ResizeObserver(check);
     ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+    // ফন্ট লোড হলে লেখার চওড়া বদলায় — তখন আবার মাপি
+    document.fonts?.ready.then(check).catch(() => {});
+    const t = setTimeout(check, 400);
+    return () => { ro.disconnect(); clearTimeout(t); };
+  }, [lang0, forceLang, d.content.order]);
   // মেনু খোলা থাকলে পেছনের পেজ স্ক্রল হবে না, Esc চাপলে বন্ধ
   useEffect(() => {
     if (!menu) return;
@@ -541,7 +558,7 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
   ) : null;
 
   return (
-    <div className={`ws th-${c.theme}${lang === "en" ? " is-en" : ""}`} id="top"
+    <div className={`ws th-${c.theme} f-${c.font ?? "anek"}${lang === "en" ? " is-en" : ""}`} id="top"
       onClickCapture={live ? (e) => {
         const a = (e.target as HTMLElement).closest("a");
         if (a && !a.getAttribute("href")?.startsWith("#")) e.preventDefault();
@@ -561,7 +578,7 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
       <header className="ws-nav">
         <div className={`ws-wrap ws-nav-in${compact ? " compact" : ""}`} ref={navRef}>
           <a href="#top" className="ws-brand">
-            <span className="ws-logo"><Icon name="heart" size={24} color="#fff" /></span>
+            <SiteLogo logo={c.logo} logoUrl={d.logoUrl} initials={initials} />
             <span className="ws-brand-t">
               <span className="ws-brand-n"><span className="ws-brand-nm">{name}</span>{shortDegrees(degrees) && <em className="ws-chip">{shortDegrees(degrees)}</em>}</span>
               <span className="ws-brand-s">{tx("designation")}</span>
@@ -585,7 +602,7 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
       <div className={`ws-drawer-bg${menu ? " open" : ""}`} onClick={() => setMenu(false)} aria-hidden="true" />
       <aside id="ws-drawer" className={`ws-drawer${menu ? " open" : ""}`} aria-label={t.menu} aria-hidden={!menu} inert={!menu}>
         <div className="ws-drawer-h">
-          <span className="ws-logo sm2"><Icon name="heart" size={20} color="#fff" /></span>
+          <SiteLogo logo={c.logo} logoUrl={d.logoUrl} initials={initials} size="sm2" />
           <span className="col grow"><b>{name}</b><span className="ws-mut">{tx("designation")}</span></span>
           <button type="button" className="ws-burger show" onClick={() => setMenu(false)} aria-label={t.close}><Icon name="x" size={22} /></button>
         </div>
@@ -631,6 +648,7 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
             <div className="ws-hero-pic">
               <div className="ws-pframe">
                 <span className="ws-pframe-bg" aria-hidden />
+                <span className="ws-pframe-ring" aria-hidden />
                 <span className="ws-pframe-dots" aria-hidden />
                 <div className="ws-photo">
                   {d.photo ? <img src={d.photo} alt={name} /> : <span className="ws-photo-ph">{initials}</span>}
@@ -659,7 +677,7 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
         <div className="ws-wrap">
           <div className="ws-foot-grid">
             <div className="ws-foot-col">
-              <div className="ws-foot-brand"><span className="ws-logo sm"><Icon name="heart" size={20} color="#fff" /></span><b>{name}</b></div>
+              <div className="ws-foot-brand"><SiteLogo logo={c.logo} logoUrl={d.logoUrl} initials={initials} size="sm" /><b>{name}</b></div>
               <p>{tx("designation")}</p>
               <p className="ws-foot-a">BMDC Reg. No: {d.bmdcNo}</p>
               {(c.facebook || c.youtube || c.linkedin) && (

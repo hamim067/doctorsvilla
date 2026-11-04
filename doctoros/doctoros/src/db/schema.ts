@@ -251,6 +251,7 @@ export type SiteSections = {
 };
 /** হেডার/মূল অংশ আর ফুটার বাদে যেসব অংশ উপর-নিচে সাজানো যায় */
 export type SiteBlock = "services" | "about" | "chambers" | "queue" | "booking" | "videos" | "blog" | "faq";
+export type SiteLogo = { kind: "icon" | "letters" | "image"; text: string; shape: "rounded" | "circle" };
 /** ইউটিউব/ফেসবুক/ভিমিওর লিংক — ভিডিও আমাদের সার্ভারে থাকে না */
 export type SiteVideo = { url: string; title: string; titleEn: string };
 /** ব্লগ / স্বাস্থ্য টিপস — cover = ছবির সংস্করণ (০ = ছবি নেই), ছবি doctor_assets-এ "post-<id>" নামে */
@@ -259,6 +260,10 @@ export type SiteContent = {
   theme: "navy" | "green" | "plum";
   sections: SiteSections;
   order: SiteBlock[];
+  /** ওয়েবসাইটের লোগো: আইকন, ১-২ অক্ষর, বা আপলোড করা লোগো */
+  logo: SiteLogo;
+  /** বাংলা ফন্ট */
+  font: "anek" | "hind";
   videos: SiteVideo[];
   posts: SitePost[];
   stats: { experience: boolean; patients: boolean; chambers: boolean };

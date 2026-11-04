@@ -9,7 +9,12 @@ import { getSession } from "@/lib/auth";
 import { siteOrigin } from "@/lib/qr";
 import { hasPremium, loadSite, normalize } from "@/lib/site";
 import { postDate } from "@/lib/post-date";
+import { doctorAssetUrls } from "@/lib/assets";
+import { SiteLogo } from "../../Website";
 import "../../../site.css";
+import "@fontsource/anek-bangla/400.css";
+import "@fontsource/anek-bangla/600.css";
+import "@fontsource/anek-bangla/700.css";
 import "@fontsource/plus-jakarta-sans/500.css";
 import "@fontsource/plus-jakarta-sans/700.css";
 
@@ -49,13 +54,15 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   const d = await load(slug, id);
   if (!d) notFound();
   const { doctor, c, post } = d;
+  const { logoUrl } = await doctorAssetUrls(doctor.id, slug);
+  const initials = doctor.name.replace(/^(অধ্যাপক|সহযোগী অধ্যাপক|ডা\.?|ডাঃ|Dr\.?|Prof\.?)\s*/g, "").trim().slice(0, 2);
   const others = c.posts.filter((p) => p.id !== id && p.title.trim()).slice(0, 3);
   return (
-    <div className={`ws ws-art-page th-${c.theme}`}>
+    <div className={`ws ws-art-page th-${c.theme} f-${c.font}`}>
       <header className="ws-nav">
         <div className="ws-wrap ws-nav-in">
           <Link href={`/dr/${slug}`} className="ws-brand">
-            <span className="ws-logo"><Icon name="heart" size={24} color="#fff" /></span>
+            <SiteLogo logo={c.logo} logoUrl={logoUrl ?? null} initials={initials} />
             <span className="ws-brand-t"><span className="ws-brand-n">{doctor.name}</span><span className="ws-brand-s">{c.bn.designation}</span></span>
           </Link>
           <div className="ws-nav-r"><ThemeToggle className="ws-mode" label={false} /><Link href={`/dr/${slug}#booking`} className="ws-btn ws-btn-p ws-nav-cta"><Icon name="calendar" size={18} />সিরিয়াল নিন</Link></div>
