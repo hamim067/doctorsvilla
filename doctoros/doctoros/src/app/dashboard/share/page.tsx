@@ -4,6 +4,10 @@ import { CopyButton } from "@/components/CopyButton";
 import { requireDoctor } from "@/lib/auth";
 import { doctorChambers } from "@/lib/chambers";
 import { qrPng, qrSvg, siteOrigin } from "@/lib/qr";
+import { normalizePad, sampleData } from "@/lib/rxpad";
+import { PadDesigner } from "./PadDesigner";
+import "../../print/rxpad.css";
+import "./share.css";
 
 export const metadata = { title: "শেয়ার ও QR কোড" };
 
@@ -16,6 +20,7 @@ export default async function SharePage() {
   const wa = `https://wa.me/?text=${encodeURIComponent(`${d.name}-এর কাছে অনলাইনে সিরিয়াল নিন: ${url}`)}`;
   const fb = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
 
+  const sample = { ...sampleData({ name: d.name, degrees: d.degrees, specialty: d.specialty, bmdcNo: d.bmdcNo }, chambers[0] ? { name: chambers[0].name, address: chambers[0].address, city: chambers[0].city } : null), qrSvg: svg, url };
   return (
     <>
       <div className="stack-sm" style={{ gap: 2 }}>
@@ -42,6 +47,14 @@ export default async function SharePage() {
         </div>
       </div>
 
+      <section className="stack" id="pad">
+        <div className="stack-sm" style={{ gap: 2 }}>
+          <h2>প্রেসক্রিপশন প্যাডের ডিজাইন</h2>
+          <span className="muted small">ফরম্যাট বাছুন, রং আর কোন অংশ থাকবে ঠিক করুন — প্রেসক্রিপশন প্রিন্ট আর রোগীর PDF দুটোই এই ডিজাইনে হবে।</span>
+        </div>
+        <PadDesigner initial={normalizePad(d.rxPad)} sample={sample} />
+      </section>
+
       <div className="card stack">
         <h2>প্রিন্ট করার জিনিস</h2>
         <p className="muted small">প্রিন্ট পেজ খুলে ব্রাউজারের Print (Ctrl + P) চাপুন, অথবা PDF হিসেবে সেভ করে প্রেসে দিন।</p>
@@ -52,6 +65,10 @@ export default async function SharePage() {
               <span className="muted small">{c.name} — দেয়ালে লাগানোর জন্য, বড় QR সহ</span>
             </a>
           ))}
+          <a className="card stack-sm" href="/print/rx-sample?blank=1" target="_blank" rel="noreferrer" style={{ color: "inherit", background: "var(--ground)" }}>
+            <strong>খালি প্রেসক্রিপশন প্যাড</strong>
+            <span className="muted small">আপনার বাছা ডিজাইনে — ছাপিয়ে হাতে লেখার জন্য</span>
+          </a>
           <a className="card stack-sm" href="/print/poster?card=1" target="_blank" rel="noreferrer" style={{ color: "inherit", background: "var(--ground)" }}>
             <strong>ভিজিটিং কার্ড</strong>
             <span className="muted small">এক পাতায় ১০টি কার্ড, QR সহ</span>

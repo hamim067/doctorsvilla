@@ -10,7 +10,7 @@ const blank: Medicine = { name: "", dose: "", when: "", days: "" };
 
 type Props = {
   bookingId: string;
-  initial: { complaint: string; diagnosis: string; advice: string; medicines: Medicine[]; followUpDate: string | null };
+  initial: { complaint: string; diagnosis: string; advice: string; investigations: string; medicines: Medicine[]; followUpDate: string | null };
   suggestions: string[];
   minDate: string;
   previous?: { medicines: Medicine[]; label: string } | null;
@@ -81,7 +81,8 @@ export function PrescriptionForm({ bookingId, initial, suggestions, minDate, pre
           ))}
           <div><button type="button" className="btn" onClick={() => setMeds((x) => [...x, blank])}>+ আরেকটি ওষুধ</button></div>
         </fieldset>
-        <label className="card field">পরীক্ষা ও পরামর্শ<textarea className="input" name="advice" defaultValue={initial.advice} rows={3} /></label>
+        <label className="card field">পরীক্ষা (টেস্ট)<textarea className="input" name="investigations" defaultValue={initial.investigations} rows={2} placeholder="যেমন: CBC, ECG, Lipid profile" /></label>
+        <label className="card field">পরামর্শ<textarea className="input" name="advice" defaultValue={initial.advice} rows={3} placeholder="যেমন: লবণ কম খাবেন, প্রতিদিন ৩০ মিনিট হাঁটবেন" /></label>
       </div>
 
       <div className="stack" style={{ flex: "2 1 300px", minWidth: 0 }}>

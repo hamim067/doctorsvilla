@@ -1,0 +1,104 @@
+/* প্রেসক্রিপশন প্যাড — চারটা ফরম্যাট; A4 আর A5 দুই মাপ (--u = ১ মিমি-র অনুপাত) */
+.rp { --u: 1mm; position: relative; box-sizing: border-box; width: 210mm; min-height: 297mm; background: #fff; color: #17232B; font-family: "Hind Siliguri", system-ui, sans-serif; font-size: 10.5pt; line-height: 1.45; display: flex; flex-direction: column; overflow: hidden; }
+.rp.p-A5 { --u: 0.705mm; width: 148mm; min-height: 210mm; font-size: 8.4pt; }
+.rp * { box-sizing: border-box; }
+.rp h1, .rp h2, .rp h4, .rp p { margin: 0; }
+.rp .pre { white-space: pre-line; }
+.rp-rx { font-family: Georgia, "Times New Roman", serif; font-size: 2.6em; font-weight: 700; line-height: 1; display: inline-block; }
+.rp-rx sub { font-size: 0.6em; vertical-align: -0.25em; margin-left: -0.12em; }
+.rp-meds { display: flex; flex-direction: column; margin-top: calc(var(--u) * 3); }
+.rp-med { display: flex; flex-direction: column; gap: calc(var(--u) * 0.6); padding: calc(var(--u) * 2.4) 0; border-bottom: 0.2mm dashed #D6DDE3; }
+.rp-med b { font-size: 1.12em; }
+.rp-med span { color: #44525C; }
+.rp-block h4 { font-size: 0.9em; font-weight: 700; color: var(--rp-a); margin-bottom: calc(var(--u) * 1.2); letter-spacing: 0.2px; }
+.rp-block p { min-height: 1.4em; }
+.rp-kv { display: flex; justify-content: space-between; gap: calc(var(--u) * 2); font-size: 0.95em; padding: calc(var(--u) * 0.6) 0; border-bottom: 0.15mm dotted #D6DDE3; }
+.rp-kv span { color: #5B6870; }
+.rp-adv { margin-top: calc(var(--u) * 5); }
+.rp-fu { margin-top: calc(var(--u) * 4); padding: calc(var(--u) * 2.5) calc(var(--u) * 4); border-radius: calc(var(--u) * 2.5); background: var(--rp-soft); color: var(--rp-b); }
+.rp-end { margin-top: auto; padding-top: calc(var(--u) * 8); display: flex; justify-content: space-between; align-items: flex-end; gap: calc(var(--u) * 6); }
+.rp-sign { margin-left: auto; width: calc(var(--u) * 55); text-align: center; font-size: 0.9em; color: #44525C; display: flex; flex-direction: column; gap: calc(var(--u) * 1.5); }
+.rp-sign span { display: block; border-top: 0.3mm solid #17232B; }
+.rp-qr { display: flex; align-items: center; gap: calc(var(--u) * 2.5); font-size: 0.8em; color: #5B6870; max-width: calc(var(--u) * 60); }
+.rp-qr > div { width: calc(var(--u) * 20); height: calc(var(--u) * 20); flex: 0 0 auto; }
+.rp-qr svg { width: 100%; height: 100%; display: block; }
+.rp-water { position: absolute; left: 50%; top: 52%; transform: translate(-30%, -50%); color: var(--rp-a); opacity: 0.07; pointer-events: none; }
+.rp-water svg { width: calc(var(--u) * 95); height: calc(var(--u) * 95); }
+.rp-pt { display: flex; flex-wrap: wrap; gap: calc(var(--u) * 1.5) calc(var(--u) * 7); font-size: 0.97em; }
+.rp-pt i { font-style: normal; color: #5B6870; }
+
+/* ===== ১. আধুনিক কোণ ===== */
+.t-teal .rp-h { position: relative; display: flex; justify-content: space-between; gap: calc(var(--u) * 10); padding: calc(var(--u) * 12) calc(var(--u) * 14) calc(var(--u) * 6); }
+.t-teal .rp-doc h1 { font-size: 2em; color: var(--rp-a); font-weight: 700; line-height: 1.15; }
+.t-teal .rp-qual { font-size: 1em; letter-spacing: 0.18em; text-transform: uppercase; color: #2A3640; margin: calc(var(--u) * 1) 0 calc(var(--u) * 1.5); }
+.t-teal .rp-doc p, .t-teal .rp-hosp p { font-size: 0.85em; color: #6B7780; }
+.t-teal .rp-hosp { text-align: right; max-width: 45%; }
+.t-teal .rp-hosp h2 { font-size: 1.45em; color: var(--rp-b); text-transform: uppercase; letter-spacing: 0.04em; }
+.t-teal .rp-slogan { font-size: 0.92em; color: var(--rp-b); text-transform: uppercase; margin-bottom: calc(var(--u) * 1); }
+.t-teal .rp-diag { position: absolute; top: 0; bottom: calc(var(--u) * -2); left: 50%; width: calc(var(--u) * 6); background: var(--rp-b); transform: skewX(-28deg); }
+.t-teal .rp-bars { display: flex; flex-direction: column; gap: calc(var(--u) * 0.6); }
+.t-teal .rp-bars span:first-child { height: calc(var(--u) * 4.5); background: var(--rp-a); }
+.t-teal .rp-bars span:last-child { height: calc(var(--u) * 1.2); background: linear-gradient(90deg, var(--rp-a), var(--rp-b)); margin-left: 22%; }
+.t-teal .rp-main { flex: 1; display: grid; grid-template-columns: calc(var(--u) * 54) 1fr; }
+.t-teal .rp-side { border-right: 0.5mm solid var(--rp-b); padding: calc(var(--u) * 12) calc(var(--u) * 5) calc(var(--u) * 6) calc(var(--u) * 14); display: flex; flex-direction: column; gap: calc(var(--u) * 9); }
+.t-teal .rp-body { position: relative; padding: 0 calc(var(--u) * 14) calc(var(--u) * 6) calc(var(--u) * 7); display: flex; flex-direction: column; }
+.t-teal .rp-pt { border: 0.3mm solid var(--rp-b); border-top: 0; padding: calc(var(--u) * 1.8) calc(var(--u) * 3); margin: 0 0 calc(var(--u) * 8) calc(var(--u) * -7); font-size: 0.9em; }
+.t-teal .rp-f { display: flex; align-items: stretch; background: linear-gradient(90deg, transparent 0, transparent 44%, var(--rp-soft) 44%); min-height: calc(var(--u) * 18); }
+.t-teal .rp-call { background: var(--rp-b); color: #fff; padding: calc(var(--u) * 3.5) calc(var(--u) * 16) calc(var(--u) * 3.5) calc(var(--u) * 14); display: flex; flex-direction: column; justify-content: center; clip-path: polygon(0 0, 82% 0, 100% 100%, 0 100%); min-width: 38%; }
+.t-teal .rp-call small { font-size: 0.8em; opacity: 0.85; }
+.t-teal .rp-call b { font-size: 1.15em; letter-spacing: 0.04em; }
+.t-teal .rp-contact { flex: 1; display: flex; align-items: center; gap: calc(var(--u) * 6); padding: 0 calc(var(--u) * 8); font-size: 0.85em; flex-wrap: wrap; }
+.t-teal .rp-contact span { display: inline-flex; align-items: center; gap: calc(var(--u) * 2); }
+.t-teal .rp-contact i { width: calc(var(--u) * 3.5); height: calc(var(--u) * 3.5); border-radius: 50%; background: var(--rp-a); display: inline-block; }
+
+/* ===== ২. নীল মিনিমাল ===== */
+.t-blue .rp-h { display: flex; gap: calc(var(--u) * 8); align-items: flex-start; padding: calc(var(--u) * 14) calc(var(--u) * 16) calc(var(--u) * 7); }
+.t-blue .rp-logo { flex: 0 0 auto; }
+.t-blue .rp-logo svg { width: calc(var(--u) * 30); height: calc(var(--u) * 30); }
+.t-blue .rp-doc { flex: 1; min-width: 0; }
+.t-blue .rp-doc h1 { font-size: 2.15em; color: var(--rp-a); font-weight: 700; line-height: 1.15; }
+.t-blue .rp-qual { letter-spacing: 0.2em; text-transform: uppercase; color: #2A3640; margin-top: calc(var(--u) * 1); }
+.t-blue .rp-line { display: block; height: calc(var(--u) * 1); margin: calc(var(--u) * 3) 0; background: linear-gradient(90deg, var(--rp-a), color-mix(in srgb, var(--rp-a) 15%, #fff)); border-radius: 2mm; }
+.t-blue .rp-hrow { display: flex; justify-content: space-between; align-items: flex-end; gap: calc(var(--u) * 5); }
+.t-blue .rp-hrow p { font-size: 0.85em; color: #6B7780; }
+.t-blue .rp-hosp { text-align: right; }
+.t-blue .rp-hosp h2 { font-size: 1.3em; color: var(--rp-a); text-transform: uppercase; }
+.t-blue .rp-hosp small { font-size: 0.75em; text-transform: uppercase; color: #2A3640; }
+.t-blue .rp-band { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 2.5) calc(var(--u) * 10); padding: calc(var(--u) * 6) calc(var(--u) * 16); background: linear-gradient(180deg, var(--rp-soft), #fff); }
+.t-blue .rp-ln { display: flex; gap: calc(var(--u) * 2); align-items: baseline; border-bottom: 0.25mm solid color-mix(in srgb, var(--rp-a) 40%, #fff); padding-bottom: calc(var(--u) * 0.8); }
+.t-blue .rp-ln.w2 { grid-column: 1 / -1; }
+.t-blue .rp-ln i { font-style: normal; color: #2A3640; white-space: nowrap; }
+.t-blue .rp-body { flex: 1; padding: calc(var(--u) * 6) calc(var(--u) * 16) calc(var(--u) * 4); display: flex; flex-direction: column; }
+.t-blue .rp-two { display: grid; grid-template-columns: 1fr calc(var(--u) * 52); gap: calc(var(--u) * 10); }
+.t-blue .rp-side { display: flex; flex-direction: column; gap: calc(var(--u) * 6); padding-left: calc(var(--u) * 6); border-left: 0.25mm solid color-mix(in srgb, var(--rp-a) 25%, #fff); }
+.t-blue .rp-f { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 2.5) calc(var(--u) * 8); padding: calc(var(--u) * 6) calc(var(--u) * 16) calc(var(--u) * 12); font-size: 0.88em; color: #44525C; position: relative; z-index: 1; max-width: 78%; }
+.t-blue .rp-f span { display: inline-flex; align-items: center; gap: calc(var(--u) * 2); }
+.t-blue .rp-f svg { color: var(--rp-a); flex: 0 0 auto; }
+.t-blue .rp-curl { position: absolute; right: 0; bottom: 0; width: calc(var(--u) * 50); height: calc(var(--u) * 50); }
+
+/* ===== ৩. ক্লাসিক ===== */
+.t-classic .rp-h { display: flex; justify-content: space-between; gap: calc(var(--u) * 8); padding: calc(var(--u) * 12) calc(var(--u) * 14) calc(var(--u) * 5); border-bottom: calc(var(--u) * 1.2) solid var(--rp-a); }
+.t-classic .rp-doc h1 { font-size: 1.85em; color: var(--rp-b); }
+.t-classic .rp-qual { color: #2A3640; font-weight: 600; }
+.t-classic .rp-doc p, .t-classic .rp-hosp p { font-size: 0.88em; color: #5B6870; }
+.t-classic .rp-hosp { text-align: right; }
+.t-classic .rp-hosp h2 { font-size: 1.15em; color: var(--rp-b); }
+.t-classic > .rp-pt { padding: calc(var(--u) * 4) calc(var(--u) * 14); border-bottom: 0.3mm solid #DCE3E0; }
+.t-classic .rp-main { flex: 1; display: grid; grid-template-columns: calc(var(--u) * 55) 1fr; }
+.t-classic .rp-side { border-right: 0.3mm solid #DCE3E0; padding: calc(var(--u) * 7) calc(var(--u) * 5) calc(var(--u) * 6) calc(var(--u) * 14); display: flex; flex-direction: column; gap: calc(var(--u) * 7); }
+.t-classic .rp-body { position: relative; padding: calc(var(--u) * 7) calc(var(--u) * 14) calc(var(--u) * 12) calc(var(--u) * 8); display: flex; flex-direction: column; }
+
+/* ===== ৪. ছাপানো প্যাড ===== */
+.t-pre { padding: var(--rp-top) calc(var(--u) * 14) var(--rp-bottom); }
+.t-pre .rp-block h4 { color: #333; }
+.t-pre > .rp-pt { padding-bottom: calc(var(--u) * 4); border-bottom: 0.2mm solid #BBB; }
+.t-pre .rp-main { flex: 1; display: grid; grid-template-columns: calc(var(--u) * 48) 1fr; }
+.t-pre .rp-side { padding: calc(var(--u) * 6) calc(var(--u) * 5) 0 0; display: flex; flex-direction: column; gap: calc(var(--u) * 7); }
+.t-pre .rp-body { padding: calc(var(--u) * 6) 0 0 calc(var(--u) * 7); }
+.t-pre .rp-fu { background: none; border: 0.2mm solid #999; color: #222; }
+
+/* প্রিন্ট: পাতার মাপ ঠিক রাখা */
+@media print {
+  .rp { box-shadow: none !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

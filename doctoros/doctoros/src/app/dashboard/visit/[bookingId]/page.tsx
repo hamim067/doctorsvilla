@@ -59,6 +59,7 @@ export default async function VisitPage({ params }: { params: Promise<{ bookingI
           complaint: visit?.complaint ?? "",
           diagnosis: visit?.diagnosis ?? "",
           advice: visit?.advice ?? "",
+          investigations: visit?.investigations ?? "",
           medicines: visit?.medicines ?? [],
           followUpDate: visit?.followUpDate ?? null,
         }}

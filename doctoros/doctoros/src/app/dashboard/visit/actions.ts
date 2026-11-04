@@ -38,6 +38,7 @@ async function persist(doctorId: string, fd: FormData, auto: boolean) {
     complaint: str(fd, "complaint") || null,
     diagnosis: str(fd, "diagnosis") || null,
     advice: str(fd, "advice") || null,
+    investigations: str(fd, "investigations") || null,
     medicines,
     followUpDate,
   };
@@ -85,7 +86,7 @@ export async function savePrescription(_: FormState, fd: FormData): Promise<Form
 export async function autosavePrescription(fd: FormData): Promise<{ ok: boolean; at?: string; error?: string }> {
   const s = await requireStaff();
   if (!(await canSeeRx(s))) return { ok: false, error: "অনুমতি নেই" };
-  const filled = ["complaint", "diagnosis", "advice"].some((k) => str(fd, k)) || fd.getAll("med-name").some((v) => String(v).trim());
+  const filled = ["complaint", "diagnosis", "advice", "investigations"].some((k) => str(fd, k)) || fd.getAll("med-name").some((v) => String(v).trim());
   if (!filled) return { ok: true };
   let r;
   try { r = await persist(s.doctorId, fd, true); } catch { return { ok: false, error: "সেভ করা যায়নি" }; }

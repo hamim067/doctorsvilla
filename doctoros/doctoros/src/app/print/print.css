@@ -62,3 +62,6 @@
 .rx-qr { display: flex; gap: 3mm; align-items: center; }
 .rx-qr svg { width: 22mm; height: 22mm; display: block; }
 .rx-sign { text-align: center; border-top: 0.3mm solid #10231F; padding-top: 1.5mm; width: 55mm; color: #10231F; }
+.pr-paper { width: fit-content; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,.12); }
+@media (max-width: 860px) { .pr-paper { zoom: 0.5; } }
+@media print { .pr-paper { box-shadow: none; zoom: 1 !important; } }

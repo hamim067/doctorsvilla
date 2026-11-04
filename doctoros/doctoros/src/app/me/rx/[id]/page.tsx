@@ -6,6 +6,10 @@ import { patientCode } from "@/lib/booking";
 import { familyOf, requirePatient } from "@/lib/patient-auth";
 import { bn, dateDhaka, formatDateBn, thisYear } from "@/lib/time";
 import "../../../print/print.css";
+import "../../../print/rxpad.css";
+import { RxPad } from "@/components/RxPad";
+import { normalizePad } from "@/lib/rxpad";
+import { buildPadData } from "@/lib/rxpad-data";
 
 export const metadata = { title: "প্রেসক্রিপশন", robots: { index: false } };
 
@@ -24,44 +28,17 @@ export default async function PatientRxPrint({ params }: { params: Promise<{ id:
   const { v, d, chamber } = row;
   const date = row.date ?? dateDhaka(v.createdAt);
   const age = p.birthYear ? thisYear() - p.birthYear : null;
+  const pad = normalizePad(d.rxPad);
+  const data = await buildPadData({ doctor: d, patient: p, chamber: chamber ?? null, visit: v, date, forPatient: true });
   return (
     <>
+      <style>{`@page { size: ${pad.paper}; margin: 0; }`}</style>
       <div className="pr-bar">
         <a href="/me/files">← প্রেসক্রিপশনে ফিরুন</a>
         <span className="small muted">রোগীর কপি · প্রিন্ট বা PDF হিসেবে সেভ করুন</span>
         <PrintButton label="প্রিন্ট / PDF" />
       </div>
-      <div className="pr-desk"><div className="pr-a4 rx">
-        <header className="rx-head">
-          <div>
-            <h1>{d.name}</h1>
-            <div className="deg">{d.degrees}</div>
-            <div className="deg">{d.specialty}</div>
-            <div className="deg">BMDC রেজি: {d.bmdcNo}</div>
-          </div>
-          {chamber && <div className="right"><b style={{ color: "#10231F", fontSize: "11pt" }}>{chamber.name}</b><span>{chamber.address}, {chamber.city}</span></div>}
-        </header>
-        <div className="rx-pt">
-          <span><b>নাম:</b> {p.name}</span>
-          {age !== null && <span><b>বয়স:</b> {bn(age)} বছর</span>}
-          {p.gender && <span><b>লিঙ্গ:</b> {p.gender}</span>}
-          <span><b>আইডি:</b> {patientCode(p.number)}</span>
-          <span><b>তারিখ:</b> {formatDateBn(date, false)} {bn(date.slice(0, 4))}</span>
-        </div>
-        <div className="rx-body">
-          <aside className="rx-left">
-            <div><h3>অভিযোগ</h3><div>{v.complaint || "—"}</div></div>
-            <div><h3>রোগ নির্ণয়</h3><div>{v.diagnosis || "—"}</div></div>
-          </aside>
-          <section className="rx-right">
-            <span className="rx-sym" aria-label="ওষুধ">Rx</span>
-            <div>{v.medicines.map((m, i) => <div key={i} className="rx-med"><b>{bn(i + 1)}. {m.name}</b><span>{[m.dose, m.when, m.days].filter(Boolean).join(" — ")}</span></div>)}</div>
-            {v.advice && <div><h3>পরীক্ষা ও পরামর্শ</h3><div style={{ whiteSpace: "pre-line" }}>{v.advice}</div></div>}
-            {v.followUpDate && <div className="rx-fu">আবার দেখানোর দিন: {formatDateBn(v.followUpDate)}</div>}
-          </section>
-        </div>
-        <footer className="rx-foot"><span>DoctorOS থেকে রোগীর কপি</span><div className="rx-sign">স্বাক্ষর</div></footer>
-      </div></div>
+      <div className="pr-desk"><div className="pr-paper"><RxPad s={pad} d={data} /></div></div>
     </>
   );
 }

@@ -4,7 +4,7 @@ import { Icon } from "@/components/Icons";
 import { keepValues } from "@/components/keepValues";
 
 /** রিডিং — সার্ভার থেকে আসা সাধারণ রূপ (lib/vitals → toRow) */
-export type VRow = { id: string; date: string; sys: number | null; dia: number | null; pulse: number | null; sugar: number | null; sugarWhen: string | null; weight: number | null; note: string | null; by: string };
+export type VRow = { id: string; date: string; sys: number | null; dia: number | null; pulse: number | null; sugar: number | null; sugarWhen: string | null; weight: number | null; temp?: number | null; spo2?: number | null; note: string | null; by: string };
 export type VState = { error?: string; ok?: string; at?: number } | undefined;
 
 const bn = (n: number | string) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]);
@@ -150,6 +150,8 @@ export function VitalsPanel({ rows, action, canAdd = true, compact = false, intr
                 <label className="field">সুগার (mmol/L বা mg/dL)<input className="input" name="sugar" inputMode="decimal" placeholder="৬.৫" /></label>
                 <label className="field">সুগার কখন মাপা<select className="input" name="sugarWhen" defaultValue="fasting"><option value="fasting">খালি পেটে</option><option value="after_meal">খাওয়ার ২ ঘণ্টা পর</option><option value="random">যেকোনো সময়</option></select></label>
                 <label className="field">ওজন (kg)<input className="input" name="weight" inputMode="decimal" placeholder="৬৫" /></label>
+                <label className="field">তাপমাত্রা (°F)<input className="input" name="temp" inputMode="decimal" placeholder="৯৮.৬" /></label>
+                <label className="field">অক্সিজেন SpO₂ (%)<input className="input" name="spo2" inputMode="numeric" placeholder="৯৮" /></label>
               </div>
               <label className="field">নোট (ঐচ্ছিক)<input className="input" name="note" maxLength={200} placeholder="যেমন: ওষুধ খাওয়ার আগে মাপা" /></label>
               {state?.error && <p className="alert alert-error" role="alert">⚠ {state.error}</p>}
@@ -166,7 +168,7 @@ export function VitalsPanel({ rows, action, canAdd = true, compact = false, intr
       {!compact && rows.length > 0 && (
         <div className="table-wrap vt-table">
           <table>
-            <thead><tr><th>তারিখ</th><th>প্রেসার</th><th>পালস</th><th>সুগার</th><th>ওজন</th><th>যোগ করেছেন</th></tr></thead>
+            <thead><tr><th>তারিখ</th><th>প্রেসার</th><th>পালস</th><th>সুগার</th><th>ওজন</th><th>তাপ/SpO₂</th><th>যোগ করেছেন</th></tr></thead>
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id}>
@@ -175,6 +177,7 @@ export function VitalsPanel({ rows, action, canAdd = true, compact = false, intr
                   <td>{r.pulse !== null ? bn(r.pulse) : "—"}</td>
                   <td>{r.sugar !== null ? <span className={`vt-v ${sugarFlag(r.sugar, r.sugarWhen).c}`}>{bn(r.sugar)} <span className="xs muted">{WHEN[r.sugarWhen ?? "random"]}</span></span> : "—"}</td>
                   <td>{r.weight !== null ? `${bn(r.weight)} kg` : "—"}</td>
+                  <td>{[r.temp ? `${bn(r.temp)}°F` : null, r.spo2 ? `${bn(r.spo2)}%` : null].filter(Boolean).join(" · ") || "—"}</td>
                   <td className="small muted">{r.by}</td>
                 </tr>
               ))}

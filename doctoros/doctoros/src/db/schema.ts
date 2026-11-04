@@ -54,6 +54,8 @@ export const doctors = pgTable("doctors", {
   premiumUntil: text("premium_until"),
   /** অ্যাসিস্ট্যান্ট প্রেসক্রিপশন দেখতে/লিখতে পারবেন কিনা — ডাক্তার অনুমতি দিলে তবেই */
   assistantRxAccess: boolean("assistant_rx_access").notNull().default(false),
+  /** প্রেসক্রিপশন প্যাডের ডিজাইন (ফরম্যাট, রং, কাগজ, কোন অংশ দেখাবে) — lib/rxpad.ts */
+  rxPad: jsonb("rx_pad").$type<Record<string, unknown>>(),
   ownerId: text("owner_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   createdAt: createdAt(),
 });
@@ -176,6 +178,8 @@ export const visits = pgTable("visits", {
   diagnosis: text("diagnosis"),
   medicines: jsonb("medicines").$type<Medicine[]>().notNull().default([]),
   advice: text("advice"),
+  /** কোন কোন টেস্ট করাতে হবে */
+  investigations: text("investigations"),
   followUpDate: text("follow_up_date"),
   createdAt: createdAt(),
 });
@@ -283,6 +287,10 @@ export const vitals = pgTable(
     /** fasting | after_meal | random */
     sugarWhen: text("sugar_when"),
     weightX10: integer("weight_x10"),
+    /** তাপমাত্রা °F ×১০ */
+    tempX10: integer("temp_x10"),
+    /** অক্সিজেন (SpO₂ %) */
+    spo2: integer("spo2"),
     note: text("note"),
     createdAt: createdAt(),
   },

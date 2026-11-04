@@ -1,0 +1,39 @@
+/* প্রেসক্রিপশন প্যাডের ডিজাইনার */
+.pd { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr); gap: 18px; align-items: start; }
+.pd-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.pd-h { font-size: 18px; margin: 0; }
+.pd-tpls { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.pd-tpl { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 10px; border-radius: 16px; border: 2px solid var(--line-2); background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.pd-tpl b { font-size: 16px; }
+.pd-tpl small { font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+.pd-tpl.on { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+.pd-tick { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: var(--teal); color: #fff; display: flex; align-items: center; justify-content: center; }
+.pd-thumb { border-radius: 8px; overflow: hidden; border: 1px solid var(--line-2); background: #fff; pointer-events: none; margin-bottom: 4px; }
+.pd-scaled { position: relative; overflow: hidden; width: 100%; }
+.pd-colors { display: flex; flex-wrap: wrap; gap: 8px; }
+.pd-color { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px 0 8px; border-radius: 12px; border: 2px solid var(--line-2); background: var(--card); color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.pd-color span { display: flex; border-radius: 6px; overflow: hidden; }
+.pd-color i { width: 14px; height: 26px; display: block; }
+.pd-color.on { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+.pd-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.pd-seg { display: inline-flex; padding: 3px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--ground); }
+.pd-seg button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.pd-seg button.on { background: var(--heading-bg); color: #fff; }
+.pd-checks { display: flex; flex-direction: column; gap: 10px; }
+.pd-checks label { display: flex; align-items: center; gap: 10px; font-size: 16px; cursor: pointer; }
+.pd-checks input { width: 22px; height: 22px; accent-color: var(--teal); }
+.pd-always { font-size: 14px; color: var(--muted); padding: 8px 12px; border-radius: 10px; background: var(--ground); }
+.pd-right { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.pd-pv-h { display: flex; justify-content: space-between; align-items: baseline; }
+.pd-pv { border-radius: 14px; overflow: hidden; border: 1px solid var(--line-2); box-shadow: var(--shadow-md); background: #fff; }
+.pd-save { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 12px; border-radius: 14px; background: var(--card); border: 1px solid var(--line-2); }
+.pd-save > span { flex: 1 1 100%; }
+.pd-save .btn { flex: 1; }
+@media (max-width: 1000px) {
+  .pd { grid-template-columns: minmax(0, 1fr); }
+  .pd-right { position: static; order: -1; }
+  .pd-pv { max-width: 420px; }
+}
+@media (max-width: 480px) { .pd-tpls { grid-template-columns: 1fr 1fr; gap: 8px; } }
+.pd-scaled > div { position: absolute; top: 0; left: 0; }
+.pd-tpl, .pd-left, .pd-right, .pd-pv { min-width: 0; }
