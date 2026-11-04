@@ -102,3 +102,21 @@
   .rp { box-shadow: none !important; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* আপলোড করা লোগো — সব ফরম্যাটে নিজের জায়গায় বসে */
+.rp-logoimg { display: block; object-fit: contain; flex: 0 0 auto; }
+.t-teal .rp-logoimg, .t-classic .rp-logoimg { width: calc(var(--u) * 24); height: calc(var(--u) * 24); margin-right: calc(var(--u) * -4); }
+.t-teal .rp-h, .t-classic .rp-h { align-items: flex-start; }
+.t-teal .rp-doc, .t-classic .rp-doc { flex: 1; min-width: 0; }
+.t-blue .rp-logo .rp-logoimg { width: calc(var(--u) * 30); height: calc(var(--u) * 30); }
+
+/* নিজের প্যাড — পুরো পাতা জুড়ে ছবি, লেখা নির্দিষ্ট জায়গায় */
+.t-custom { position: relative; }
+.rp-padimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; z-index: 0; }
+.rp-nopad { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; border: 1mm dashed #C9D3CF; color: #9AA6AE; font-size: 1.6em; }
+.rp-area { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; padding: var(--rp-top) var(--rp-right) var(--rp-bottom) var(--rp-left); }
+.t-custom .rp-area > .rp-pt { padding-bottom: calc(var(--u) * 3); border-bottom: 0.2mm solid rgba(0,0,0,.25); }
+.t-custom .rp-main { flex: 1; display: grid; grid-template-columns: calc(var(--u) * 46) 1fr; }
+.t-custom .rp-side { padding: calc(var(--u) * 6) calc(var(--u) * 5) 0 0; display: flex; flex-direction: column; gap: calc(var(--u) * 7); }
+.t-custom .rp-body { padding: calc(var(--u) * 6) 0 0 calc(var(--u) * 6); }
+.t-custom .rp-fu { background: rgba(255,255,255,.75); border: 0.2mm solid var(--rp-a); }

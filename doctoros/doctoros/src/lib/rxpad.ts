@@ -8,6 +8,7 @@ export const TEMPLATES = [
   { id: "blue", name: "নীল মিনিমাল", desc: "স্টেথোস্কোপ লোগো, রোগীর তথ্যের লাইন, নিচে যোগাযোগ" },
   { id: "classic", name: "ক্লাসিক", desc: "সাদামাটা দুই কলাম — সব তথ্য গুছিয়ে" },
   { id: "preprinted", name: "ছাপানো প্যাডে", desc: "আপনার নিজের ছাপানো প্যাডে শুধু লেখা প্রিন্ট হবে" },
+  { id: "custom", name: "আমার প্যাড", desc: "আপনার প্যাডের ছবি আপলোড করুন — সাদা কাগজেই পুরো প্যাড সহ প্রিন্ট হবে" },
 ] as const;
 export type TemplateId = (typeof TEMPLATES)[number]["id"];
 
@@ -25,21 +26,23 @@ export type PadSettings = {
   template: TemplateId; color: ColorId; paper: "A4" | "A5"; labels: "bn" | "en";
   hospital: string; slogan: string; phone: string; website: string; email: string;
   sections: PadSections;
-  /** ছাপানো প্যাডে উপরে-নিচে কত মিমি ফাঁকা রাখবে */
-  topMm: number; bottomMm: number;
+  /** ছাপানো/নিজের প্যাডে উপরে-নিচে-বামে-ডানে কত মিমি ফাঁকা রাখবে */
+  topMm: number; bottomMm: number; leftMm: number; rightMm: number;
+  /** লোগো আপলোড থাকলে প্যাডে দেখাবে */
+  showLogo: boolean;
 };
 
 export const DEFAULT_PAD: PadSettings = {
   template: "teal", color: "teal", paper: "A4", labels: "bn",
   hospital: "", slogan: "", phone: "", website: "", email: "",
   sections: { vitals: true, investigation: true, advice: true, followup: true, qr: true, signature: true, watermark: true },
-  topMm: 50, bottomMm: 25,
+  topMm: 50, bottomMm: 25, leftMm: 14, rightMm: 14, showLogo: true,
 };
 
 const t = (max: number) => z.string().trim().max(max).catch("");
 const flag = z.boolean().catch(true);
 export const padSchema = z.object({
-  template: z.enum(["teal", "blue", "classic", "preprinted"]).catch("teal"),
+  template: z.enum(["teal", "blue", "classic", "preprinted", "custom"]).catch("teal"),
   color: z.enum(["teal", "blue", "green", "maroon", "purple"]).catch("teal"),
   paper: z.enum(["A4", "A5"]).catch("A4"),
   labels: z.enum(["bn", "en"]).catch("bn"),
@@ -47,6 +50,9 @@ export const padSchema = z.object({
   sections: z.object({ vitals: flag, investigation: flag, advice: flag, followup: flag, qr: flag, signature: flag, watermark: flag }).catch(DEFAULT_PAD.sections),
   topMm: z.number().int().min(0).max(120).catch(50),
   bottomMm: z.number().int().min(0).max(80).catch(25),
+  leftMm: z.number().int().min(0).max(60).catch(14),
+  rightMm: z.number().int().min(0).max(60).catch(14),
+  showLogo: z.boolean().catch(true),
 });
 
 export function normalizePad(raw: unknown): PadSettings {
@@ -80,6 +86,9 @@ export type PadData = {
   vitals: { bp?: string; pulse?: string; weight?: string; temp?: string; spo2?: string } | null;
   qrSvg?: string | null;
   url?: string | null;
+  /** আপলোড করা লোগো আর নিজের প্যাডের ছবির লিংক */
+  logoUrl?: string | null;
+  padUrl?: string | null;
 };
 
 /** নমুনা — ডিজাইন বাছার সময় প্রিভিউতে দেখানোর জন্য */
@@ -102,4 +111,17 @@ export function sampleData(doctor: PadData["doctor"], chamber: PadData["chamber"
     },
     vitals: { bp: "১৪৫/৯২", pulse: "৮৪", weight: "৭৮ kg", temp: "৯৮.৪°F", spo2: "৯৮%" },
   };
+}
+
+/** রং থেকে সবচেয়ে কাছের প্যাডের রং — লোগোর সাথে মিলিয়ে নিতে */
+export function nearestColor(hex: string): ColorId {
+  const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [r, g, b] = rgb(hex);
+  let best: ColorId = "teal", bd = Infinity;
+  for (const [k, v] of Object.entries(COLORS) as [ColorId, (typeof COLORS)[ColorId]][]) {
+    const [r2, g2, b2] = rgb(v.a);
+    const dd = (r - r2) ** 2 + (g - g2) ** 2 + (b - b2) ** 2;
+    if (dd < bd) { bd = dd; best = k; }
+  }
+  return best;
 }

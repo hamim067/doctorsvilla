@@ -3,6 +3,7 @@ import "server-only";
 import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { patientCode } from "@/lib/booking";
+import { doctorAssetUrls } from "@/lib/assets";
 import { qrSvg, siteOrigin } from "@/lib/qr";
 import { type PadData } from "@/lib/rxpad";
 import { bn, formatDateBn, thisYear } from "@/lib/time";
@@ -44,5 +45,6 @@ export async function buildPadData(o: { doctor: Doctor; patient: Patient; chambe
     vitals: await vitalsOn(o.patient.id, o.date, o.forPatient ? undefined : o.doctor.id),
     qrSvg: await qrSvg(url),
     url,
+    ...(await doctorAssetUrls(o.doctor.id, o.doctor.slug)),
   };
 }

@@ -6,6 +6,7 @@ import { RxPad } from "@/components/RxPad";
 import { requireDoctor } from "@/lib/auth";
 import { doctorChambers } from "@/lib/chambers";
 import { qrSvg, siteOrigin } from "@/lib/qr";
+import { doctorAssetUrls } from "@/lib/assets";
 import { normalizePad, sampleData } from "@/lib/rxpad";
 import "../print.css";
 import "../rxpad.css";
@@ -21,9 +22,10 @@ export default async function RxSample({ searchParams }: { searchParams: Promise
   const url = `${await siteOrigin()}/dr/${d.slug}`;
   const pad = normalizePad(d.rxPad);
   const base = sampleData({ name: d.name, degrees: d.degrees, specialty: d.specialty, bmdcNo: d.bmdcNo }, ch ? { name: ch.name, address: ch.address, city: ch.city } : null);
+  const assets = await doctorAssetUrls(d.id, d.slug);
   const data = blank
-    ? { ...base, patient: { name: "", age: null, gender: null, code: "" }, date: "", serial: null, visit: null, vitals: null, qrSvg: await qrSvg(url), url }
-    : { ...base, qrSvg: await qrSvg(url), url };
+    ? { ...base, patient: { name: "", age: null, gender: null, code: "" }, date: "", serial: null, visit: null, vitals: null, qrSvg: await qrSvg(url), url, ...assets }
+    : { ...base, qrSvg: await qrSvg(url), url, ...assets };
   return (
     <>
       <style>{`@page { size: ${pad.paper}; margin: 0; }`}</style>

@@ -37,3 +37,16 @@
 @media (max-width: 480px) { .pd-tpls { grid-template-columns: 1fr 1fr; gap: 8px; } }
 .pd-scaled > div { position: absolute; top: 0; left: 0; }
 .pd-tpl, .pd-left, .pd-right, .pd-pv { min-width: 0; }
+.pd-ups { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.pd-up { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 14px; background: var(--ground); }
+.pd-up b { font-size: 16.5px; }
+.pd-up-box { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px dashed var(--line-2); background: var(--card); color: var(--muted); overflow: hidden; }
+.pd-up-box.logo { width: 78px; height: 78px; }
+.pd-up-box.pad { width: 66px; height: 94px; }
+.pd-up-box img { width: 100%; height: 100%; object-fit: contain; }
+.pd-file { cursor: pointer; }
+.pd-inline { display: flex; align-items: center; gap: 8px; font-size: 15px; cursor: pointer; }
+.pd-inline input { width: 20px; height: 20px; accent-color: var(--teal); }
+.pd-ok { color: var(--teal-ink); font-weight: 600; }
+.pd-err { color: var(--red); font-weight: 600; }
+.pd-pv .t-custom .rp-area { outline: 1.2mm dashed rgba(226, 86, 30, 0.75); outline-offset: -1mm; }

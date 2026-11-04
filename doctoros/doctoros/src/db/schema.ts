@@ -298,6 +298,21 @@ export const vitals = pgTable(
 );
 export type Vital = typeof vitals.$inferSelect;
 
+/** ডাক্তারের লোগো আর নিজের প্যাডের ছবি — data URL হিসেবে (ফাইল রাখার আলাদা জায়গা ছাড়াই) */
+export const doctorAssets = pgTable(
+  "doctor_assets",
+  {
+    doctorId: text("doctor_id").notNull().references(() => doctors.id, { onDelete: "cascade" }),
+    /** logo | pad */
+    kind: text("kind").notNull(),
+    data: text("data").notNull(),
+    width: integer("width"),
+    height: integer("height"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("doctor_assets_doctor_kind").on(t.doctorId, t.kind)],
+);
+
 // ---- relations (db.query.* দিয়ে join করার জন্য) ----
 export const doctorsRelations = relations(doctors, ({ many }) => ({ chambers: many(chambers) }));
 export const chambersRelations = relations(chambers, ({ one, many }) => ({

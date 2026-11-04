@@ -65,6 +65,7 @@ export function RxPad({ s, d }: { s: PadSettings; d: PadData }) {
     </div>
   );
   const hospitalName = s.hospital || d.chamber?.name || "";
+  const logo = s.showLogo && d.logoUrl ? <img className="rp-logoimg" src={d.logoUrl} alt="" /> : null;
   const address = d.chamber ? `${d.chamber.address}, ${d.chamber.city}` : "";
 
   /* ---------- ১. আধুনিক কোণ (প্রথম ছবি) ---------- */
@@ -72,6 +73,7 @@ export function RxPad({ s, d }: { s: PadSettings; d: PadData }) {
     return (
       <div className={`rp t-teal p-${s.paper}`} style={style}>
         <header className="rp-h">
+          {logo}
           <div className="rp-doc">
             <h1>{d.doctor.name}</h1>
             <div className="rp-qual">{d.doctor.degrees}</div>
@@ -116,7 +118,7 @@ export function RxPad({ s, d }: { s: PadSettings; d: PadData }) {
     return (
       <div className={`rp t-blue p-${s.paper}`} style={style}>
         <header className="rp-h">
-          <span className="rp-logo"><Steth size={86} stroke={c.a} sw={2.6} /></span>
+          <span className="rp-logo">{logo ?? <Steth size={86} stroke={c.a} sw={2.6} />}</span>
           <div className="rp-doc">
             <h1>{d.doctor.name}</h1>
             <div className="rp-qual">{d.doctor.degrees}</div>
@@ -161,6 +163,23 @@ export function RxPad({ s, d }: { s: PadSettings; d: PadData }) {
     );
   }
 
+  /* ---------- নিজের প্যাড — আপলোড করা ছবির উপর লেখা ---------- */
+  if (s.template === "custom") {
+    const area = { "--rp-top": `${s.topMm}mm`, "--rp-bottom": `${s.bottomMm}mm`, "--rp-left": `${s.leftMm}mm`, "--rp-right": `${s.rightMm}mm` } as React.CSSProperties;
+    return (
+      <div className={`rp t-custom p-${s.paper}`} style={{ ...style, ...area }}>
+        {d.padUrl ? <img className="rp-padimg" src={d.padUrl} alt="" /> : <div className="rp-nopad">প্যাডের ছবি আপলোড করুন</div>}
+        <div className="rp-area">
+          {patientRow}
+          <div className="rp-main">
+            <aside className="rp-side">{ccBlock}{dxBlock}{vitalsBlock}{invBlock}</aside>
+            <section className="rp-body"><Rx color={c.b} />{meds}{advBlock}{fuBlock}</section>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   /* ---------- ৩. ছাপানো প্যাড — উপরে-নিচে ফাঁকা, শুধু লেখা ---------- */
   if (s.template === "preprinted") {
     return (
@@ -178,6 +197,7 @@ export function RxPad({ s, d }: { s: PadSettings; d: PadData }) {
   return (
     <div className={`rp t-classic p-${s.paper}`} style={style}>
       <header className="rp-h">
+        {logo}
         <div className="rp-doc">
           <h1>{d.doctor.name}</h1>
           <div className="rp-qual">{d.doctor.degrees}</div>

@@ -4,6 +4,7 @@ import { CopyButton } from "@/components/CopyButton";
 import { requireDoctor } from "@/lib/auth";
 import { doctorChambers } from "@/lib/chambers";
 import { qrPng, qrSvg, siteOrigin } from "@/lib/qr";
+import { doctorAssetUrls } from "@/lib/assets";
 import { normalizePad, sampleData } from "@/lib/rxpad";
 import { PadDesigner } from "./PadDesigner";
 import "../../print/rxpad.css";
@@ -20,7 +21,7 @@ export default async function SharePage() {
   const wa = `https://wa.me/?text=${encodeURIComponent(`${d.name}-এর কাছে অনলাইনে সিরিয়াল নিন: ${url}`)}`;
   const fb = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
 
-  const sample = { ...sampleData({ name: d.name, degrees: d.degrees, specialty: d.specialty, bmdcNo: d.bmdcNo }, chambers[0] ? { name: chambers[0].name, address: chambers[0].address, city: chambers[0].city } : null), qrSvg: svg, url };
+  const sample = { ...sampleData({ name: d.name, degrees: d.degrees, specialty: d.specialty, bmdcNo: d.bmdcNo }, chambers[0] ? { name: chambers[0].name, address: chambers[0].address, city: chambers[0].city } : null), qrSvg: svg, url, ...(await doctorAssetUrls(d.id, d.slug)) };
   return (
     <>
       <div className="stack-sm" style={{ gap: 2 }}>
