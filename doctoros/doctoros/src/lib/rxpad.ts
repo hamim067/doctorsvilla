@@ -89,6 +89,9 @@ export type PadData = {
   /** আপলোড করা লোগো আর নিজের প্যাডের ছবির লিংক */
   logoUrl?: string | null;
   padUrl?: string | null;
+  /** স্বাক্ষর আর সিলের ছবি (সাদা পটভূমি সরানো PNG) */
+  signUrl?: string | null;
+  sealUrl?: string | null;
 };
 
 /** নমুনা — ডিজাইন বাছার সময় প্রিভিউতে দেখানোর জন্য */

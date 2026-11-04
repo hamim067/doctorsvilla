@@ -305,7 +305,7 @@ export const doctorAssets = pgTable(
   "doctor_assets",
   {
     doctorId: text("doctor_id").notNull().references(() => doctors.id, { onDelete: "cascade" }),
-    /** logo | pad */
+    /** logo | pad | sign | seal */
     kind: text("kind").notNull(),
     data: text("data").notNull(),
     width: integer("width"),

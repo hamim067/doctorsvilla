@@ -3,10 +3,40 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icons";
 import { RxPad } from "@/components/RxPad";
 import { COLORS, type ColorId, nearestColor, type PadData, type PadSections, type PadSettings, TEMPLATES } from "@/lib/rxpad";
-import { removeAsset, saveAsset, savePad } from "./actions";
+import { type AssetKind, removeAsset, saveAsset, savePad } from "./actions";
+
+/** PDF-এর প্রথম পাতাকে ছবিতে বদলানো (ব্রাউজারেই, সার্ভারে PDF যায় না) */
+async function pdfToImage(file: File): Promise<File> {
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  const doc = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const page = await doc.getPage(1);
+  const v1 = page.getViewport({ scale: 1 });
+  const vp = page.getViewport({ scale: Math.min(4, 1800 / v1.width) });
+  const c = document.createElement("canvas");
+  c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+  const ctx = c.getContext("2d")!;
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+  await page.render({ canvasContext: ctx, viewport: vp }).promise;
+  doc.destroy();
+  const blob = await new Promise<Blob>((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error("pdf"))), "image/png"));
+  return new File([blob], "page.png", { type: "image/png" });
+}
+
+/** সাদা কাগজের পটভূমি সরিয়ে স্বচ্ছ করা — স্বাক্ষর/সিল প্যাডের উপর সুন্দর বসে */
+function clearWhite(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  const im = ctx.getImageData(0, 0, w, h); const px = im.data;
+  for (let i = 0; i < px.length; i += 4) {
+    const l = (px[i] + px[i + 1] + px[i + 2]) / 3;
+    const sat = Math.max(px[i], px[i + 1], px[i + 2]) - Math.min(px[i], px[i + 1], px[i + 2]);
+    if (l > 215 && sat < 40) px[i + 3] = 0; // প্রায় সাদা → পুরো স্বচ্ছ
+    else if (l > 170 && sat < 40) px[i + 3] = Math.round(px[i + 3] * (215 - l) / 45); // কিনারা নরম
+  }
+  ctx.putImageData(im, 0, 0);
+}
 
 /** ছবি ব্রাউজারেই ছোট করা — লোগো PNG থাকলে স্বচ্ছ পটভূমি রেখে দিই */
-async function shrink(file: File, maxW: number, maxH: number, png: boolean) {
+async function shrink(file: File, maxW: number, maxH: number, png: boolean, transparent = false) {
   const img = await new Promise<HTMLImageElement>((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
   const k = Math.min(1, maxW / img.naturalWidth, maxH / img.naturalHeight);
   const c = document.createElement("canvas");
@@ -15,6 +45,7 @@ async function shrink(file: File, maxW: number, maxH: number, png: boolean) {
   if (!png) { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height); }
   ctx.drawImage(img, 0, 0, c.width, c.height);
   URL.revokeObjectURL(img.src);
+  if (transparent) clearWhite(ctx, c.width, c.height);
   // লোগোর প্রধান রং (সাদা/কালো/ধূসর বাদে)
   let color: string | null = null;
   try {
@@ -65,14 +96,31 @@ export function PadDesigner({ initial, sample: sample0 }: { initial: PadSettings
   const [p, setP] = useState(initial);
   const [logoUrl, setLogoUrl] = useState(sample0.logoUrl ?? null);
   const [padUrl, setPadUrl] = useState(sample0.padUrl ?? null);
-  const [upMsg, setUpMsg] = useState<{ k: "logo" | "pad"; t: string; err?: boolean } | null>(null);
-  const [busy, setBusy] = useState<"" | "logo" | "pad">("");
-  const sample = { ...sample0, logoUrl, padUrl };
-  async function upload(kind: "logo" | "pad", file: File | undefined) {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) { setUpMsg({ k: kind, t: kind === "pad" ? "JPG বা PNG ছবি দিন — PDF থাকলে প্যাডের ছবি তুলে বা স্ক্রিনশট নিয়ে দিন" : "JPG বা PNG ছবি দিন", err: true }); return; }
+  const [signUrl, setSignUrl] = useState(sample0.signUrl ?? null);
+  const [sealUrl, setSealUrl] = useState(sample0.sealUrl ?? null);
+  const [upMsg, setUpMsg] = useState<{ k: AssetKind; t: string; err?: boolean } | null>(null);
+  const [busy, setBusy] = useState<"" | AssetKind>("");
+  const sample = { ...sample0, logoUrl, padUrl, signUrl, sealUrl };
+  async function upload(kind: AssetKind, file0: File | undefined) {
+    if (!file0) return;
+    const isPdf = file0.type === "application/pdf" || /\.pdf$/i.test(file0.name);
+    if (!isPdf && !file0.type.startsWith("image/")) { setUpMsg({ k: kind, t: "JPG, PNG ছবি বা PDF দিন", err: true }); return; }
     setBusy(kind); setUpMsg(null);
     try {
+      let file = file0;
+      if (isPdf) {
+        try { file = await pdfToImage(file0); }
+        catch { setUpMsg({ k: kind, t: "PDF-টা খোলা যায়নি — পাসওয়ার্ড দেওয়া থাকলে সরিয়ে দিন, অথবা ছবি দিন", err: true }); return; }
+      }
+      if (kind === "sign" || kind === "seal") {
+        const r = await shrink(file, kind === "sign" ? 700 : 500, kind === "sign" ? 350 : 500, true, true);
+        const res = await saveAsset(kind, r.url, r.w, r.h);
+        if (res.error) { setUpMsg({ k: kind, t: res.error, err: true }); return; }
+        (kind === "sign" ? setSignUrl : setSealUrl)(r.url);
+        if (!p.sections.signature) { setP((x) => ({ ...x, sections: { ...x.sections, signature: true } })); setDirty(true); }
+        setUpMsg({ k: kind, t: `${kind === "sign" ? "স্বাক্ষর" : "সিল"} বসে গেছে — সাদা পটভূমি সরিয়ে দেওয়া হয়েছে। প্রতিটা প্রেসক্রিপশনে নিজে থেকেই বসবে।` });
+        return;
+      }
       const r = kind === "logo" ? await shrink(file, 600, 600, file.type === "image/png") : await shrink(file, 1600, 2300, false);
       const res = await saveAsset(kind, r.url, r.w, r.h);
       if (res.error) { setUpMsg({ k: kind, t: res.error, err: true }); return; }
@@ -92,9 +140,9 @@ export function PadDesigner({ initial, sample: sample0 }: { initial: PadSettings
     } catch { setUpMsg({ k: kind, t: "ছবিটা খোলা যায়নি, অন্য ছবি দিন", err: true }); }
     finally { setBusy(""); }
   }
-  async function remove(kind: "logo" | "pad") {
+  async function remove(kind: AssetKind) {
     await removeAsset(kind);
-    if (kind === "logo") setLogoUrl(null); else { setPadUrl(null); if (p.template === "custom") { setP((x) => ({ ...x, template: "teal" })); setDirty(true); } }
+    if (kind === "sign") setSignUrl(null); else if (kind === "seal") setSealUrl(null); else if (kind === "logo") setLogoUrl(null); else { setPadUrl(null); if (p.template === "custom") { setP((x) => ({ ...x, template: "teal" })); setDirty(true); } }
     setUpMsg({ k: kind, t: "সরানো হয়েছে" });
   }
   const [dirty, setDirty] = useState(false);
@@ -111,7 +159,7 @@ export function PadDesigner({ initial, sample: sample0 }: { initial: PadSettings
       <input type="hidden" name="pad" value={JSON.stringify(p)} />
       <div className="pd-left">
         <section className="card stack-sm">
-          <h3 className="pd-h">লোগো ও নিজের প্যাড (ঐচ্ছিক)</h3>
+          <h3 className="pd-h">লোগো, নিজের প্যাড, স্বাক্ষর ও সিল (ঐচ্ছিক)</h3>
           <div className="pd-ups">
             <div className="pd-up">
               <div className="pd-up-box logo">{logoUrl ? <img src={logoUrl} alt="লোগো" /> : <Icon name="camera" size={28} />}</div>
@@ -130,14 +178,28 @@ export function PadDesigner({ initial, sample: sample0 }: { initial: PadSettings
               <div className="pd-up-box pad">{padUrl ? <img src={padUrl} alt="নিজের প্যাড" /> : <Icon name="layout" size={28} />}</div>
               <div className="col" style={{ gap: 6, minWidth: 0 }}>
                 <b>নিজের প্যাড</b>
-                <span className="small muted">প্রেস থেকে বানানো প্যাডের ছবি দিন — স্ক্যান করা বা সোজা করে তোলা, শুধু প্যাডের অংশটুকু (চারপাশ কেটে)। সাদা কাগজেই পুরো প্যাডসহ প্রেসক্রিপশন প্রিন্ট হবে।</span>
+                <span className="small muted">প্রেস থেকে পাওয়া প্যাডের <b>PDF</b> দিন, অথবা ছবি (স্ক্যান করা বা সোজা করে তোলা, চারপাশ কেটে)। PDF-এর প্রথম পাতা নেওয়া হবে। সাদা কাগজেই পুরো প্যাডসহ প্রেসক্রিপশন প্রিন্ট হবে।</span>
                 <div className="row" style={{ gap: 6 }}>
-                  <label className="btn btn-sm2 pd-file">{busy === "pad" ? "আপলোড হচ্ছে…" : padUrl ? "প্যাড বদলান" : "প্যাড আপলোড"}<input type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={(e) => { upload("pad", e.target.files?.[0]); e.target.value = ""; }} /></label>
+                  <label className="btn btn-sm2 pd-file">{busy === "pad" ? "আপলোড হচ্ছে…" : padUrl ? "প্যাড বদলান" : "প্যাড আপলোড"}<input type="file" accept="image/png,image/jpeg,image/webp,application/pdf,.pdf" hidden onChange={(e) => { upload("pad", e.target.files?.[0]); e.target.value = ""; }} /></label>
                   {padUrl && <button type="button" className="btn btn-sm2" onClick={() => remove("pad")}>সরান</button>}
                 </div>
                 {upMsg?.k === "pad" && <span className={`small ${upMsg.err ? "pd-err" : "pd-ok"}`}>{upMsg.t}</span>}
               </div>
             </div>
+            {([["sign", "স্বাক্ষর", signUrl, "সাদা কাগজে কালো/নীল কালিতে সই করে ছবি তুলুন (কাছ থেকে, আলোয়)। সাদা অংশ নিজে থেকেই সরে যাবে।"], ["seal", "সিল", sealUrl, "সাদা কাগজে সিল মেরে ছবি তুলুন — স্বাক্ষরের পাশে বসবে।"]] as const).map(([k, label, url, help]) => (
+              <div key={k} className="pd-up">
+                <div className={`pd-up-box ${k}`}>{url ? <img src={url} alt={label} /> : <Icon name="edit" size={26} />}</div>
+                <div className="col" style={{ gap: 6, minWidth: 0 }}>
+                  <b>{label}</b>
+                  <span className="small muted">{help}</span>
+                  <div className="row" style={{ gap: 6 }}>
+                    <label className="btn btn-sm2 pd-file">{busy === k ? "আপলোড হচ্ছে…" : url ? `${label} বদলান` : `${label} আপলোড`}<input type="file" accept="image/png,image/jpeg,image/webp,application/pdf,.pdf" hidden onChange={(e) => { upload(k, e.target.files?.[0]); e.target.value = ""; }} /></label>
+                    {url && <button type="button" className="btn btn-sm2" onClick={() => remove(k)}>সরান</button>}
+                  </div>
+                  {upMsg?.k === k && <span className={`small ${upMsg.err ? "pd-err" : "pd-ok"}`}>{upMsg.t}</span>}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -207,8 +269,8 @@ export function PadDesigner({ initial, sample: sample0 }: { initial: PadSettings
           <h3 className="pd-h">{p.template === "preprinted" || p.template === "custom" ? "৩" : "৪"}. কোন অংশ থাকবে</h3>
           <div className="pd-checks">
             <span className="pd-always">সবসময় থাকে: ডাক্তারের নাম ও ডিগ্রি · রোগীর তথ্য · অভিযোগ (C/C) · রোগ নির্ণয় (D/E) · ওষুধ (Rx)</span>
-            {(Object.keys(SECTION_LABEL) as (keyof PadSections)[]).filter((k) => (p.template !== "preprinted" && p.template !== "custom") || !["qr", "signature", "watermark"].includes(k)).map((k) => (
-              <label key={k}><input type="checkbox" checked={p.sections[k]} onChange={(e) => sec(k, e.target.checked)} />{SECTION_LABEL[k]}</label>
+            {(Object.keys(SECTION_LABEL) as (keyof PadSections)[]).filter((k) => (p.template !== "preprinted" && p.template !== "custom") || !["qr", "watermark"].includes(k) && (k !== "signature" || signUrl || sealUrl)).map((k) => (
+              <label key={k}><input type="checkbox" checked={p.sections[k]} onChange={(e) => sec(k, e.target.checked)} />{k === "signature" && (signUrl || sealUrl) ? "স্বাক্ষর ও সিল (আপলোড করা ছবি)" : SECTION_LABEL[k]}</label>
             ))}
           </div>
         </section>

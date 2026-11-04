@@ -60,3 +60,6 @@
 .cd-checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px 16px; }
 .btn.disabled { opacity: .5; pointer-events: auto; cursor: not-allowed; }
 @media (max-width: 480px) { .cd-tpls { grid-template-columns: 1fr 1fr; gap: 8px; } .cd-tpls .pd-tpl small { display: none; } }
+
+.pd-up-box.sign { width: 96px; height: 60px; background: #fff; }
+.pd-up-box.seal { width: 72px; height: 72px; background: #fff; border-radius: 50%; }

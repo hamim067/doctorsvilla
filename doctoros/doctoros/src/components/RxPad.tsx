@@ -49,7 +49,15 @@ export function RxPad({ s, d }: { s: PadSettings; d: PadData }) {
   const invBlock = S.investigation && <div className="rp-block"><h4>{L.inv}</h4><p className="pre">{v?.investigations || ""}</p></div>;
   const advBlock = S.advice && v?.advice && <div className="rp-block rp-adv"><h4>{L.adv}</h4><p className="pre">{v.advice}</p></div>;
   const fuBlock = S.followup && v?.followUp && <div className="rp-fu">{L.fu}: <b>{v.followUp}</b></div>;
-  const sign = S.signature && <div className="rp-sign"><span />{L.sign}</div>;
+  const sigImgs = (d.signUrl || d.sealUrl) && (
+    <div className="rp-sigimgs">
+      {d.sealUrl && <img className="rp-seal" src={d.sealUrl} alt="" />}
+      {d.signUrl && <img className="rp-sig" src={d.signUrl} alt="" />}
+    </div>
+  );
+  const sign = S.signature && <div className="rp-sign">{sigImgs}<span />{L.sign}</div>;
+  // ছাপানো/নিজের প্যাডে সাধারণত স্বাক্ষরের দাগ আগেই থাকে — শুধু ছবি থাকলে বসাই
+  const signOnly = S.signature && sigImgs && <div className="rp-end"><div className="rp-sign bare">{sigImgs}</div></div>;
   const qr = S.qr && d.qrSvg && (
     <div className="rp-qr"><div dangerouslySetInnerHTML={{ __html: d.qrSvg }} /><span>{L.qr}</span></div>
   );
@@ -173,7 +181,7 @@ export function RxPad({ s, d }: { s: PadSettings; d: PadData }) {
           {patientRow}
           <div className="rp-main">
             <aside className="rp-side">{ccBlock}{dxBlock}{vitalsBlock}{invBlock}</aside>
-            <section className="rp-body"><Rx color={c.b} />{meds}{advBlock}{fuBlock}</section>
+            <section className="rp-body"><Rx color={c.b} />{meds}{advBlock}{fuBlock}{signOnly}</section>
           </div>
         </div>
       </div>
@@ -187,7 +195,7 @@ export function RxPad({ s, d }: { s: PadSettings; d: PadData }) {
         {patientRow}
         <div className="rp-main">
           <aside className="rp-side">{ccBlock}{dxBlock}{vitalsBlock}{invBlock}</aside>
-          <section className="rp-body"><Rx color="#222" />{meds}{advBlock}{fuBlock}</section>
+          <section className="rp-body"><Rx color="#222" />{meds}{advBlock}{fuBlock}{signOnly}</section>
         </div>
       </div>
     );
