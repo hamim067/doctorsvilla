@@ -320,3 +320,8 @@
 :root[data-theme="dark"] .md-v.hi { border-color: #5A3A22; }
 :root[data-theme="dark"] .md-tabs a.on { background: #14937A; }
 :root[data-theme="dark"] .rx-pad-h { background: #173F37; }
+/* নিচের মেনুর নিচে যেন কোনো লেখা চাপা না পড়ে — মেনুর উচ্চতা + ফোনের নিচের ফাঁকা জায়গা */
+@media (max-width: 819px) {
+  .me { padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
+  .me-nav { box-shadow: 0 -6px 20px rgba(13, 47, 42, 0.08); }
+}
