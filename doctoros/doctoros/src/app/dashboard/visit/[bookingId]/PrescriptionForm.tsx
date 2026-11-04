@@ -1,9 +1,9 @@
 "use client";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { SubmitButton } from "@/components/SubmitButton";
 import { keepValues } from "@/components/keepValues";
 import type { Medicine } from "@/db/schema";
-import { savePrescription } from "../actions";
+import { autosavePrescription, savePrescription } from "../actions";
 
 const FU_OPTIONS = [["", "প্রয়োজন নেই"], ["7", "৭ দিন"], ["15", "১৫ দিন"], ["30", "১ মাস"], ["90", "৩ মাস"], ["date", "তারিখ বাছুন"]] as const;
 const blank: Medicine = { name: "", dose: "", when: "", days: "" };
@@ -21,8 +21,32 @@ export function PrescriptionForm({ bookingId, initial, suggestions, minDate }: P
   const [fu, setFu] = useState<string>(initial.followUpDate ? "date" : "");
   const update = (i: number, k: keyof Medicine, v: string) => setMeds((m) => m.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
 
+  // অটো-সেভ: লেখা থামার ২ সেকেন্ড পর নিজে থেকেই সেভ — শুধু প্রিন্ট করে বা পেজ ছেড়ে গেলেও তথ্য হারায় না
+  const formRef = useRef<HTMLFormElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [auto, setAuto] = useState<{ t: "idle" | "saving" | "saved" | "error"; at?: string }>({ t: "idle" });
+  const flush = async () => {
+    if (timer.current) { clearTimeout(timer.current); timer.current = null; }
+    const f = formRef.current;
+    if (!f) return;
+    setAuto({ t: "saving" });
+    const r = await autosavePrescription(new FormData(f)).catch(() => ({ ok: false, at: undefined }));
+    setAuto(r.ok ? (r.at ? { t: "saved", at: r.at } : { t: "idle" }) : { t: "error" });
+  };
+  const schedule = () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(flush, 2000);
+  };
+  useEffect(() => { if (meds !== initial.medicines) schedule(); }, [meds]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    // ট্যাব বদলালে/বন্ধ করলে বাকি থাকা সেভ এখনই
+    const hide = () => { if (document.visibilityState === "hidden" && timer.current) flush(); };
+    document.addEventListener("visibilitychange", hide);
+    return () => document.removeEventListener("visibilitychange", hide);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
-    <form onSubmit={keepValues(action)} className="row" style={{ alignItems: "flex-start", gap: 20 }}>
+    <form ref={formRef} onSubmit={keepValues(action)} onInput={schedule} onChange={schedule} className="row" style={{ alignItems: "flex-start", gap: 20 }}>
       <input type="hidden" name="bookingId" value={bookingId} />
       <datalist id="med-suggest">{suggestions.map((s) => <option key={s} value={s} />)}</datalist>
       <datalist id="dose-suggest">{["১+০+১", "১+১+১", "০+০+১", "১+০+০", "০+১+০", "প্রয়োজনে"].map((s) => <option key={s} value={s} />)}</datalist>
@@ -63,6 +87,9 @@ export function PrescriptionForm({ bookingId, initial, suggestions, minDate }: P
           {fu === "date" && <label className="field">তারিখ<input className="input" type="date" name="followUpDate" min={minDate} defaultValue={initial.followUpDate ?? ""} required /></label>}
           <p className="alert alert-ok small">{fu ? "ফলোআপের আগের দিন রোগীর কাছে বুকিং লিংকসহ রিমাইন্ডার যাবে।" : "কোনো রিমাইন্ডার যাবে না।"}</p>
         </fieldset>
+        <p className={`rx-auto ${auto.t}`} role="status" aria-live="polite">
+          {auto.t === "saving" ? "সেভ হচ্ছে…" : auto.t === "saved" ? `✓ নিজে থেকেই সেভ হয়েছে · ${auto.at}` : auto.t === "error" ? "⚠ অটো-সেভ হয়নি — নিচের বোতামে সেভ করুন" : "লিখতে থাকুন — নিজে থেকেই সেভ হবে, রোগীর অ্যাকাউন্টেও যাবে"}
+        </p>
         <SubmitButton pending={pending} className="btn btn-primary btn-big btn-block" name="next" value="1">সেভ করে পরের রোগী</SubmitButton>
         <SubmitButton pending={pending} className="btn btn-block">শুধু সেভ করুন</SubmitButton>
         <SubmitButton pending={pending} className="btn btn-block" name="next" value="print">সেভ করে প্রিন্ট (প্যাডে)</SubmitButton>

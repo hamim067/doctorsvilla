@@ -15,11 +15,12 @@ export default async function MeLayout({ children }: { children: React.ReactNode
           <Link href="/" className="me-logo dark"><span className="me-mark"><Icon name="plus" size={16} stroke={2.8} color="#5BD6A4" /></span>DoctorOS</Link>
           <form action={patientLogout} className="row" style={{ gap: 10 }}>
             <ThemeToggle className="home-mode" label={false} />
-            <span className="small muted">{s.phone}</span>
+            <span className="small muted me-phone">{s.phone}</span>
             <button className="btn" style={{ minHeight: 38 }}>লগআউট</button>
           </form>
         </div>
       </header>
+      <div className="me-wrap me-tabs-wrap"><MeNav variant="top" /></div>
       <main className="me-wrap me-main">{children}</main>
       <MeNav />
     </div>

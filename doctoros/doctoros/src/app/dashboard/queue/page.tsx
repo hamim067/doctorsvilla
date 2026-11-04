@@ -3,6 +3,7 @@ import { AutoRefresh } from "@/components/AutoRefresh";
 import { ChamberTabs } from "@/components/ChamberTabs";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SubmitButton } from "@/components/SubmitButton";
+import { canSeeRx } from "@/lib/access";
 import { requireStaff } from "@/lib/auth";
 import { patientCode } from "@/lib/booking";
 import { doctorChambers, pickChamber } from "@/lib/chambers";
@@ -13,8 +14,10 @@ import { queueAction, requeueAction } from "./actions";
 export const metadata = { title: "সিরিয়াল কিউ" };
 export const dynamic = "force-dynamic";
 
-export default async function QueuePage({ searchParams }: { searchParams: Promise<{ chamber?: string }> }) {
+export default async function QueuePage({ searchParams }: { searchParams: Promise<{ chamber?: string; rx?: string }> }) {
   const s = await requireStaff();
+  const rx = await canSeeRx(s);
+  const denied = (await searchParams).rx === "denied";
   const list = await doctorChambers(s.doctorId);
   const chamber = pickChamber(list, (await searchParams).chamber);
   if (!chamber) return <p>আগে <Link href="/dashboard/chambers">চেম্বার যোগ করুন</Link>।</p>;
@@ -37,6 +40,7 @@ export default async function QueuePage({ searchParams }: { searchParams: Promis
         </div>
       </div>
       <ChamberTabs chambers={list} current={chamber.id} base="/dashboard/queue" />
+      {denied && <p className="alert alert-error">প্রেসক্রিপশন দেখার অনুমতি নেই — ডাক্তার অনুমতি দিলে দেখা যাবে।</p>}
 
       <section className="now-panel" aria-live="polite">
         <div className="stack-sm" style={{ alignItems: "center", minWidth: 110, gap: 0 }}>
@@ -48,7 +52,7 @@ export default async function QueuePage({ searchParams }: { searchParams: Promis
             <>
               <strong style={{ fontSize: 22 }}>{cur.patientName}</strong>
               <span style={{ color: "#c9e7e0" }}>{cur.type === "FOLLOW_UP" ? "ফলোআপ" : "নতুন"} রোগী · {patientCode(cur.patientNumber)} · {cur.source === "ONLINE" ? "অনলাইন" : "সরাসরি"}</span>
-              <Link href={`/dashboard/visit/${cur.id}`} style={{ color: "#fff", textDecoration: "underline" }}>প্রেসক্রিপশন লিখুন →</Link>
+              {rx && <Link href={`/dashboard/visit/${cur.id}`} style={{ color: "#fff", textDecoration: "underline" }}>প্রেসক্রিপশন লিখুন →</Link>}
             </>
           ) : (
             <span style={{ fontSize: 18 }}>{nextUp ? `পরের রোগী: সিরিয়াল ${bn(nextUp.serialNo)} — ${nextUp.patientName}` : "অপেক্ষমাণ কেউ নেই"}</span>
@@ -90,7 +94,7 @@ export default async function QueuePage({ searchParams }: { searchParams: Promis
                   {r.status === "ABSENT" && (
                     <form action={requeueAction}><input type="hidden" name="bookingId" value={r.id} /><button className="btn" style={{ minHeight: 36 }}>আবার লাইনে</button></form>
                   )}
-                  {(r.status === "DONE" || r.status === "IN_PROGRESS") && <Link className="btn" style={{ minHeight: 36 }} href={`/dashboard/visit/${r.id}`}>প্রেসক্রিপশন</Link>}
+                  {rx && (r.status === "DONE" || r.status === "IN_PROGRESS") && <Link className="btn" style={{ minHeight: 36 }} href={`/dashboard/visit/${r.id}`}>প্রেসক্রিপশন</Link>}
                 </td>
               </tr>
             ))}

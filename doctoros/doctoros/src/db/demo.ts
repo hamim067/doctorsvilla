@@ -303,6 +303,22 @@ async function main() {
     if (id) await db.insert(s.doctorSites).values({ doctorId: id, published: true, content: site.content }).onConflictDoNothing();
   }
 
+  // ---- প্রেসার/সুগারের ডেমো রিডিং (রহিম উদ্দিন, ডা. তানভীর) ----
+  const rp = pid["রহিম উদ্দিন"];
+  if (rp && docIds["demo-tanvir"]) {
+    const [hasV] = await db.select({ id: s.vitals.id }).from(s.vitals).where(eq(s.vitals.patientId, rp)).limit(1);
+    if (!hasV) {
+      const rows = [];
+      for (let i = 0; i < 8; i++) {
+        const date = addDays(TODAY, -56 + i * 8);
+        const sys = 158 - i * 4 + (i % 2 ? 3 : 0), dia = 98 - i * 2;
+        rows.push({ patientId: rp, doctorId: i % 3 === 2 ? null : docIds["demo-tanvir"], source: i % 3 === 2 ? "PATIENT" : "DOCTOR", date,
+          systolic: sys, diastolic: dia, pulse: 84 - i, sugarX10: 82 - i * 3, sugarWhen: "fasting", weightX10: 790 - i * 6, note: null });
+      }
+      await db.insert(s.vitals).values(rows);
+    }
+  }
+
   console.log("ডেমো ডেটা প্রস্তুত");
   await pool.end();
 }

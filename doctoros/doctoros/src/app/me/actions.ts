@@ -6,7 +6,9 @@ import { db, schema } from "@/db";
 import { normalizePhone } from "@/lib/booking";
 import { type FormState, int, str } from "@/lib/form";
 import { createPatientSession, destroyPatientSession, familyOf, requirePatient, sendOtp, verifyOtp } from "@/lib/patient-auth";
-import { today } from "@/lib/time";
+import { today, thisYear } from "@/lib/time";
+import type { VState } from "@/components/Vitals";
+import { parseVital } from "@/lib/vitals";
 
 export type OtpState = { step: "phone" | "code"; phone?: string; error?: string; demoCode?: string; info?: string } | undefined;
 
@@ -48,7 +50,7 @@ export async function addFamilyMember(_: FormState, fd: FormData): Promise<FormS
     name,
     relation: str(fd, "relation") || (fam.length === 0 ? "নিজে" : null),
     gender: str(fd, "gender") || null,
-    birthYear: age && age > 0 && age < 120 ? new Date().getFullYear() - age : null,
+    birthYear: age && age > 0 && age < 120 ? thisYear() - age : null,
   });
   revalidatePath("/me/family");
   return { ok: `${name} যোগ হয়েছেন` };
@@ -73,4 +75,17 @@ export async function cancelBooking(fd: FormData) {
     gte(schema.bookings.date, today()),
   ));
   revalidatePath("/me");
+}
+
+/** রোগী নিজে (বা পরিবারের সদস্যের) প্রেসার/সুগার/ওজন লেখেন */
+export async function addMyVital(patientId: string, _: VState, fd: FormData): Promise<VState> {
+  const s = await requirePatient();
+  const fam = await familyOf(s.accountId);
+  if (!fam.some((p) => p.id === patientId)) return { error: "সদস্য পাওয়া যায়নি" };
+  const r = parseVital(fd);
+  if ("error" in r) return { error: r.error };
+  await db.insert(schema.vitals).values({ ...r.value, patientId, doctorId: null, source: "PATIENT" });
+  revalidatePath("/me/health");
+  revalidatePath("/me");
+  return { ok: "রিডিং সেভ হয়েছে — আপনার ডাক্তারও পরের ভিজিটে দেখতে পাবেন", at: Date.now() };
 }

@@ -1,5 +1,6 @@
 "use server";
 import { and, eq } from "drizzle-orm";
+import { thisYear } from "@/lib/time";
 import { redirect } from "next/navigation";
 import { db, schema } from "@/db";
 import { BookingError, createBooking } from "@/lib/booking";
@@ -29,7 +30,7 @@ export async function bookOnline(_: FormState, fd: FormData): Promise<FormState>
       phone: str(fd, "phone"),
       name: str(fd, "name"),
       gender: str(fd, "gender") || null,
-      birthYear: age && age > 0 && age < 120 ? new Date().getFullYear() - age : null,
+      birthYear: age && age > 0 && age < 120 ? thisYear() - age : null,
     });
     id = booking.id;
   } catch (e) {

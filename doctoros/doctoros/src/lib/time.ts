@@ -46,3 +46,11 @@ export function formatTimeBn(hhmm: string): string {
 export function clockDhaka(d: Date): string {
   return new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).format(d);
 }
+
+/** এই বছর (ঢাকার ক্যালেন্ডারে) */
+export const thisYear = () => Number(today().slice(0, 4));
+
+/** কোনো মুহূর্তের তারিখ "YYYY-MM-DD" — ঢাকা সময়ে (UTC নয়) */
+export function dateDhaka(d: Date): string {
+  return today(d);
+}

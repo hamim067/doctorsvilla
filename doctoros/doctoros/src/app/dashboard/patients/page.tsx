@@ -5,7 +5,7 @@ import { ChamberTabs } from "@/components/ChamberTabs";
 import { requireStaff } from "@/lib/auth";
 import { normalizePhone, patientCode } from "@/lib/booking";
 import { doctorChambers, pickChamber } from "@/lib/chambers";
-import { bn, formatDateBn, today } from "@/lib/time";
+import { bn, formatDateBn, today, thisYear } from "@/lib/time";
 import { QuickSerialButton, WalkInForm } from "./WalkInForm";
 
 export const metadata = { title: "রোগী খোঁজা" };
@@ -56,7 +56,7 @@ export default async function PatientsPage({ searchParams }: { searchParams: Pro
   if (!chamber) return <p>আগে <Link href="/dashboard/chambers">চেম্বার যোগ করুন</Link>।</p>;
   const q = sp.q ?? "";
   const results = await search(s.doctorId, chamber.id, q);
-  const year = new Date().getFullYear();
+  const year = thisYear();
   const phoneGuess = normalizePhone(toAscii(q)) ?? undefined;
 
   return (

@@ -265,3 +265,54 @@ tr.live td { background: #fffaf5; }
 :root[data-theme="dark"] .auth .alert-ok { background: #173F37; color: #6FDDB8; }
 :root[data-theme="dark"] .auth .alert-error { background: #3B1E1E; color: #F5A3A3; }
 :root[data-theme="dark"] body:has(.auth) { background: #0C1513; }
+
+/* ================= স্বাস্থ্যের রিডিং (ড্যাশবোর্ড ও রোগী দুই জায়গায়) ================= */
+.vt { display: flex; flex-direction: column; gap: 14px; }
+.vt-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.vt-tile { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 14px; background: var(--ground); min-width: 0; }
+.vt-tl { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.vt-tile b { font-size: 22px; line-height: 1.2; color: var(--ink); }
+.vt-tile b small { font-size: 12px; font-weight: 500; color: var(--muted); }
+.vt-none { font-size: 14px; color: var(--muted); padding: 6px 0; }
+.vt-d { font-size: 12px; color: var(--muted); }
+.vt-flag { align-self: flex-start; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
+.vt-flag.ok { background: var(--teal-soft); color: var(--teal-ink, #0B6E5F); }
+.vt-flag.hi { background: var(--orange-soft); color: var(--orange-ink); }
+.vt-flag.lo { background: #E1ECF7; color: #1F4E7A; }
+.vt-flag.nt { background: transparent; color: var(--muted); padding: 0; }
+.vt-v.hi { color: var(--orange-ink); font-weight: 700; }
+.vt-v.lo { color: #1F4E7A; font-weight: 700; }
+.vt-box { border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.vt-tabs { display: inline-flex; align-self: flex-start; padding: 3px; border-radius: 10px; background: var(--ground); }
+.vt-tabs button { border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); padding: 5px 14px; border-radius: 8px; cursor: pointer; }
+.vt-tabs button.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+.vt-chart { position: relative; color: var(--teal); overflow: hidden; }
+.vt-chart svg { display: block; }
+.vt-tip { position: absolute; top: 0; transform: translateX(-50%); background: #0D2F2A; color: #fff; border-radius: 10px; padding: 6px 10px; font-size: 12px; display: flex; flex-direction: column; gap: 2px; pointer-events: none; white-space: nowrap; z-index: 2; }
+.vt-tip i, .vt-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; }
+.vt-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--muted); }
+.vt-legend i.band { background: currentColor; opacity: 0.15; }
+.vt-empty { font-size: 14px; color: var(--muted); padding: 20px 0; text-align: center; }
+.vt-add { display: flex; flex-direction: column; gap: 10px; }
+.vt-add > .btn { align-self: flex-start; }
+.vt-form { display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 14px; border: 1px dashed var(--teal); background: color-mix(in srgb, var(--teal-soft) 40%, var(--card)); }
+.vt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.vt-bp { display: flex; align-items: center; gap: 6px; }
+.vt-bp span { color: var(--muted); font-weight: 700; }
+.vt-table td, .vt-table th { white-space: nowrap; }
+.vt-note { font-size: 12.5px; color: var(--muted); }
+.vt.compact .vt-note { display: none; }
+@media (max-width: 560px) {
+  .vt-tiles { grid-template-columns: minmax(0, 1fr); }
+  .vt-tile { flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: 10px; }
+  .vt-tl { flex-basis: 100%; }
+}
+/* প্রেসক্রিপশনের অটো-সেভ লেখা */
+.rx-auto { font-size: 13.5px; color: var(--muted); padding: 8px 12px; border-radius: 10px; background: var(--ground); }
+.rx-auto.saved { color: var(--teal-ink, #0B6E5F); background: var(--teal-soft); }
+.rx-auto.error { color: var(--red); background: var(--red-soft); }
+:root[data-theme="dark"] .vt-tip { background: #E4ECE9; color: #0C1513; }
+:root[data-theme="dark"] .vt-flag.lo, :root[data-theme="dark"] .vt-v.lo { background: #1C2B3F; color: #9CC0EE; }
+:root[data-theme="dark"] .vt-chart svg line { stroke: #2E403C; }
+:root[data-theme="dark"] .vt-chart svg text { fill: #9FB2AD; }
+:root[data-theme="dark"] .vt-chart svg circle { stroke: #13201E; }

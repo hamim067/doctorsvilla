@@ -1,6 +1,6 @@
 import { patientCode } from "@/lib/booking";
 import { familyOf, requirePatient } from "@/lib/patient-auth";
-import { bn } from "@/lib/time";
+import { bn, thisYear } from "@/lib/time";
 import { updateRelation } from "../../actions";
 import { RELATIONS } from "@/lib/relations";
 import { AddMember } from "./AddMember";
@@ -13,7 +13,7 @@ const TINTS = [["#D5E6E1", "#0B6E5F"], ["#FFE6D5", "#8A3A10"], ["#E5E3F3", "#3E3
 export default async function Family() {
   const s = await requirePatient();
   const fam = await familyOf(s.accountId);
-  const year = new Date().getFullYear();
+  const year = thisYear();
   return (
     <div className="stack">
       <div className="col" style={{ gap: 4 }}>

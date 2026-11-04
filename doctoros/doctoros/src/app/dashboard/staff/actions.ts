@@ -39,3 +39,10 @@ export async function resetAssistantPassword(_: FormState, fd: FormData): Promis
     .returning({ name: schema.users.name });
   return r.length ? { ok: `${r[0].name}-এর নতুন পাসওয়ার্ড সেট হয়েছে` } : { error: "অ্যাসিস্ট্যান্ট পাওয়া যায়নি" };
 }
+
+/** অ্যাসিস্ট্যান্ট প্রেসক্রিপশন দেখতে/লিখতে পারবেন কিনা — ডিফল্ট: না */
+export async function setAssistantRx(fd: FormData) {
+  const s = await requireDoctor();
+  await db.update(schema.doctors).set({ assistantRxAccess: fd.get("allow") === "1" }).where(eq(schema.doctors.id, s.doctorId));
+  revalidatePath("/dashboard/staff");
+}

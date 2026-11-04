@@ -3,9 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, schema } from "@/db";
 import { StatusBadge } from "@/components/StatusBadge";
+import { VitalsPanel } from "@/components/Vitals";
+import { canSeeRx } from "@/lib/access";
 import { requireStaff } from "@/lib/auth";
+import { toRow, vitalsForDoctor } from "@/lib/vitals";
+import { addVitalForPatient } from "../actions";
 import { patientCode } from "@/lib/booking";
-import { bn, formatDateBn } from "@/lib/time";
+import { bn, formatDateBn, thisYear } from "@/lib/time";
 
 const FU = { PENDING: "আসন্ন", REMINDED: "রিমাইন্ডার গেছে", BOOKED: "সিরিয়াল নিয়েছেন", MISSED: "মিস", CANCELLED: "বাতিল" } as const;
 
@@ -23,13 +27,16 @@ export default async function PatientProfile({ params }: { params: Promise<{ id:
   // অন্য ডাক্তারের রোগীর তথ্য দেখা যাবে না
   if (hist.length === 0) notFound();
 
-  const [vs, fus, family] = await Promise.all([
+  const rx = await canSeeRx(s);
+  const [vs, fus, family, vit] = await Promise.all([
     db.select().from(visits).where(and(eq(visits.patientId, id), eq(visits.doctorId, s.doctorId))).orderBy(desc(visits.createdAt)),
     db.select().from(followUps).where(and(eq(followUps.patientId, id), eq(followUps.doctorId, s.doctorId))).orderBy(desc(followUps.dueDate)),
     db.select({ id: patients.id, name: patients.name, number: patients.number }).from(patients).where(and(eq(patients.accountId, row.accountId), ne(patients.id, id))),
+    vitalsForDoctor(s.doctorId, id),
   ]);
+  const vrows = vit.map((v) => toRow(v, v.source === "PATIENT" ? "রোগী নিজে" : v.source === "ASSISTANT" ? "অ্যাসিস্ট্যান্ট" : "ডাক্তার"));
   const p = row.p;
-  const age = p.birthYear ? new Date().getFullYear() - p.birthYear : null;
+  const age = p.birthYear ? thisYear() - p.birthYear : null;
   const visitByBooking = new Map(vs.filter((v) => v.bookingId).map((v) => [v.bookingId!, v]));
 
   return (
@@ -52,26 +59,32 @@ export default async function PatientProfile({ params }: { params: Promise<{ id:
         </div>
       )}
 
+      <section className="card stack" aria-label="স্বাস্থ্যের রিডিং">
+        <div className="row-sb"><h2>প্রেসার, সুগার ও ওজন</h2><span className="small muted">তারিখ অনুযায়ী — রোগীর নিজের অ্যাকাউন্টেও দেখাবে</span></div>
+        <VitalsPanel rows={vrows} action={addVitalForPatient.bind(null, id)} />
+      </section>
+
       <div className="card stack">
         <h2>ভিজিটের ইতিহাস</h2>
+        {!rx && <p className="alert alert-error small">প্রেসক্রিপশন দেখার অনুমতি নেই — ডাক্তার &quot;অ্যাসিস্ট্যান্ট&quot; পেজ থেকে অনুমতি দিলে দেখা যাবে।</p>}
         {hist.map(({ b, chamberName }) => {
           const v = visitByBooking.get(b.id);
           return (
             <div key={b.id} className="row" style={{ borderTop: "1px solid var(--row-line)", paddingTop: 12, alignItems: "flex-start" }}>
               <div className="stack-sm" style={{ width: 160, gap: 0 }}>
-                <strong>{formatDateBn(b.date, false)} {b.date.slice(0, 4)}</strong>
+                <strong>{formatDateBn(b.date, false)} {bn(b.date.slice(0, 4))}</strong>
                 <span className="muted small">{chamberName} · সিরিয়াল {bn(b.serialNo)}</span>
               </div>
               <div className="stack-sm" style={{ flex: 1, minWidth: 240, gap: 2 }}>
-                {v ? (
+                {v && rx ? (
                   <>
                     <strong>{v.diagnosis || v.complaint || "প্রেসক্রিপশন"}</strong>
                     <span className="muted small">{v.medicines.map((m) => `${m.name} ${m.dose}`).join(" · ") || "ওষুধ নেই"}</span>
                     {v.advice && <span className="small">{v.advice}</span>}
                   </>
-                ) : <StatusBadge status={b.status} />}
+                ) : <span style={{ alignSelf: "flex-start" }}><StatusBadge status={b.status} /></span>}
               </div>
-              {(b.status === "DONE" || b.status === "IN_PROGRESS") && <Link className="btn" style={{ minHeight: 36 }} href={`/dashboard/visit/${b.id}`}>{v ? "প্রেসক্রিপশন দেখুন" : "প্রেসক্রিপশন লিখুন"}</Link>}
+              {rx && (b.status === "DONE" || b.status === "IN_PROGRESS") && <Link className="btn" style={{ minHeight: 36 }} href={`/dashboard/visit/${b.id}`}>{v ? "প্রেসক্রিপশন দেখুন" : "প্রেসক্রিপশন লিখুন"}</Link>}
             </div>
           );
         })}

@@ -2,15 +2,20 @@ import { and, eq, sql } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, schema } from "@/db";
+import { requireRx } from "@/lib/access";
 import { requireStaff } from "@/lib/auth";
 import { patientCode } from "@/lib/booking";
-import { addDays, bn, formatDateBn, today } from "@/lib/time";
+import { addDays, bn, formatDateBn, today, thisYear } from "@/lib/time";
+import { VitalsPanel } from "@/components/Vitals";
+import { toRow, vitalsForDoctor } from "@/lib/vitals";
+import { addVitalForPatient } from "../../patients/actions";
 import { PrescriptionForm } from "./PrescriptionForm";
 
 export const metadata = { title: "প্রেসক্রিপশন" };
 
 export default async function VisitPage({ params }: { params: Promise<{ bookingId: string }> }) {
   const s = await requireStaff();
+  await requireRx(s);
   const { bookingId } = await params;
   const [row] = await db
     .select({ b: schema.bookings, p: schema.patients, doctor: schema.doctors })
@@ -25,7 +30,8 @@ export default async function VisitPage({ params }: { params: Promise<{ bookingI
   const sugg = await db.execute<{ name: string }>(sql`
     select distinct m->>'name' as name from visits v, jsonb_array_elements(v.medicines) m
     where v.doctor_id = ${s.doctorId} and coalesce(m->>'name','') <> '' order by 1 limit 300`);
-  const age = row.p.birthYear ? new Date().getFullYear() - row.p.birthYear : null;
+  const vit = (await vitalsForDoctor(s.doctorId, row.p.id, 30)).map((v) => toRow(v, v.source === "PATIENT" ? "রোগী নিজে" : v.source === "ASSISTANT" ? "অ্যাসিস্ট্যান্ট" : "ডাক্তার"));
+  const age = row.p.birthYear ? thisYear() - row.p.birthYear : null;
 
   return (
     <>
@@ -46,6 +52,10 @@ export default async function VisitPage({ params }: { params: Promise<{ bookingI
           followUpDate: visit?.followUpDate ?? null,
         }}
       />
+      <section className="card stack no-print" aria-label="প্রেসার ও সুগার">
+        <div className="row-sb"><h2>প্রেসার, সুগার ও ওজন</h2><span className="small muted">আজকের মাপ এখানে লিখুন — রোগীর ফাইলেও যাবে</span></div>
+        <VitalsPanel rows={vit} compact action={addVitalForPatient.bind(null, row.p.id)} />
+      </section>
       <p className="muted small no-print"><Link href={`/dashboard/patients/${row.p.id}`}>রোগীর আগের ইতিহাস দেখুন →</Link></p>
     </>
   );

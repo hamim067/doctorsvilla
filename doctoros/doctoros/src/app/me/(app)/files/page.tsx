@@ -3,7 +3,7 @@ import Link from "next/link";
 import { db, schema } from "@/db";
 import { patientCode } from "@/lib/booking";
 import { familyOf, requirePatient } from "@/lib/patient-auth";
-import { bn, formatDateBn } from "@/lib/time";
+import { bn, dateDhaka, formatDateBn } from "@/lib/time";
 
 export const metadata = { title: "মেডিকেল ফাইল" };
 export const dynamic = "force-dynamic";
@@ -38,7 +38,7 @@ export default async function MyFiles({ searchParams }: { searchParams: Promise<
         <article key={v.id} className="me-card stack-sm">
           <div className="row-sb">
             <span className={`badge ${i === 0 ? "badge-teal" : ""}`}>প্রেসক্রিপশন{i === 0 ? " · সর্বশেষ" : ""}</span>
-            <span className="small muted">{formatDateBn(v.createdAt.toISOString().slice(0, 10), false)} {bn(v.createdAt.getFullYear())}</span>
+            <span className="small muted">{formatDateBn(dateDhaka(v.createdAt), false)} {bn(dateDhaka(v.createdAt).slice(0, 4))}</span>
           </div>
           <b style={{ fontSize: 17 }}>{doctorName} <span className="small muted" style={{ fontWeight: 400 }}>{degrees}</span></b>
           <span className="small muted">রোগী: {patientName}</span>

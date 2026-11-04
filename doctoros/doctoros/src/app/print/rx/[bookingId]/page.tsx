@@ -3,16 +3,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, schema } from "@/db";
 import { PrintButton } from "@/components/PrintButton";
+import { requireRx } from "@/lib/access";
 import { requireStaff } from "@/lib/auth";
 import { patientCode } from "@/lib/booking";
 import { qrSvg, siteOrigin } from "@/lib/qr";
-import { bn, formatDateBn } from "@/lib/time";
+import { bn, formatDateBn, thisYear } from "@/lib/time";
 import "../../print.css";
 
 export const metadata = { title: "প্রেসক্রিপশন প্রিন্ট", robots: { index: false } };
 
 export default async function RxPrint({ params, searchParams }: { params: Promise<{ bookingId: string }>; searchParams: Promise<{ auto?: string }> }) {
   const s = await requireStaff();
+  await requireRx(s);
   const { bookingId } = await params;
   const { auto } = await searchParams;
   const [row] = await db
@@ -26,7 +28,7 @@ export default async function RxPrint({ params, searchParams }: { params: Promis
   if (!row) notFound();
   const [v] = await db.select().from(schema.visits).where(eq(schema.visits.bookingId, bookingId)).limit(1);
   const { b, p, doctor: d, chamber: c } = row;
-  const age = p.birthYear ? new Date().getFullYear() - p.birthYear : null;
+  const age = p.birthYear ? thisYear() - p.birthYear : null;
   const url = `${await siteOrigin()}/dr/${d.slug}`;
   const svg = await qrSvg(url);
 

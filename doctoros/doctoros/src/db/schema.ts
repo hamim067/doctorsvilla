@@ -52,6 +52,8 @@ export const doctors = pgTable("doctors", {
   plan: text("plan").notNull().default("FREE"),
   /** Premium কোন তারিখ পর্যন্ত ("YYYY-MM-DD"); null = মেয়াদ নেই */
   premiumUntil: text("premium_until"),
+  /** অ্যাসিস্ট্যান্ট প্রেসক্রিপশন দেখতে/লিখতে পারবেন কিনা — ডাক্তার অনুমতি দিলে তবেই */
+  assistantRxAccess: boolean("assistant_rx_access").notNull().default(false),
   ownerId: text("owner_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   createdAt: createdAt(),
 });
@@ -254,6 +256,34 @@ export const doctorSites = pgTable("doctor_sites", {
   photo: text("photo"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * রোগীর স্বাস্থ্যের রিডিং — প্রেসার, সুগার, ওজন, পালস; তারিখসহ।
+ * ডাক্তার/অ্যাসিস্ট্যান্ট (doctorId থাকে) বা রোগী নিজে (doctorId null) যোগ করেন।
+ * সুগার mmol/L ×১০ আর ওজন kg ×১০ পূর্ণসংখ্যায় রাখা — দশমিকের গোলমাল এড়াতে।
+ */
+export const vitals = pgTable(
+  "vitals",
+  {
+    id: id(),
+    patientId: text("patient_id").notNull().references(() => patients.id, { onDelete: "cascade" }),
+    doctorId: text("doctor_id").references(() => doctors.id, { onDelete: "set null" }),
+    /** DOCTOR | ASSISTANT | PATIENT */
+    source: text("source").notNull(),
+    date: text("date").notNull(),
+    systolic: integer("systolic"),
+    diastolic: integer("diastolic"),
+    pulse: integer("pulse"),
+    sugarX10: integer("sugar_x10"),
+    /** fasting | after_meal | random */
+    sugarWhen: text("sugar_when"),
+    weightX10: integer("weight_x10"),
+    note: text("note"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("vitals_patient_date").on(t.patientId, t.date)],
+);
+export type Vital = typeof vitals.$inferSelect;
 
 // ---- relations (db.query.* দিয়ে join করার জন্য) ----
 export const doctorsRelations = relations(doctors, ({ many }) => ({ chambers: many(chambers) }));

@@ -30,7 +30,18 @@ const hashCode = (phone: string, code: string) =>
 
 export const smsIsLive = () => process.env.SMS_PROVIDER === "http";
 
+/**
+ * এসএমএস চালু না থাকলে কোড স্ক্রিনে দেখানো হয় — কিন্তু শুধু ডেমো রোগীর নম্বরে (01800000001–09),
+ * নইলে যে কেউ অন্যের নম্বর দিয়ে তার প্রেসক্রিপশন দেখে ফেলতে পারত।
+ * টেস্টের জন্য সব নম্বরে দেখাতে চাইলে Vercel-এ OTP_DEMO_ALL=1 (আসল রোগী আসার আগে মুছে দিন)।
+ */
+const isDemoPhone = (p: string) => /^0180000000\d$/.test(p);
+const showOnScreen = (p: string) => !smsIsLive() && (isDemoPhone(p) || process.env.OTP_DEMO_ALL === "1");
+
 export async function sendOtp(phone: string): Promise<{ error?: string; demoCode?: string }> {
+  if (!smsIsLive() && !showOnScreen(phone)) {
+    return { error: "রোগীর লগইন শীঘ্রই চালু হচ্ছে (এসএমএস যুক্ত হলে)। সিরিয়াল নিতে লগইন লাগে না — ডাক্তারের পেজ থেকে সরাসরি নিন।" };
+  }
   const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
   const recent = await db
     .select({ createdAt: schema.otpCodes.createdAt })
@@ -43,7 +54,7 @@ export async function sendOtp(phone: string): Promise<{ error?: string; demoCode
   const code = String(randomInt(100000, 1000000));
   await db.insert(schema.otpCodes).values({ phone, codeHash: hashCode(phone, code), expiresAt: new Date(Date.now() + OTP_TTL_MS) });
   await notifyPatient({ doctorId: null, phone, purpose: "otp", body: `DoctorOS লগইন কোড: ${code}। ৫ মিনিট কাজ করবে, কাউকে বলবেন না।` });
-  return smsIsLive() ? {} : { demoCode: code };
+  return showOnScreen(phone) ? { demoCode: code } : {};
 }
 
 export async function verifyOtp(phone: string, code: string): Promise<{ error?: string; accountId?: string }> {
