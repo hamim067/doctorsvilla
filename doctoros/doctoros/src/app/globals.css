@@ -191,29 +191,9 @@ tr.live td { background: #fffaf5; }
 .dash-main h1 { font-size: clamp(24px, 2.4vw, 30px); }
 .dash-main .card { border-radius: 18px; border-color: var(--line-2); box-shadow: var(--shadow-sm); }
 
-/* ট্যাবলেট ও মোবাইল: বাম মেনু → উপরে লোগো বার + আড়াআড়ি স্ক্রল করা মেনু */
-@media (max-width: 900px) {
-  .dash { flex-direction: column; }
-  .dash-side { position: sticky; top: 0; z-index: 20; height: auto; flex: 0 0 auto; padding: 0; overflow: visible; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15); }
-  .dash-side .brand, .dash-side .who, .dash-nav-label { display: none; }
-  .dash-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px 6px; }
-  .dash-top .brand-sm { display: flex; align-items: center; gap: 8px; color: #fff; font-weight: 700; font-size: 18px; }
-  .dash-top .who-out { min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.25); background: transparent; color: #fff; font: inherit; font-size: 13px; }
-  .dash-top .who-name { font-size: 12px; color: var(--side-ink); max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dash-nav { flex-direction: row; gap: 6px; overflow-x: auto; padding: 4px 14px 12px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-  .dash-nav::-webkit-scrollbar { display: none; }
-  .dash-side a.nav { min-height: 38px; padding: 0 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); font-size: 14px; }
-  .dash-side a.nav svg { display: none; }
-  .dash-side a.nav.active { background: var(--mint); color: var(--side-bg); box-shadow: none; }
-  .dash-main { padding: 16px 14px 40px; gap: 16px; }
-}
-
 /* ---- থিম বদলের বোতাম ---- */
 .theme-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.25); background: transparent; color: #fff; font: inherit; font-size: 14px; cursor: pointer; align-self: flex-start; }
 .theme-btn:hover { background: rgba(255, 255, 255, 0.08); }
-.dash-top .theme-btn { min-height: 34px; width: 34px; padding: 0; justify-content: center; border-radius: 999px; }
-.dash-top .theme-btn span { display: none; }
-.dash-top-r { display: flex; align-items: center; gap: 8px; }
 
 /* ================= ড্যাশবোর্ড — ডার্ক মোড ================= */
 :root[data-theme="dark"] .dash {
@@ -335,8 +315,6 @@ label.field { font-size: 15.5px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 
 /* ড্যাশবোর্ডের ছোট লেখাগুলো বড় */
-.dash-top .who-name { font-size: 14px; }
-.dash-side .who-out, .dash-top .who-out { font-size: 14px; min-height: 38px; }
 .dash-nav-label { font-size: 12.5px !important; }
 .dash-side a.nav { font-size: 16px; }
 .kpi-label { font-size: 15px !important; }
@@ -353,7 +331,6 @@ label.field { font-size: 15.5px; }
 @media (max-width: 640px) {
   .dash-main h1 { font-size: 26px; line-height: 1.3; }
   .dash-main h2 { font-size: 19px; }
-  .dash-side a.nav { font-size: 15.5px; min-height: 42px; }
   .dash-main .row { gap: 10px; }
   .dash-main .row.between > .row .btn { flex: 1 1 auto; }
   .dash-main .card { padding: 16px; }

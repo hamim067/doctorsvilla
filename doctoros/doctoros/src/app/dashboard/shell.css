@@ -1,0 +1,73 @@
+/* ================= ড্যাশবোর্ডের মেনু ================= */
+.dash-side { position: sticky; transition: flex-basis .22s ease, padding .22s ease; }
+.ds-brandrow { display: flex; align-items: center; }
+.dash-side .brand { padding: 2px 10px 14px; overflow: hidden; white-space: nowrap; }
+.ds-collapse { position: absolute; top: 26px; right: -1px; transform: translateX(50%); z-index: 3; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--dash-bg); background: var(--mint); color: var(--side-bg); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; box-shadow: 0 2px 8px rgba(0,0,0,.25); transform: translateX(50%) rotate(180deg); transition: transform .2s; }
+.dash.mini .ds-collapse { transform: translateX(50%) rotate(0deg); }
+.dash-side { overflow: visible; }
+.dash-nav { overflow-y: auto; overflow-x: hidden; flex: 1 1 auto; min-height: 0; scrollbar-width: thin; }
+.ds-group { display: flex; flex-direction: column; gap: 2px; }
+.dash-side a.nav { gap: 12px; }
+.who-n { font-weight: 600; }
+.who-s { color: var(--side-ink); font-size: 13.5px; }
+.who-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.who-lang { margin: 2px 0; }
+
+/* ভাষার সুইচ */
+.ds-lang { display: inline-flex; padding: 3px; border-radius: 12px; background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.14); }
+.ds-lang button { min-height: 34px; min-width: 52px; padding: 0 12px; border: 0; border-radius: 9px; background: transparent; color: var(--side-ink); font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+.ds-lang button.on { background: var(--teal); color: #fff; }
+
+/* ছোট (শুধু আইকন) মেনু */
+.dash.mini .dash-side { flex-basis: 78px; padding: 20px 10px; }
+.dash.mini .nl { display: none; }
+.dash.mini .dash-side .brand { justify-content: center; padding: 2px 0 14px; }
+.dash.mini .dash-nav-label { font-size: 0 !important; padding: 0; margin: 10px 14px; height: 1px; background: rgba(255,255,255,.12); }
+.dash.mini .dash-side a.nav { justify-content: center; padding: 0; min-height: 46px; }
+.dash.mini .dash-side a.nav.active { box-shadow: inset 0 -3px 0 var(--mint); }
+.dash.mini .who { padding: 12px 0 0; align-items: center; }
+.dash.mini .who-btns { flex-direction: column; align-items: center; }
+.dash.mini .who .theme-btn, .dash.mini .who .who-out { width: 44px; min-height: 40px; padding: 0; justify-content: center; display: inline-flex; align-items: center; }
+
+/* মোবাইলের জিনিস ডেস্কটপে লুকানো */
+.dash-top, .ds-drawer, .ds-shade { display: none; }
+
+/* ---------- মোবাইল ও ট্যাবলেট ---------- */
+@media (max-width: 900px) {
+  .dash { flex-direction: column; }
+  .dash-side { display: none; }
+  .dash-top { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: var(--side-bg); color: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.18); }
+  .dash-top .brand-sm { display: flex; align-items: center; gap: 10px; color: #fff; min-width: 0; text-decoration: none; }
+  .dash-top .brand-sm b { font-size: 18px; line-height: 1.15; }
+  .dash-top .brand-sm small { font-size: 13.5px; color: var(--side-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 48vw; }
+  .dash-top-r { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+  .dash-top .theme-btn { width: 44px; min-height: 44px; padding: 0; justify-content: center; border-radius: 12px; }
+  .ds-menubtn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 0; background: var(--mint); color: var(--side-bg); font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+
+  .ds-shade { display: block; position: fixed; inset: 0; z-index: 40; background: rgba(5, 15, 13, .55); opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
+  .ds-shade.open { opacity: 1; visibility: visible; }
+  .ds-drawer { display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 41; width: min(88vw, 380px); background: var(--side-bg); color: #fff; box-shadow: 8px 0 30px rgba(0,0,0,.35); transform: translateX(-102%); visibility: hidden; transition: transform .25s ease, visibility .25s; overscroll-behavior: contain; }
+  .ds-drawer.open { transform: none; visibility: visible; }
+  .ds-dh { display: flex; align-items: center; gap: 12px; padding: 18px 16px 16px; border-bottom: 1px solid rgba(255,255,255,.1); }
+  .ds-dh b { font-size: 18px; line-height: 1.25; }
+  .ds-dh small { font-size: 14px; color: var(--side-ink); }
+  .ds-av { width: 48px; height: 48px; flex: 0 0 auto; border-radius: 14px; background: var(--teal); display: flex; align-items: center; justify-content: center; color: #fff; }
+  .ds-x { width: 48px; height: 48px; flex: 0 0 auto; border-radius: 14px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.05); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .ds-list { flex: 1 1 auto; overflow-y: auto; padding: 6px 12px 12px; display: flex; flex-direction: column; gap: 4px; }
+  .ds-glabel { display: block; font-size: 13px; font-weight: 700; color: #7FA59C; padding: 14px 6px 6px; }
+  .ds-item { display: flex; align-items: center; gap: 14px; min-height: 58px; padding: 6px 8px; border-radius: 14px; color: #fff !important; text-decoration: none; font-size: 17px; font-weight: 600; }
+  .ds-item:active, .ds-item:hover { background: rgba(255,255,255,.06); }
+  .ds-item.on { background: rgba(255,255,255,.1); }
+  .ds-item.on .ds-ic { background: var(--mint); color: var(--side-bg); }
+  .ds-ic { width: 44px; height: 44px; flex: 0 0 auto; border-radius: 12px; background: rgba(82, 214, 170, .12); color: var(--mint); display: flex; align-items: center; justify-content: center; }
+  .ds-tx { flex: 1; min-width: 0; }
+  .ds-item > svg:last-child { color: var(--side-ink); opacity: .8; }
+  .ds-foot { padding: 12px 16px calc(16px + env(safe-area-inset-bottom)); border-top: 1px solid rgba(255,255,255,.1); display: flex; flex-direction: column; gap: 12px; }
+  .ds-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 16px; color: var(--side-ink); }
+  .ds-theme { width: 48px; height: 48px; border-radius: 14px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.05); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .ds-logout { width: 100%; min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 14px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.05); color: #fff; font: inherit; font-size: 16.5px; font-weight: 700; cursor: pointer; }
+  .ds-lang button { min-height: 40px; min-width: 60px; font-size: 15.5px; }
+  .dash-main { padding: 16px 14px 40px; gap: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .ds-drawer, .ds-shade, .dash-side, .ds-collapse { transition: none; } }
+.ds-minilang { font-weight: 700 !important; font-size: 13.5px !important; }
