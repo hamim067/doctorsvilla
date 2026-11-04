@@ -371,7 +371,8 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
 
   const NAV_IC: Record<string, keyof typeof ICON> = { top: "layout", about: "user", services: "steth", chambers: "pin", queue: "pulse", faq: "help", videos: "youtube", blog: "edit" };
   const stats = [
-    c.stats.experience && d.stats.experience ? { v: `${fmt(d.stats.experience, lang)}+`, l: t.exp } : null,
+    // অভিজ্ঞতা ছবির ব্যাজে দেখায় — এখানে আবার নয়
+
     c.stats.patients && d.stats.patients >= 10 ? { v: `${fmt(d.stats.patients >= 100 ? Math.floor(d.stats.patients / 10) * 10 : d.stats.patients, lang)}+`, l: t.pts } : null,
     c.stats.chambers && d.stats.chambers ? { v: fmt(d.stats.chambers, lang), l: t.chs } : null,
   ].filter(Boolean) as { v: string; l: string }[];
@@ -628,13 +629,23 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
               </div>
             </div>
             <div className="ws-hero-pic">
-              <div className="ws-photo">
-                {d.photo ? <img src={d.photo} alt={name} /> : <span className="ws-photo-ph">{initials}</span>}
-                <div className="ws-photo-cap">
-                  {d.verified && <span className="ws-photo-v"><Icon name="check" size={13} stroke={3} />{t.verified}</span>}
-                  <b>{name}</b>
-                  <span>{tx("designation")}</span>
+              <div className="ws-pframe">
+                <span className="ws-pframe-bg" aria-hidden />
+                <span className="ws-pframe-dots" aria-hidden />
+                <div className="ws-photo">
+                  {d.photo ? <img src={d.photo} alt={name} /> : <span className="ws-photo-ph">{initials}</span>}
+                  <div className="ws-photo-cap">
+                    <b>{name}</b>
+                    <span>{tx("designation")}</span>
+                  </div>
                 </div>
+                {c.stats.experience && d.stats.experience ? (
+                  <div className="ws-exp" aria-label={`${fmt(d.stats.experience, lang)}+ ${t.exp}`}>
+                    <span className="ws-exp-ic"><Icon name="award" size={20} /></span>
+                    <span className="ws-exp-t"><b>{fmt(d.stats.experience, lang)}+</b><small>{t.exp}</small></span>
+                  </div>
+                ) : null}
+                {d.verified && <span className="ws-ver"><Icon name="shield" size={15} />{t.verified}</span>}
               </div>
             </div>
           </div>
