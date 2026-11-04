@@ -63,6 +63,9 @@ type NewBookingInput = {
   name?: string;
   gender?: string | null;
   birthYear?: number | null;
+  /** ডাক্তার নিজে সরাসরি দেখছেন — চেম্বার বন্ধের দিনেও চলবে, সিরিয়াল সম্পন্ন হিসেবে থাকবে */
+  direct?: boolean;
+  feeWaived?: boolean;
 };
 
 /**
@@ -79,10 +82,15 @@ export async function createBooking(input: NewBookingInput) {
     throw new BookingError(`অনলাইনে সর্বোচ্চ ${bn(ONLINE_BOOKING_DAYS)} দিন আগে সিরিয়াল নেওয়া যায়`);
 
   const avail = await dayAvailability(input.chamberId, input.date);
-  if (!avail.open) throw new BookingError(avail.reason);
-  if (input.source === "ONLINE" && avail.onlineLeft <= 0) throw new BookingError("এই দিনের অনলাইন সিরিয়াল শেষ");
+  let chamber: typeof chambers.$inferSelect;
+  if (avail.open) chamber = avail.chamber;
+  else if (input.direct && input.source === "WALK_IN") {
+    const [c] = await db.select().from(chambers).where(and(eq(chambers.id, input.chamberId), eq(chambers.active, true))).limit(1);
+    if (!c) throw new BookingError("চেম্বার পাওয়া যায়নি");
+    chamber = c;
+  } else throw new BookingError(avail.reason);
+  if (input.source === "ONLINE" && avail.open && avail.onlineLeft <= 0) throw new BookingError("এই দিনের অনলাইন সিরিয়াল শেষ");
   // সরাসরি আসা রোগীর জন্য লিমিট পেরোলেও অ্যাসিস্ট্যান্ট দিতে পারবেন — ডাক্তারের সিদ্ধান্ত
-  const { chamber } = avail;
 
   // ---- রোগী খুঁজে বের করা বা নতুন বানানো ----
   let patient: typeof patients.$inferSelect;
@@ -158,12 +166,15 @@ export async function createBooking(input: NewBookingInput) {
             serialNo,
             source: input.source,
             type: fu ? "FOLLOW_UP" : "NEW",
+            feeWaived: Boolean(input.feeWaived),
+            ...(input.direct ? { status: "DONE" as const, calledAt: new Date(), completedAt: new Date() } : {}),
           })
           .returning();
         if (fu) await tx.update(followUps).set({ status: "BOOKED", bookingId: b.id }).where(eq(followUps.id, fu.id));
         return b;
       });
 
+      if (input.direct) return { booking, patient, chamber };
       const [doc] = await db.select({ name: doctors.name }).from(doctors).where(eq(doctors.id, chamber.doctorId)).limit(1);
       await notifyPatient({
         doctorId: chamber.doctorId,

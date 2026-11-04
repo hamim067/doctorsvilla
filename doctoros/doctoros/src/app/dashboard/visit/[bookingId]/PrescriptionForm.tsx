@@ -13,9 +13,10 @@ type Props = {
   initial: { complaint: string; diagnosis: string; advice: string; medicines: Medicine[]; followUpDate: string | null };
   suggestions: string[];
   minDate: string;
+  previous?: { medicines: Medicine[]; label: string } | null;
 };
 
-export function PrescriptionForm({ bookingId, initial, suggestions, minDate }: Props) {
+export function PrescriptionForm({ bookingId, initial, suggestions, minDate, previous }: Props) {
   const [state, action, pending] = useActionState(savePrescription, undefined);
   const [meds, setMeds] = useState<Medicine[]>(initial.medicines.length ? initial.medicines : [blank]);
   const [fu, setFu] = useState<string>(initial.followUpDate ? "date" : "");
@@ -59,6 +60,16 @@ export function PrescriptionForm({ bookingId, initial, suggestions, minDate }: P
         <label className="card field">রোগ নির্ণয়<input className="input" name="diagnosis" defaultValue={initial.diagnosis} /></label>
         <fieldset className="card stack-sm" style={{ border: "1px solid var(--line)" }}>
           <legend style={{ fontWeight: 700 }}>ওষুধ (Rx)</legend>
+          {previous && (
+            <button type="button" className="btn rx-copy" onClick={() => {
+              // আগেরগুলো বসাই, তবে যে ওষুধ আগেই লেখা আছে তা আবার নয়
+              setMeds((cur) => {
+                const have = new Set(cur.filter((m) => m.name.trim()).map((m) => m.name.trim().toLowerCase()));
+                const add = previous.medicines.filter((m) => !have.has(m.name.trim().toLowerCase()));
+                return [...cur.filter((m) => m.name.trim()), ...add].length ? [...cur.filter((m) => m.name.trim()), ...add] : [blank];
+              });
+            }}>⟲ আগের প্রেসক্রিপশনের ওষুধ কপি করুন ({previous.label})</button>
+          )}
           {meds.map((m, i) => (
             <div key={i} className="row" style={{ background: "var(--ground)", padding: 8, borderRadius: 10 }}>
               <input aria-label="ওষুধের নাম" className="input" name="med-name" list="med-suggest" value={m.name} onChange={(e) => update(i, "name", e.target.value)} placeholder="ওষুধের নাম ও মাত্রা" style={{ flex: "2 1 200px" }} />

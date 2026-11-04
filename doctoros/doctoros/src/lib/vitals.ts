@@ -66,3 +66,9 @@ export const toRow = (v: Vital, by: string): VitalRow => ({
   sugar: v.sugarX10 === null ? null : v.sugarX10 / 10, sugarWhen: v.sugarWhen,
   weight: v.weightX10 === null ? null : v.weightX10 / 10, note: v.note, by,
 });
+
+/** একই রোগীর একই তারিখে হুবহু একই রিডিং আগে আছে কিনা — দুবার সেভ এড়াতে */
+export async function duplicateVital(patientId: string, v: { date: string; systolic: number | null; diastolic: number | null; pulse: number | null; sugarX10: number | null; weightX10: number | null }) {
+  const rows = await db.select().from(schema.vitals).where(and(eq(schema.vitals.patientId, patientId), eq(schema.vitals.date, v.date)));
+  return rows.some((r) => r.systolic === v.systolic && r.diastolic === v.diastolic && r.pulse === v.pulse && r.sugarX10 === v.sugarX10 && r.weightX10 === v.weightX10);
+}

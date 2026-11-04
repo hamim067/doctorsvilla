@@ -109,3 +109,11 @@ export async function requirePatient(): Promise<PatientSession> {
 export async function familyOf(accountId: string) {
   return db.select().from(schema.patients).where(eq(schema.patients.accountId, accountId)).orderBy(schema.patients.createdAt);
 }
+
+/** "কার তথ্য দেখছেন" — বাছাই করা সদস্যের আইডি কুকিতে থাকে */
+export const MEMBER_COOKIE = "dos_member";
+export async function selectedMember<T extends { id: string }>(fam: T[], wanted?: string): Promise<T | undefined> {
+  const { cookies } = await import("next/headers");
+  const id = wanted ?? (await cookies()).get(MEMBER_COOKIE)?.value;
+  return fam.find((p) => p.id === id) ?? fam[0];
+}

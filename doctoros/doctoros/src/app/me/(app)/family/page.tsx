@@ -1,45 +1,28 @@
 import { patientCode } from "@/lib/booking";
-import { familyOf, requirePatient } from "@/lib/patient-auth";
-import { bn, thisYear } from "@/lib/time";
-import { updateRelation } from "../../actions";
-import { RELATIONS } from "@/lib/relations";
-import { AddMember } from "./AddMember";
+import { familyOf, requirePatient, selectedMember } from "@/lib/patient-auth";
+import { thisYear } from "@/lib/time";
+import { FamilyList } from "./FamilyList";
 
 export const metadata = { title: "পরিবার" };
 export const dynamic = "force-dynamic";
 
-const TINTS = [["#D5E6E1", "#0B6E5F"], ["#FFE6D5", "#8A3A10"], ["#E5E3F3", "#3E3577"], ["#E1ECF7", "#1F4E7A"]];
-
+/** পরিবারের সদস্য — দেখা, বদলানো, নতুন যোগ (একই নামে দুবার নয়) */
 export default async function Family() {
   const s = await requirePatient();
   const fam = await familyOf(s.accountId);
-  const year = thisYear();
+  const sel = await selectedMember(fam);
+  const y = thisYear();
+  const members = fam.map((p) => ({
+    id: p.id, name: p.name, relation: p.relation, gender: p.gender, code: patientCode(p.number),
+    age: p.birthYear ? y - p.birthYear : null, allergies: p.allergies, conditions: p.conditions,
+  }));
   return (
-    <div className="stack">
+    <div className="md">
       <div className="col" style={{ gap: 4 }}>
-        <h1>পরিবার</h1>
-        <span className="muted">এক নাম্বারে ({s.phone}) সবার সিরিয়াল আর ফাইল আলাদা থাকবে।</span>
+        <h1>পরিবারের সদস্য</h1>
+        <span className="muted">এক নম্বরে ({s.phone}) সবার সিরিয়াল আর প্রেসক্রিপশন আলাদা আলাদা থাকে। ডাক্তারের কাছে এই নম্বর বললেই হবে।</span>
       </div>
-      {fam.map((p, i) => (
-        <div key={p.id} className="me-card me-member">
-          <span className="me-av" style={{ background: TINTS[i % 4][0], color: TINTS[i % 4][1] }}>{p.name.slice(0, 1)}</span>
-          <div className="col grow me-member-info" style={{ gap: 0 }}>
-            <b style={{ fontSize: 18 }}>{p.name}</b>
-            <span className="small muted">{[p.gender, p.birthYear ? `${bn(year - p.birthYear)} বছর` : null].filter(Boolean).join(" · ") || "—"}</span>
-            <span className="xs muted">আইডি {patientCode(p.number)}</span>
-          </div>
-          <form action={updateRelation} className="me-member-rel">
-            <input type="hidden" name="id" value={p.id} />
-            <label className="me-rel-l" htmlFor={`rel-${p.id}`}>সম্পর্ক</label>
-            <select id={`rel-${p.id}`} name="relation" defaultValue={p.relation ?? ""} className="input">
-              <option value="">—</option>{RELATIONS.map((r) => <option key={r}>{r}</option>)}
-            </select>
-            <button className="btn">সেভ</button>
-          </form>
-        </div>
-      ))}
-      <AddMember first={fam.length === 0} />
-      <p className="small muted">প্রতিটি সদস্যের নিজস্ব রোগী আইডি থাকে। চেম্বারে নাম্বার বললেই অ্যাসিস্ট্যান্ট সবার তালিকা দেখতে পাবেন।</p>
+      <FamilyList members={members} selectedId={sel?.id ?? null} />
     </div>
   );
 }

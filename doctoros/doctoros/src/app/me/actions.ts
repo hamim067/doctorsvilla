@@ -8,7 +8,10 @@ import { type FormState, int, str } from "@/lib/form";
 import { createPatientSession, destroyPatientSession, familyOf, requirePatient, sendOtp, verifyOtp } from "@/lib/patient-auth";
 import { today, thisYear } from "@/lib/time";
 import type { VState } from "@/components/Vitals";
-import { parseVital } from "@/lib/vitals";
+import { duplicateVital, parseVital } from "@/lib/vitals";
+import { cookies } from "next/headers";
+import { splitList } from "@/lib/meds";
+import { MEMBER_COOKIE } from "@/lib/patient-auth";
 
 export type OtpState = { step: "phone" | "code"; phone?: string; error?: string; demoCode?: string; info?: string } | undefined;
 
@@ -52,7 +55,10 @@ export async function addFamilyMember(_: FormState, fd: FormData): Promise<FormS
     gender: str(fd, "gender") || null,
     birthYear: age && age > 0 && age < 120 ? thisYear() - age : null,
   });
-  revalidatePath("/me/family");
+  const [created] = await db.select({ id: schema.patients.id }).from(schema.patients)
+    .where(and(eq(schema.patients.accountId, s.accountId), eq(schema.patients.name, name))).limit(1);
+  if (created) (await cookies()).set(MEMBER_COOKIE, created.id, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  revalidatePath("/me", "layout");
   return { ok: `${name} যোগ হয়েছেন` };
 }
 
@@ -84,8 +90,41 @@ export async function addMyVital(patientId: string, _: VState, fd: FormData): Pr
   if (!fam.some((p) => p.id === patientId)) return { error: "সদস্য পাওয়া যায়নি" };
   const r = parseVital(fd);
   if ("error" in r) return { error: r.error };
+  if (await duplicateVital(patientId, r.value)) return { error: "এই রিডিং আগেই সেভ করা আছে" };
   await db.insert(schema.vitals).values({ ...r.value, patientId, doctorId: null, source: "PATIENT" });
   revalidatePath("/me/health");
   revalidatePath("/me");
   return { ok: "রিডিং সেভ হয়েছে — আপনার ডাক্তারও পরের ভিজিটে দেখতে পাবেন", at: Date.now() };
+}
+
+/** কার তথ্য দেখছেন — মেনু থেকে সদস্য বাছাই (কুকিতে মনে রাখে) */
+export async function selectMember(fd: FormData) {
+  const s = await requirePatient();
+  const id = str(fd, "id");
+  const fam = await familyOf(s.accountId);
+  if (fam.some((p) => p.id === id)) (await cookies()).set(MEMBER_COOKIE, id, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  revalidatePath("/me", "layout");
+}
+
+/** সদস্যের তথ্য বদলানো — নাম, সম্পর্ক, বয়স, লিঙ্গ, অ্যালার্জি, দীর্ঘমেয়াদি রোগ */
+export async function updateMember(_: FormState, fd: FormData): Promise<FormState> {
+  const s = await requirePatient();
+  const id = str(fd, "id");
+  const fam = await familyOf(s.accountId);
+  const me = fam.find((p) => p.id === id);
+  if (!me) return { error: "সদস্য পাওয়া যায়নি" };
+  const name = str(fd, "name");
+  if (name.length < 2) return { error: "নাম দিন" };
+  if (fam.some((p) => p.id !== id && p.name.trim().toLowerCase() === name.toLowerCase())) return { error: "এই নামে আরেকজন সদস্য আছেন" };
+  const age = int(fd, "age");
+  await db.update(schema.patients).set({
+    name,
+    relation: str(fd, "relation") || null,
+    gender: str(fd, "gender") || null,
+    birthYear: age && age > 0 && age < 120 ? thisYear() - age : me.birthYear,
+    allergies: splitList(str(fd, "allergies")).join(", ").slice(0, 300) || null,
+    conditions: splitList(str(fd, "conditions")).join(", ").slice(0, 300) || null,
+  }).where(and(eq(schema.patients.id, id), eq(schema.patients.accountId, s.accountId)));
+  revalidatePath("/me", "layout");
+  return { ok: "সেভ হয়েছে" };
 }

@@ -197,6 +197,7 @@
 .ws-drawer-bg.open { opacity: 1; pointer-events: auto; }
 .ws-drawer { position: fixed; top: 0; right: 0; bottom: 0; z-index: 61; width: min(360px, 88vw); background: var(--card); box-shadow: -20px 0 50px rgba(6, 14, 26, 0.25); display: flex; flex-direction: column; gap: 6px; padding: 14px 14px calc(16px + env(safe-area-inset-bottom)); transform: translateX(105%); transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); overflow-y: auto; }
 .ws-drawer.open { transform: none; }
+.ws-drawer:not(.open) { visibility: hidden; transition: transform 0.28s, visibility 0s 0.28s; }
 .ws-drawer-h { display: flex; align-items: center; gap: 12px; padding: 4px 2px 14px; border-bottom: 1px solid var(--line); }
 .ws-drawer-h b { color: var(--title); font-size: 17px; line-height: 1.3; }
 .ws-drawer-h .ws-mut { font-size: 13px; }

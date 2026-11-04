@@ -58,7 +58,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const d30 = addDays(t, -29), next7 = addDays(t, 7);
   const monthStart = `${t.slice(0, 7)}-01`; // এসএমএস গোনা হয় চলতি মাসে
   const { bookings, chambers, followUps, messageLogs } = schema;
-  const fee = sql`case when ${bookings.type} = 'FOLLOW_UP' then ${chambers.feeFollowUp} else ${chambers.feeNew} end`;
+  const fee = sql`case when ${bookings.feeWaived} then 0 when ${bookings.type} = 'FOLLOW_UP' then ${chambers.feeFollowUp} else ${chambers.feeNew} end`;
   const mine = eq(bookings.doctorId, s.doctorId);
 
   const [st, daily, [month], hourly, upcoming, [mix], [fu], [missed], [sms]] = await Promise.all([

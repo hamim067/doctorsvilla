@@ -26,7 +26,7 @@ async function periodStats(doctorId: string, from: string, to: string) {
       online: sql<number>`count(*) filter (where ${bookings.status} <> 'CANCELLED' and ${bookings.source} = 'ONLINE')::int`,
       followUp: sql<number>`count(*) filter (where ${bookings.status} = 'DONE' and ${bookings.type} = 'FOLLOW_UP')::int`,
       cancelled: sql<number>`count(*) filter (where ${bookings.status} = 'CANCELLED')::int`,
-      income: sql<number>`coalesce(sum(case when ${bookings.status} = 'DONE' then (case when ${bookings.type} = 'FOLLOW_UP' then ${chambers.feeFollowUp} else ${chambers.feeNew} end) end), 0)::int`,
+      income: sql<number>`coalesce(sum(case when ${bookings.status} = 'DONE' then (case when ${bookings.feeWaived} then 0 when ${bookings.type} = 'FOLLOW_UP' then ${chambers.feeFollowUp} else ${chambers.feeNew} end) end), 0)::int`,
     }).from(bookings).innerJoin(chambers, eq(chambers.id, bookings.chamberId))
       .where(and(eq(bookings.doctorId, doctorId), gte(bookings.date, from), lte(bookings.date, to))),
     db.select({
@@ -67,7 +67,7 @@ export default async function Reports({ searchParams }: { searchParams: Promise<
       online: sql<number>`count(${bookings.id}) filter (where ${bookings.status} <> 'CANCELLED' and ${bookings.source} = 'ONLINE')::int`,
       total: sql<number>`count(${bookings.id}) filter (where ${bookings.status} <> 'CANCELLED')::int`,
       absent: sql<number>`count(${bookings.id}) filter (where ${bookings.status} = 'ABSENT')::int`,
-      income: sql<number>`coalesce(sum(case when ${bookings.status} = 'DONE' then (case when ${bookings.type} = 'FOLLOW_UP' then ${chambers.feeFollowUp} else ${chambers.feeNew} end) end), 0)::int`,
+      income: sql<number>`coalesce(sum(case when ${bookings.status} = 'DONE' then (case when ${bookings.feeWaived} then 0 when ${bookings.type} = 'FOLLOW_UP' then ${chambers.feeFollowUp} else ${chambers.feeNew} end) end), 0)::int`,
     }).from(chambers)
       .leftJoin(bookings, and(eq(bookings.chamberId, chambers.id), gte(bookings.date, from), lte(bookings.date, to)))
       .where(eq(chambers.doctorId, s.doctorId)).groupBy(chambers.id),

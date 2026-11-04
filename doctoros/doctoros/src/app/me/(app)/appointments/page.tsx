@@ -1,95 +1,90 @@
 import { and, desc, eq, gte, inArray, lt } from "drizzle-orm";
 import Link from "next/link";
 import { db, schema } from "@/db";
+import { Icon } from "@/components/Icons";
 import { StatusBadge } from "@/components/StatusBadge";
-import { familyOf, requirePatient } from "@/lib/patient-auth";
+import { familyOf, requirePatient, selectedMember } from "@/lib/patient-auth";
 import { bn, formatDateBn, formatTimeBn, today, weekday } from "@/lib/time";
 import { cancelBooking } from "../../actions";
 
-export const metadata = { title: "আমার অ্যাপয়েন্টমেন্ট" };
+export const metadata = { title: "আমার সিরিয়াল" };
 export const dynamic = "force-dynamic";
 
-export default async function MyAppointments() {
+/** বাছাই করা সদস্যের সিরিয়াল — "সামনে" আর "আগের" দুটো আলাদা ট্যাবে */
+export default async function MyAppointments({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const s = await requirePatient();
   const fam = await familyOf(s.accountId);
-  if (fam.length === 0) {
-    return (
-      <div className="me-card stack">
-        <h1>স্বাগতম!</h1>
-        <p>এই নাম্বারে এখনো কোনো রোগীর প্রোফাইল নেই। প্রথমে নিজের বা পরিবারের সদস্যের নাম যোগ করুন, অথবা কোনো ডাক্তারের কাছে সিরিয়াল নিন।</p>
-        <div className="row"><Link className="btn btn-primary" href="/me/family">সদস্য যোগ করুন</Link><Link className="btn" href="/">ডাক্তার খুঁজুন</Link></div>
-      </div>
-    );
-  }
-  const ids = fam.map((p) => p.id);
-  const nameOf = new Map(fam.map((p) => [p.id, p.name]));
+  if (fam.length === 0) return <div className="md-card"><p>আগে <Link href="/me/family">সদস্য যোগ করুন</Link> অথবা <Link href="/">ডাক্তার খুঁজে</Link> সিরিয়াল নিন।</p></div>;
+  const me = (await selectedMember(fam))!;
+  const tab = (await searchParams).tab === "past" ? "past" : "next";
   const t = today();
   const { bookings, doctors, chambers, followUps, schedules } = schema;
   const base = () =>
-    db.select({ b: bookings, doctorName: doctors.name, slug: doctors.slug, specialty: doctors.specialty, chamberName: chambers.name, city: chambers.city, chamberId: chambers.id })
+    db.select({ b: bookings, doctorName: doctors.name, slug: doctors.slug, specialty: doctors.specialty, chamberName: chambers.name, city: chambers.city })
       .from(bookings).innerJoin(doctors, eq(doctors.id, bookings.doctorId)).innerJoin(chambers, eq(chambers.id, bookings.chamberId));
-
   const [upcoming, past, fus, scheds] = await Promise.all([
-    base().where(and(inArray(bookings.patientId, ids), gte(bookings.date, t), inArray(bookings.status, ["WAITING", "IN_PROGRESS"]))).orderBy(bookings.date, bookings.serialNo),
-    base().where(and(inArray(bookings.patientId, ids), lt(bookings.date, t))).orderBy(desc(bookings.date)).limit(20),
+    base().where(and(eq(bookings.patientId, me.id), gte(bookings.date, t), inArray(bookings.status, ["WAITING", "IN_PROGRESS"]))).orderBy(bookings.date, bookings.serialNo),
+    base().where(and(eq(bookings.patientId, me.id), lt(bookings.date, t))).orderBy(desc(bookings.date)).limit(40),
     db.select({ fu: followUps, doctorName: doctors.name, slug: doctors.slug }).from(followUps).innerJoin(doctors, eq(doctors.id, followUps.doctorId))
-      .where(and(inArray(followUps.patientId, ids), inArray(followUps.status, ["PENDING", "REMINDED", "MISSED"]))).orderBy(followUps.dueDate),
+      .where(and(eq(followUps.patientId, me.id), inArray(followUps.status, ["PENDING", "REMINDED", "MISSED"]))).orderBy(followUps.dueDate),
     db.select().from(schedules),
   ]);
   const startOf = (chamberId: string, date: string) => scheds.find((x) => x.chamberId === chamberId && x.weekday === weekday(date))?.startTime;
-  const todays = upcoming.filter((u) => u.b.date === t);
 
   return (
-    <div className="stack">
-      <h1>আমার অ্যাপয়েন্টমেন্ট</h1>
+    <div className="md">
+      <div className="row-sb"><h1>সিরিয়াল</h1><Link href="/" className="btn btn-primary"><Icon name="plus" size={18} />নতুন সিরিয়াল</Link></div>
+      <nav className="md-tabs" aria-label="সিরিয়াল">
+        <Link href="?tab=next" className={tab === "next" ? "on" : ""} aria-current={tab === "next" ? "page" : undefined}>সামনে ({bn(upcoming.length + fus.length)})</Link>
+        <Link href="?tab=past" className={tab === "past" ? "on" : ""} aria-current={tab === "past" ? "page" : undefined}>আগের ({bn(past.length)})</Link>
+      </nav>
 
-      {todays.map((u) => (
-        <Link key={u.b.id} href={`/live/${u.b.id}`} className="me-today">
-          <div className="row-sb"><span className="badge badge-teal">আজ · সিরিয়াল {bn(u.b.serialNo)}</span><span className="small" style={{ color: "var(--orange)", fontWeight: 700 }}>লাইভ দেখুন →</span></div>
-          <b style={{ fontSize: 17 }}>{u.doctorName}</b>
-          <span className="small muted">{nameOf.get(u.b.patientId)} · {u.chamberName}, {u.city}</span>
-        </Link>
-      ))}
-
-      {fus.map((f) => (
-        <div key={f.fu.id} className="me-card me-fu stack-sm">
-          <b style={{ color: "var(--orange-ink)" }}>{f.fu.status === "MISSED" ? "ফলোআপ মিস হয়েছে" : "ফলোআপ বাকি"}</b>
-          <span>{f.doctorName} বলেছেন {formatDateBn(f.fu.dueDate)} আবার দেখাতে · {nameOf.get(f.fu.patientId)}</span>
-          <div><Link className="btn btn-warn" href={`/dr/${f.slug}/book`}>ফলোআপ সিরিয়াল নিন</Link></div>
-        </div>
-      ))}
-
-      <h2>আসন্ন</h2>
-      {upcoming.filter((u) => u.b.date !== t).length === 0 && todays.length === 0 && (
-        <div className="me-card stack-sm"><span className="muted">কোনো আসন্ন সিরিয়াল নেই।</span><div><Link className="btn btn-primary" href="/">ডাক্তার খুঁজুন</Link></div></div>
-      )}
-      {upcoming.filter((u) => u.b.date !== t).map((u) => {
-        const st = startOf(u.chamberId, u.b.date);
-        return (
-          <div key={u.b.id} className="me-card me-appt">
-            <div className="me-date"><span>{formatDateBn(u.b.date, false).split(" ")[1]}</span><b>{formatDateBn(u.b.date, false).split(" ")[0]}</b></div>
-            <div className="col grow" style={{ gap: 2 }}>
-              <Link href={`/live/${u.b.id}`} style={{ fontWeight: 700, color: "inherit" }}>{u.doctorName}</Link>
-              <span className="small muted">{u.specialty} · {nameOf.get(u.b.patientId)} · সিরিয়াল {bn(u.b.serialNo)}</span>
-              <span className="small muted">{u.chamberName}{st ? ` · ${formatTimeBn(st)} থেকে` : ""}</span>
+      {tab === "next" && (
+        <>
+          {fus.map((f) => (
+            <div key={f.fu.id} className="md-card md-appt md-due">
+              <span className="md-date warn"><small>{formatDateBn(f.fu.dueDate, false).split(" ")[1]}</small><b>{formatDateBn(f.fu.dueDate, false).split(" ")[0]}</b></span>
+              <span className="col grow" style={{ gap: 2 }}>
+                <b>{f.doctorName}</b>
+                <span className="small">{f.fu.status === "MISSED" ? "আবার দেখানোর দিন পেরিয়ে গেছে" : "ডাক্তার এই দিনে আবার দেখাতে বলেছেন"} — এখনো সিরিয়াল নেওয়া হয়নি</span>
+              </span>
+              <Link className="btn btn-warn" href={`/dr/${f.slug}/book`}>সিরিয়াল নিন</Link>
             </div>
-            <form action={cancelBooking}><input type="hidden" name="id" value={u.b.id} /><button className="btn" style={{ minHeight: 38 }}>বাতিল</button></form>
-          </div>
-        );
-      })}
+          ))}
+          {upcoming.map((u) => {
+            const st = startOf(u.b.chamberId, u.b.date);
+            const isToday = u.b.date === t;
+            return (
+              <div key={u.b.id} className={`md-card md-appt${isToday ? " md-is-today" : ""}`}>
+                <span className="md-date"><small>{isToday ? "আজ" : formatDateBn(u.b.date, false).split(" ")[1]}</small><b>{formatDateBn(u.b.date, false).split(" ")[0]}</b></span>
+                <span className="col grow" style={{ gap: 2, minWidth: 0 }}>
+                  <b>{u.doctorName}</b>
+                  <span className="small">{u.specialty}</span>
+                  <span className="small">সিরিয়াল <b>{bn(u.b.serialNo)}</b> · {u.chamberName}{st ? ` · ${formatTimeBn(st)} থেকে` : ""}</span>
+                </span>
+                <span className="md-appt-act">
+                  <Link className="btn btn-primary" href={`/live/${u.b.id}`}>লাইভ দেখুন</Link>
+                  {u.b.status === "WAITING" && <form action={cancelBooking}><input type="hidden" name="id" value={u.b.id} /><button className="btn">বাতিল করুন</button></form>}
+                </span>
+              </div>
+            );
+          })}
+          {upcoming.length === 0 && fus.length === 0 && <div className="md-card md-none">সামনে কোনো সিরিয়াল নেই। <Link href="/">ডাক্তার খুঁজে সিরিয়াল নিন →</Link></div>}
+        </>
+      )}
 
-      {past.length > 0 && <h2>আগের</h2>}
-      {past.map((u) => (
-        <Link key={u.b.id} href={`/live/${u.b.id}`} className="me-card me-appt" style={{ color: "inherit" }}>
-          <div className="me-date muted-date"><span>{formatDateBn(u.b.date, false).split(" ")[1]}</span><b>{formatDateBn(u.b.date, false).split(" ")[0]}</b></div>
-          <div className="col grow" style={{ gap: 2 }}>
-            <b>{u.doctorName}</b>
-            <span className="small muted">{nameOf.get(u.b.patientId)} · {u.chamberName}</span>
-          </div>
-          <StatusBadge status={u.b.status} />
-        </Link>
-      ))}
-      <p className="small muted">নতুন সিরিয়াল নিতে <Link href="/">ডাক্তার খুঁজুন</Link>।</p>
+      {tab === "past" && (
+        <>
+          {past.length === 0 && <div className="md-card md-none">আগের কোনো সিরিয়াল নেই।</div>}
+          {past.map((u) => (
+            <Link key={u.b.id} href={`/live/${u.b.id}`} className="md-card md-appt" style={{ color: "inherit" }}>
+              <span className="md-date muted-date"><small>{formatDateBn(u.b.date, false).split(" ")[1]}</small><b>{formatDateBn(u.b.date, false).split(" ")[0]}</b></span>
+              <span className="col grow" style={{ gap: 2 }}><b>{u.doctorName}</b><span className="small">{u.chamberName} · সিরিয়াল {bn(u.b.serialNo)}</span></span>
+              <StatusBadge status={u.b.status} />
+            </Link>
+          ))}
+        </>
+      )}
     </div>
   );
 }

@@ -127,6 +127,9 @@ export const patients = pgTable(
     birthYear: integer("birth_year"),
     /** অ্যাকাউন্টধারীর সাথে সম্পর্ক: নিজে, মা, বাবা, স্ত্রী, ছেলে… */
     relation: text("relation"),
+    /** অ্যালার্জি ও দীর্ঘমেয়াদি রোগ — কমা দিয়ে আলাদা; ডাক্তার ও রোগী দুজনেই লেখেন */
+    allergies: text("allergies"),
+    conditions: text("conditions"),
     createdAt: createdAt(),
   },
   (t) => [index("patients_name").on(t.name)],
@@ -146,6 +149,8 @@ export const bookings = pgTable(
     status: bookingStatusEnum("status").notNull().default("WAITING"),
     source: bookingSourceEnum("source").notNull(),
     type: visitTypeEnum("type").notNull().default("NEW"),
+    /** ডাক্তার ফি নেননি (ফ্রি দেখেছেন) — আয়ের হিসাবে ০ ধরা হয় */
+    feeWaived: boolean("fee_waived").notNull().default(false),
     calledAt: timestamp("called_at", { withTimezone: true }),
     completedAt: timestamp("completed_at", { withTimezone: true }),
     createdAt: createdAt(),

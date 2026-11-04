@@ -37,7 +37,7 @@ export default async function CalendarReport({ searchParams }: { searchParams: P
   const chamberList = await db.select({ id: chambers.id, name: chambers.name }).from(chambers).where(eq(chambers.doctorId, s.doctorId)).orderBy(asc(chambers.createdAt));
   const chamberId = chamberList.find((c) => c.id === sp.chamber)?.id ?? null;
   const scope = and(eq(bookings.doctorId, s.doctorId), chamberId ? eq(bookings.chamberId, chamberId) : undefined);
-  const fee = sql`(case when ${bookings.type} = 'FOLLOW_UP' then ${chambers.feeFollowUp} else ${chambers.feeNew} end)`;
+  const fee = sql`(case when ${bookings.feeWaived} then 0 when ${bookings.type} = 'FOLLOW_UP' then ${chambers.feeFollowUp} else ${chambers.feeNew} end)`;
 
   const [rows, dayRows] = await Promise.all([
     db.select({
