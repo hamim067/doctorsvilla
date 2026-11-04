@@ -177,3 +177,43 @@
   .we-moves .we-ib { width: 32px; height: 36px; }
   .we-step-h { gap: 4px; }
 }
+
+/* অভিজ্ঞতা ও সংখ্যার বক্স */
+.we-box { border: 1px solid var(--line-2); border-radius: 16px; overflow: hidden; background: var(--card); }
+.we-box-h { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--ground); }
+.we-box-h b { font-size: 15.5px; color: var(--ink); }
+.we-box > .we-checks, .we-box > .we-exp-row { padding: 14px; }
+.we-checks label span { display: flex; flex-direction: column; line-height: 1.35; }
+.we-exp-row { display: flex; flex-direction: column; gap: 8px; font-size: 15px; color: var(--ink); }
+.we-exp-in { display: flex; align-items: center; gap: 8px; }
+.we-exp-in .input { width: 90px; text-align: center; font-size: 20px; font-weight: 700; min-height: 48px; -moz-appearance: textfield; }
+.we-exp-in .input::-webkit-outer-spin-button, .we-exp-in .input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.we-exp-in .we-ib { width: 44px; height: 44px; }
+.we-exp-in b { font-size: 16px; }
+/* প্রোফাইলের সারি — নাম না ভেঙে, বোতাম নিচে নামে */
+.we-profile { flex-wrap: wrap; }
+.we-profile > .col { min-width: 180px; }
+.we-profile b { line-height: 1.3; }
+.we-pv-btn { display: none !important; }
+@media (max-width: 1100px) {
+  .we-fab { display: none !important; }
+  .we-pv-btn { display: inline-flex !important; min-height: 46px; }
+}
+@media (max-width: 600px) {
+  .we-profile .btn { width: 100%; justify-content: center; }
+  .we-top-r { gap: 8px; }
+  .we-top-r .we-status:empty { display: none; }
+  .we-top-r .we-pv-btn, .we-top-r .we-save-btn { flex: 1; justify-content: center; }
+}
+/* মোবাইলে অংশের নাম যেন চাপা না পড়ে */
+@media (max-width: 560px) {
+  .we-step[data-block] .we-chev { display: none; }
+  .we-step[data-block] .we-handle { width: 32px; margin-left: 0; }
+  .we-moves { gap: 0; }
+  .we-moves .we-ib { width: 30px; height: 34px; }
+  .we-step[data-block] .we-step-t { font-size: 15.5px; line-height: 1.3; }
+  .we-step[data-block] .we-hint { font-size: 12.5px; }
+  .we-post .we-pthumb { display: none; }
+  .we-item-top .we-ib { width: 32px; height: 34px; }
+  .we-item-top .row { gap: 2px !important; }
+}

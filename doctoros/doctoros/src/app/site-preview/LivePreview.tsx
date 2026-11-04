@@ -4,7 +4,7 @@ import { DoctorWebsite, type WsData } from "@/app/dr/[slug]/Website";
 import type { SiteContent } from "@/db/schema";
 
 type Msg =
-  | { type: "dv-content"; content: SiteContent; photo: string | null; lang: "bn" | "en"; dark: boolean }
+  | { type: "dv-content"; content: SiteContent; photo: string | null; lang: "bn" | "en"; dark: boolean; experience?: number | null }
   | { type: "dv-scroll"; id: string };
 
 export function LivePreview({ initial }: { initial: WsData }) {
@@ -20,6 +20,7 @@ export function LivePreview({ initial }: { initial: WsData }) {
           content: m.content,
           english: Boolean(m.content.en.designation.trim() && m.content.en.heroTitle.trim()),
           photo: m.photo === "keep" ? initial.photo : m.photo,
+          stats: { ...initial.stats, experience: m.experience === undefined ? initial.stats.experience : m.experience },
         });
         setLang(m.lang);
         document.documentElement.dataset.theme = m.dark ? "dark" : "light";

@@ -39,6 +39,14 @@ export async function saveSite(_: SiteState, fd: FormData): Promise<SiteState> {
   const wantPublish = fd.get("published") === "1" && premium;
   if (wantPublish && !content.bn.heroTitle.trim()) return { error: "প্রকাশ করার আগে মূল অংশের শিরোনাম লিখুন" };
 
+  // অভিজ্ঞতার বছর — প্রোফাইলেই রাখি, যেন সব জায়গায় একই সংখ্যা থাকে
+  const expRaw = toAsciiDigits(String(fd.get("experience") ?? "")).trim();
+  if (expRaw !== "") {
+    const n = Number(expRaw);
+    if (!Number.isInteger(n) || n < 0 || n > 60) return { error: "অভিজ্ঞতার বছর ০ থেকে ৬০-এর মধ্যে দিন" };
+  }
+  if (fd.has("experience")) await db.update(schema.doctors).set({ experienceYears: expRaw === "" ? null : Number(expRaw) }).where(eq(schema.doctors.id, s.doctorId));
+
   const values = { content, published: wantPublish, updatedAt: new Date(), ...(photo !== undefined ? { photo } : {}) };
   await db.insert(schema.doctorSites).values({ doctorId: s.doctorId, ...values })
     .onConflictDoUpdate({ target: schema.doctorSites.doctorId, set: values });
@@ -48,6 +56,7 @@ export async function saveSite(_: SiteState, fd: FormData): Promise<SiteState> {
   await db.delete(schema.doctorAssets).where(and(eq(schema.doctorAssets.doctorId, s.doctorId), like(schema.doctorAssets.kind, "post-%"), ...(keep.length ? [notInArray(schema.doctorAssets.kind, keep)] : [])));
 
   revalidatePath("/dashboard/website");
+  revalidatePath("/dashboard/profile");
   revalidatePath(`/dr/${doctor.slug}`);
   if (fd.get("published") === "1" && !premium) return { error: "লেখা সেভ হয়েছে, কিন্তু প্রকাশ করতে Premium লাগবে", at: Date.now() };
   return { ok: wantPublish ? "সেভ হয়েছে — ওয়েবসাইট প্রকাশিত" : "সেভ হয়েছে (এখনো প্রকাশ হয়নি)", at: Date.now() };

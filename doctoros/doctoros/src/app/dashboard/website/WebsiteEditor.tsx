@@ -94,6 +94,8 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
   const [photoOut, setPhotoOut] = useState("keep");
   const [photoErr, setPhotoErr] = useState("");
   const [dirty, setDirty] = useState(false);
+  const [expYears, setExpYears0] = useState<number | null>(doctor.experienceYears);
+  const setExpYears = (f: number | null | ((y: number | null) => number | null)) => { setExpYears0(f); setDirty(true); };
   const [state, action, pending] = useActionState(saveSite, undefined);
   const fileRef = useRef<HTMLInputElement>(null);
   const [openStep, setOpenStep] = useState("header");
@@ -159,9 +161,9 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
   };
   // যা লিখছেন সাথে সাথে প্রিভিউতে
   useEffect(() => {
-    const t = setTimeout(() => post({ type: "dv-content", content: c, photo: photoOut === "keep" ? "keep" : photo, lang, dark: pvDark }), 120);
+    const t = setTimeout(() => post({ type: "dv-content", content: c, photo: photoOut === "keep" ? "keep" : photo, lang, dark: pvDark, experience: expYears }), 120);
     return () => clearTimeout(t);
-  }, [c, photo, photoOut, lang, pvDark, ready]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [c, photo, photoOut, lang, pvDark, ready, expYears]); // eslint-disable-line react-hooks/exhaustive-deps
   const SECTION_OF: Record<string, string> = { header: "top", hero: "top", footer: "footer" };
   const toggle = (n: string) => {
     setOpenStep((o) => (o === n ? "" : n));
@@ -347,6 +349,7 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
       <input type="hidden" name="content" value={JSON.stringify(c)} />
       <input type="hidden" name="photo" value={photoOut} />
       <input type="hidden" name="published" value={published ? "1" : "0"} />
+      <input type="hidden" name="experience" value={expYears ?? ""} />
 
       {/* উপরের বার — Shopify-র মতো: শিরোনাম, অবস্থা, ভাষা, সেভ */}
       <div className="we-top">
@@ -365,6 +368,7 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
           <span className="we-status" aria-live="polite">
             {state?.error ? <span className="we-err">⚠ {state.error}</span> : state?.ok && !dirty ? <span className="we-ok">✓ সেভ হয়েছে</span> : dirty ? <span className="we-dirty"><i />সেভ বাকি</span> : null}
           </span>
+          <button type="button" className="btn btn-sm we-pv-btn" onClick={() => setPvSheet(true)}><Icon name="eye" size={16} />প্রিভিউ</button>
           <a className="btn btn-sm we-hide-sm" href={`/dr/${doctor.slug}?preview=1`} target="_blank" rel="noreferrer"><Icon name="external" size={16} />নতুন ট্যাবে</a>
           <button className="btn btn-primary btn-sm we-save-btn" disabled={pending}>{pending ? "সেভ হচ্ছে…" : published ? "সেভ ও প্রকাশ" : "সেভ করুন"}</button>
         </div>
@@ -450,17 +454,36 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
         {txt("heroText", "ছোট বর্ণনা (২–৩ লাইন)", "কোন কোন সমস্যার চিকিৎসা করেন, কাদের জন্য…", 3, 400)}
         {!en && (
           <>
-            <div className="we-sub">
-              <span className="col grow" style={{ gap: 0 }}><b>সংখ্যার বক্স</b><span className="we-hint">আসল তথ্য থেকে আপনাআপনি — বানানো দাবি নয়</span></span>
-              <Switch {...sec("stats")} label="সংখ্যার বক্স দেখাবে" />
-            </div>
-            {c.sections.stats && (
-              <div className="we-checks">
-                <label><input type="checkbox" checked={c.stats.experience} onChange={(e) => up((x) => ({ ...x, stats: { ...x.stats, experience: e.target.checked } }))} />অভিজ্ঞতা {doctor.experienceYears ? `(${doctor.experienceYears.toLocaleString("bn-BD")}+ বছর)` : "(প্রোফাইলে বছর দিন)"}</label>
-                <label><input type="checkbox" checked={c.stats.patients} onChange={(e) => up((x) => ({ ...x, stats: { ...x.stats, patients: e.target.checked } }))} />DoctorsVilla-তে রোগী দেখেছেন</label>
-                <label><input type="checkbox" checked={c.stats.chambers} onChange={(e) => up((x) => ({ ...x, stats: { ...x.stats, chambers: e.target.checked } }))} />চেম্বারের সংখ্যা</label>
+            <div className="we-box">
+              <div className="we-box-h">
+                <span className="col grow" style={{ gap: 0 }}><b>অভিজ্ঞতার ব্যাজ</b><span className="we-hint">ছবির উপরে বাম কোণে — যেমন &quot;১২+ বছরের অভিজ্ঞতা&quot;</span></span>
+                <Switch on={c.stats.experience} set={(v) => up((x) => ({ ...x, stats: { ...x.stats, experience: v } }))} label="অভিজ্ঞতার ব্যাজ দেখাবে" />
               </div>
-            )}
+              {c.stats.experience && (
+                <label className="we-exp-row">
+                  <span>কত বছরের অভিজ্ঞতা?</span>
+                  <span className="we-exp-in">
+                    <button type="button" className="we-ib" aria-label="এক বছর কম" onClick={() => setExpYears((y) => Math.max(0, (y ?? 1) - 1))}><Icon name="down" size={16} /></button>
+                    <input className="input" type="number" inputMode="numeric" min={0} max={60} value={expYears ?? ""} placeholder="যেমন ৮" onChange={(e) => { const v = e.target.value.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))); setExpYears(v === "" ? null : Math.max(0, Math.min(60, Math.round(Number(v)) || 0))); }} aria-label="অভিজ্ঞতা (বছর)" />
+                    <button type="button" className="we-ib" aria-label="এক বছর বেশি" onClick={() => setExpYears((y) => Math.min(60, (y ?? 0) + 1))}><Icon name="up" size={16} /></button>
+                    <b>বছর</b>
+                  </span>
+                  {!expYears && <span className="we-hint">বছর না দিলে ব্যাজ দেখাবে না। প্রোফাইলেও এই সংখ্যাটাই থাকবে।</span>}
+                </label>
+              )}
+            </div>
+            <div className="we-box">
+              <div className="we-box-h">
+                <span className="col grow" style={{ gap: 0 }}><b>সংখ্যার বক্স</b><span className="we-hint">শিরোনামের নিচে — আসল তথ্য থেকে নিজে থেকেই গোনা</span></span>
+                <Switch {...sec("stats")} label="সংখ্যার বক্স দেখাবে" />
+              </div>
+              {c.sections.stats && (
+                <div className="we-checks">
+                  <label><input type="checkbox" checked={c.stats.patients} onChange={(e) => up((x) => ({ ...x, stats: { ...x.stats, patients: e.target.checked } }))} /><span>DoctorsVilla-তে কতজন রোগী দেখেছেন <small className="we-hint">(১০ জনের বেশি হলে দেখাবে)</small></span></label>
+                  <label><input type="checkbox" checked={c.stats.chambers} onChange={(e) => up((x) => ({ ...x, stats: { ...x.stats, chambers: e.target.checked } }))} /><span>চেম্বারের সংখ্যা</span></label>
+                </div>
+              )}
+            </div>
             <label className="field">WhatsApp নাম্বার (ঐচ্ছিক)<input className="input" inputMode="tel" maxLength={20} value={c.whatsapp} placeholder="০১৭XXXXXXXX" onChange={(e) => setRoot("whatsapp", e.target.value)} />
               <span className="we-ref">দিলে "WhatsApp-এ যোগাযোগ" বোতাম দেখাবে</span></label>
           </>
