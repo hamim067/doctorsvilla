@@ -34,7 +34,7 @@ export default async function PatientRxPrint({ params }: { params: Promise<{ id:
     <>
       <style>{`@page { size: ${pad.paper}; margin: 0; }`}</style>
       <div className="pr-bar">
-        <a href="/me/files">← প্রেসক্রিপশনে ফিরুন</a>
+        <a href={`/me/files/${v.id}`}>← প্রেসক্রিপশনে ফিরুন</a>
         <span className="small muted">রোগীর কপি · প্রিন্ট বা PDF হিসেবে সেভ করুন</span>
         <PrintButton label="প্রিন্ট / PDF" />
       </div>

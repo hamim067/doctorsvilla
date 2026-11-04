@@ -22,16 +22,18 @@ function addMinutes(hhmm: string, min: number) {
 
 type Family = { id: string; name: string; relation: string | null }[];
 
-export function BookForm({ chamberId, days, avgMinutes, summary, patient }: {
-  chamberId: string; days: Day[]; avgMinutes: number;
+export function BookForm({ chamberId, days, avgMinutes, summary, patient, wantDate, wantMember }: {
+  chamberId: string; days: Day[]; avgMinutes: number; wantDate?: string; wantMember?: string;
   patient: { phone: string; family: Family } | null;
   summary: { doctor: string; chamber: string; feeNew: number; feeFollowUp: number };
 }) {
   const [state, action, pending] = useActionState(bookOnline, undefined);
-  const firstOpen = days.find((d) => d.open && d.onlineLeft > 0)?.date ?? "";
+  // ফলোআপের দিন থেকে এলে সেই দিনটা (বা তার পরের প্রথম খোলা দিন) আগে থেকেই বাছা
+  const okDay = (d: Day) => d.open && d.onlineLeft > 0;
+  const firstOpen = (wantDate && (days.find((d) => d.date >= wantDate && okDay(d))?.date)) || days.find(okDay)?.date || "";
   const [picked, setPicked] = useState(firstOpen);
   const fam = patient?.family ?? [];
-  const [member, setMember] = useState(fam[0]?.id ?? "new");
+  const [member, setMember] = useState((wantMember && fam.find((f) => f.id === wantMember)?.id) || fam[0]?.id || "new");
   const [name, setName] = useState("");
   const chosen = fam.find((f) => f.id === member);
   const shownName = chosen ? chosen.name : name;

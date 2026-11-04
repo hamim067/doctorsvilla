@@ -12,9 +12,9 @@ import { BookForm } from "./BookForm";
 export const metadata = { title: "সিরিয়াল নিন" };
 export const dynamic = "force-dynamic";
 
-export default async function BookPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ chamber?: string }> }) {
+export default async function BookPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ chamber?: string; date?: string; member?: string }> }) {
   const { slug } = await params;
-  const { chamber: wanted } = await searchParams;
+  const { chamber: wanted, date: wantDate, member: wantMember } = await searchParams;
   const [doctor] = await db.select().from(schema.doctors).where(eq(schema.doctors.slug, slug)).limit(1);
   if (!doctor) notFound();
   const chambers = await db.query.chambers.findMany({
@@ -71,6 +71,8 @@ export default async function BookPage({ params, searchParams }: { params: Promi
         </section>
 
         <BookForm
+          wantDate={wantDate && /^\d{4}-\d{2}-\d{2}$/.test(wantDate) ? wantDate : undefined}
+          wantMember={wantMember}
           chamberId={chamber.id}
           days={days}
           avgMinutes={chamber.avgMinutes}
