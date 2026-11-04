@@ -412,3 +412,16 @@
 .ws-art-more { margin-top: 36px; display: grid; gap: 10px; }
 .ws-art-more a { padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink) !important; font-weight: 600; }
 @media (max-width: 640px) { .ws-vids > *, .ws-posts > * { flex-basis: 100%; min-width: 0; } .ws-art-body { font-size: 17px; } }
+/* ভিডিও: ডেস্কটপে ৩টি পাশাপাশি, ট্যাবে ২টি, মোবাইলে আঙুলে সরিয়ে দেখা */
+@media (max-width: 980px) and (min-width: 641px) {
+  .ws-vids > *, .ws-posts > * { flex-basis: calc((100% - 22px) / 2); min-width: 0; }
+}
+@media (max-width: 640px) {
+  .ws-vids { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scroll-snap-type: x mandatory; gap: 14px; margin: 0 -16px; padding: 4px 16px 14px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .ws-vids::-webkit-scrollbar { display: none; }
+  .ws-vids > * { flex: 0 0 84%; scroll-snap-align: center; }
+  .ws-vids > *:only-child { flex-basis: 100%; }
+  .ws-vid-btn { width: 58px; height: 58px; }
+}
+.ws-vid-play img { opacity: 0; transition: opacity .2s; }
+.ws-vid-play img.ok { opacity: 1; }

@@ -91,6 +91,7 @@ function shortDegrees(deg: string) {
 /** ভিডিও কার্ড — প্রথমে শুধু ছবি, চাপলে তবেই ভিডিও লোড (সাইট ধীর হয় না) */
 function VideoCard({ url, title, t }: { url: string; title: string; t: typeof UI.bn }) {
   const [on, setOn] = useState(false);
+  const [thumbOk, setThumbOk] = useState(false);
   const v = parseVideo(url);
   if (!v) return null;
   return (
@@ -99,7 +100,7 @@ function VideoCard({ url, title, t }: { url: string; title: string; t: typeof UI
         {on ? <iframe src={v.embed} title={title || v.label} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" />
           : (
             <button type="button" className="ws-vid-play" onClick={() => setOn(true)} aria-label={`${t.play}: ${title || v.label}`}>
-              {v.thumb && <img src={v.thumb} alt="" loading="lazy" onError={(e) => e.currentTarget.remove()} />}
+              {v.thumb && <img src={v.thumb} alt="" loading="lazy" className={thumbOk ? "ok" : ""} ref={(el) => { if (el?.complete && el.naturalWidth > 0) setThumbOk(true); }} onLoad={() => setThumbOk(true)} />}
               <span className="ws-vid-btn"><svg viewBox="0 0 24 24" width="30" height="30" aria-hidden><path d="M8 5.5v13l11-6.5z" fill="currentColor" /></svg></span>
               <span className="ws-vid-src">{v.label}</span>
             </button>

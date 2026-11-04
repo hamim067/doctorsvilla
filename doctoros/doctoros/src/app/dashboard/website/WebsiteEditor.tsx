@@ -24,18 +24,19 @@ function Switch({ on, set, label }: { on: boolean; set: (v: boolean) => void; la
   );
 }
 
-type Move = { up: () => void; down: () => void; first: boolean; last: boolean; drag: { onDragStart: () => void; onDragOver: (e: React.DragEvent) => void; onDrop: () => void; onDragEnd: () => void; over: boolean } };
+type Move = { up: () => void; down: () => void; first: boolean; last: boolean; grab: (e: React.PointerEvent) => void; over: "above" | "below" | null; dragging: boolean };
 function Step({ n, icon, title, hint, on, set, open, onOpen, move, fixed, children }: {
   n: string; icon: keyof typeof ICON; title: string; hint: string; on?: boolean; set?: (v: boolean) => void;
   open: boolean; onOpen: () => void; move?: Move; fixed?: string; children: React.ReactNode;
 }) {
   const optional = on !== undefined && set;
   return (
-    <section className={`we-step${optional && !on ? " off" : ""}${open ? " open" : ""}${move?.drag.over ? " drop" : ""}`} data-step={n}
-      onDragOver={move?.drag.onDragOver} onDrop={move?.drag.onDrop}>
+    <section className={`we-step${optional && !on ? " off" : ""}${open ? " open" : ""}${move?.over ? ` drop-${move.over}` : ""}${move?.dragging ? " dragging" : ""}`} data-step={n} data-block={move ? n : undefined}>
       <div className="we-step-h">
         {move ? (
-          <span className="we-handle" draggable onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", n); move.drag.onDragStart(); }} onDragEnd={move.drag.onDragEnd} title="টেনে উপরে-নিচে নিন" aria-hidden>⠿</span>
+          <span className="we-handle" onPointerDown={move.grab} title="চেপে ধরে উপরে-নিচে টানুন" aria-hidden>
+            <svg viewBox="0 0 12 20" width="12" height="20"><g fill="currentColor"><circle cx="3" cy="3" r="1.8" /><circle cx="9" cy="3" r="1.8" /><circle cx="3" cy="10" r="1.8" /><circle cx="9" cy="10" r="1.8" /><circle cx="3" cy="17" r="1.8" /><circle cx="9" cy="17" r="1.8" /></g></svg>
+          </span>
         ) : fixed ? <span className="we-lock" title={fixed} aria-label={fixed}>🔒</span> : null}
         <button type="button" className="we-step-btn" aria-expanded={open} onClick={onOpen}>
           <span className="we-num"><Icon name={icon} size={18} /></span>
@@ -97,7 +98,39 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
   const fileRef = useRef<HTMLInputElement>(null);
   const [openStep, setOpenStep] = useState("header");
   const [dragK, setDragK] = useState<SiteBlock | null>(null);
-  const [overK, setOverK] = useState<SiteBlock | null>(null);
+  const [over, setOver] = useState<{ k: SiteBlock; pos: "above" | "below" } | null>(null);
+  const overRef = useRef<{ k: SiteBlock; pos: "above" | "below" } | null>(null);
+  /** আঙুল বা মাউস — দুটোতেই চলে: হাতল চেপে ধরে টানলে যে অংশের উপর ছাড়বেন তার উপরে/নিচে বসবে */
+  const grab = (k: SiteBlock) => (e: React.PointerEvent) => {
+    e.preventDefault();
+    setDragK(k);
+    let raf = 0, lastY = e.clientY;
+    const pick = (x: number, y: number) => {
+      const el = document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-block]");
+      const t = el?.dataset.block as SiteBlock | undefined;
+      if (!el || !t || t === k) { overRef.current = null; setOver(null); return; }
+      const r = el.getBoundingClientRect();
+      const v = { k: t, pos: (y < r.top + r.height / 2 ? "above" : "below") as "above" | "below" };
+      overRef.current = v; setOver(v);
+    };
+    // কিনারায় গেলে পেজ নিজে থেকে স্ক্রল
+    const scroll = () => {
+      const edge = 90;
+      if (lastY < edge) window.scrollBy(0, -12); else if (lastY > innerHeight - edge) window.scrollBy(0, 12);
+      raf = requestAnimationFrame(scroll);
+    };
+    raf = requestAnimationFrame(scroll);
+    const move = (ev: PointerEvent) => { ev.preventDefault(); lastY = ev.clientY; pick(ev.clientX, ev.clientY); };
+    const up = () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up);
+      const o = overRef.current;
+      if (o) placeBlock(k, o.k, o.pos);
+      overRef.current = null; setOver(null); setDragK(null);
+    };
+    window.addEventListener("pointermove", move, { passive: false });
+    window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
+  };
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [pvDark, setPvDark] = useState(false);
   const [pvSheet, setPvSheet] = useState(false);
@@ -195,10 +228,9 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
 
   // ---- অংশের ক্রম ----
   const moveBlock = (i: number, d: -1 | 1) => up((x) => ({ ...x, order: moveIn(x.order, i, d) }));
-  const dropBlock = (from: SiteBlock, to: SiteBlock) => up((x) => {
+  const placeBlock = (from: SiteBlock, to: SiteBlock, pos: "above" | "below") => up((x) => {
     const o = x.order.filter((k) => k !== from);
-    const at = o.indexOf(to) + (x.order.indexOf(from) < x.order.indexOf(to) ? 1 : 0);
-    o.splice(at, 0, from);
+    o.splice(o.indexOf(to) + (pos === "below" ? 1 : 0), 0, from);
     return { ...x, order: o };
   });
 
@@ -441,13 +473,8 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
         const move: Move = {
           first: idx === 0, last: idx === c.order.length - 1,
           up: () => moveBlock(idx, -1), down: () => moveBlock(idx, 1),
-          drag: {
-            over: overK === k && dragK !== k,
-            onDragStart: () => setDragK(k),
-            onDragOver: (e) => { if (dragK) { e.preventDefault(); setOverK(k); } },
-            onDrop: () => { if (dragK && dragK !== k) dropBlock(dragK, k); setDragK(null); setOverK(null); },
-            onDragEnd: () => { setDragK(null); setOverK(null); },
-          },
+          grab: grab(k), dragging: dragK === k,
+          over: over?.k === k ? over.pos : null,
         };
         const p = { ...stepProps(k), move };
         return <Fragment key={k}>{(() => { switch (k) {
