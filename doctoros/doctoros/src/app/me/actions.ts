@@ -2,6 +2,7 @@
 import { and, eq, gte, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { clientIp, hit } from "@/lib/rate-limit";
 import { db, schema } from "@/db";
 import { normalizePhone } from "@/lib/booking";
 import { type FormState, int, str } from "@/lib/form";
@@ -20,6 +21,8 @@ export async function otpAction(prev: OtpState, fd: FormData): Promise<OtpState>
   if (intent === "send" || intent === "resend") {
     const phone = normalizePhone(str(fd, "phone") || prev?.phone || "");
     if (!phone) return { step: "phone", error: "সঠিক মোবাইল নাম্বার দিন (যেমন 01712345678)" };
+    // এক জায়গা থেকে অনেক নাম্বারে কোড পাঠিয়ে SMS-এর খরচ বাড়ানো ঠেকাতে
+    if (!(await hit(`otp-ip:${await clientIp()}`, 15, 3600))) return { step: "phone", phone, error: "অনেকবার কোড চাওয়া হয়েছে — এক ঘণ্টা পরে আবার চেষ্টা করুন" };
     const r = await sendOtp(phone);
     if (r.error) return { step: prev?.step === "code" ? "code" : "phone", phone, error: r.error, demoCode: prev?.demoCode };
     return { step: "code", phone, demoCode: r.demoCode, info: `${phone} নাম্বারে ৬ সংখ্যার কোড পাঠানো হয়েছে` };
@@ -32,7 +35,8 @@ export async function otpAction(prev: OtpState, fd: FormData): Promise<OtpState>
   if (r.error || !r.accountId) return { ...prev, step: "code", error: r.error, info: undefined };
   await createPatientSession({ accountId: r.accountId, phone });
   const next = str(fd, "next");
-  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/me");
+  // শুধু এই সাইটের ভেতরের পাতায় ফেরত — "//" বা "/\\" দিয়ে অন্য সাইটে পাঠানো যায় না
+  redirect(/^\/(?![\/\\])/.test(next) ? next : "/me");
 }
 
 export async function patientLogout() {

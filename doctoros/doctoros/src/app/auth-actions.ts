@@ -6,6 +6,8 @@ import { db, schema } from "@/db";
 import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
 import { normalizePhone, toAsciiDigits } from "@/lib/booking";
 import { type FormState, str } from "@/lib/form";
+import { blockedFor, clearLimit, clientIp, hit } from "@/lib/rate-limit";
+import { bn } from "@/lib/time";
 
 const registerSchema = z.object({
   name: z.string().min(3, "ডাক্তারের নাম দিন"),
@@ -59,9 +61,17 @@ export async function login(_: FormState, fd: FormData): Promise<FormState> {
   const phone = normalizePhone(str(fd, "phone"));
   const password = str(fd, "password");
   if (!phone || !password) return { error: "মোবাইল নাম্বার ও পাসওয়ার্ড দিন" };
+  // ভুল পাসওয়ার্ড আন্দাজ ঠেকানো: এক নাম্বারে ৫ বার ভুল হলে ১৫ মিনিট বন্ধ; এক জায়গা থেকে ঘণ্টায় ৩০ বার
+  const key = `login:${phone}`, ipKey = `login-ip:${await clientIp()}`;
+  const wait = Math.max(await blockedFor(key, 5), await blockedFor(ipKey, 30));
+  if (wait) return { error: `অনেকবার ভুল হয়েছে — ${bn(wait)} মিনিট পরে আবার চেষ্টা করুন` };
   const [user] = await db.select().from(schema.users).where(eq(schema.users.phone, phone)).limit(1);
-  if (!user || !(await verifyPassword(password, user.passwordHash)) || !user.doctorId)
+  if (!user || !(await verifyPassword(password, user.passwordHash)) || !user.doctorId) {
+    await hit(key, 5, 15 * 60);
+    await hit(ipKey, 30, 60 * 60);
     return { error: "মোবাইল নাম্বার বা পাসওয়ার্ড ভুল" };
+  }
+  await clearLimit(key);
   await createSession({ uid: user.id, role: user.role, doctorId: user.doctorId, name: user.name });
   redirect(user.role === "ASSISTANT" ? "/dashboard/queue" : "/dashboard");
 }

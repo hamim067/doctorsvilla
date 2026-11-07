@@ -3,7 +3,8 @@ import { and, eq } from "drizzle-orm";
 import { thisYear } from "@/lib/time";
 import { redirect } from "next/navigation";
 import { db, schema } from "@/db";
-import { BookingError, createBooking } from "@/lib/booking";
+import { BookingError, createBooking, normalizePhone } from "@/lib/booking";
+import { clientIp, hit } from "@/lib/rate-limit";
 import { type FormState, int, str } from "@/lib/form";
 import { getPatientSession } from "@/lib/patient-auth";
 
@@ -20,6 +21,10 @@ export async function bookOnline(_: FormState, fd: FormData): Promise<FormState>
     if (!p) return { error: "সদস্য পাওয়া যায়নি" };
     patientId = p.id;
   }
+  // ভুয়া বুকিং দিয়ে সিরিয়াল ভরিয়ে ফেলা ঠেকাতে: এক জায়গা থেকে ঘণ্টায় ১০টা, এক নাম্বারে দিনে ৬টা
+  const phoneKey = normalizePhone(str(fd, "phone")) ?? "";
+  if (!(await hit(`book-ip:${await clientIp()}`, 10, 3600)) || (phoneKey && !(await hit(`book-ph:${phoneKey}`, 6, 86400))))
+    return { error: "অনেকগুলো সিরিয়াল নেওয়া হয়েছে — কিছুক্ষণ পরে আবার চেষ্টা করুন, বা চেম্বারে ফোন করুন" };
   let id: string;
   try {
     const { booking } = await createBooking({

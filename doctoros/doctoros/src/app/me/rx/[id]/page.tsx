@@ -10,6 +10,7 @@ import "../../../print/rxpad.css";
 import { RxPad } from "@/components/RxPad";
 import { normalizePad } from "@/lib/rxpad";
 import { buildPadData } from "@/lib/rxpad-data";
+import { FitPaper } from "@/components/FitPaper";
 
 export const metadata = { title: "প্রেসক্রিপশন", robots: { index: false } };
 
@@ -38,7 +39,7 @@ export default async function PatientRxPrint({ params }: { params: Promise<{ id:
         <span className="small muted">রোগীর কপি · প্রিন্ট বা PDF হিসেবে সেভ করুন</span>
         <PrintButton label="প্রিন্ট / PDF" />
       </div>
-      <div className="pr-desk"><div className="pr-paper"><RxPad s={pad} d={data} /></div></div>
+      <FitPaper /><div className="pr-desk"><div className="pr-paper"><RxPad s={pad} d={data} /></div></div>
     </>
   );
 }

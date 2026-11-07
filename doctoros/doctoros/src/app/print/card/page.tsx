@@ -9,6 +9,7 @@ import { normalizeCard } from "@/lib/vcard";
 import { buildCardData } from "@/lib/vcard-data";
 import "../print.css";
 import "../vcard.css";
+import { FitPaper } from "@/components/FitPaper";
 
 export const metadata = { title: "ভিজিটিং কার্ড", robots: { index: false } };
 
@@ -27,7 +28,7 @@ export default async function CardPrint() {
         <span className="small muted">{card.back ? "২ পাতা: সামনে আর পেছন — প্রিন্টারে \"দুই পাশে (লম্বা দিকে উল্টে)\" বাছুন" : "এক পাতায় ১০টি — কাটার দাগ ধরে কাটুন"}</span>
         <PrintButton />
       </div>
-      <div className="pr-desk">
+      <FitPaper /><div className="pr-desk">
         <div className="pr-paper vk-page"><div className="vk-sheet">{ten.map((i) => <VisitingCard key={i} s={card} d={data} />)}</div></div>
         {card.back && <div className="pr-paper vk-page"><div className="vk-sheet back">{ten.map((i) => <VisitingCard key={i} s={card} d={data} side="back" />)}</div></div>}
       </div>

@@ -10,6 +10,7 @@ import { normalizePad } from "@/lib/rxpad";
 import { buildPadData } from "@/lib/rxpad-data";
 import "../../print.css";
 import "../../rxpad.css";
+import { FitPaper } from "@/components/FitPaper";
 
 export const metadata = { title: "প্রেসক্রিপশন প্রিন্ট", robots: { index: false } };
 
@@ -40,7 +41,7 @@ export default async function RxPrint({ params, searchParams }: { params: Promis
         <PrintButton />
       </div>
       {auto && <script dangerouslySetInnerHTML={{ __html: "window.addEventListener('load',()=>setTimeout(()=>window.print(),400))" }} />}
-      <div className="pr-desk"><div className="pr-paper"><RxPad s={pad} d={data} /></div></div>
+      <FitPaper /><div className="pr-desk"><div className="pr-paper"><RxPad s={pad} d={data} /></div></div>
     </>
   );
 }

@@ -2,7 +2,7 @@
 .pr-bar { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--line); padding: 10px 16px; display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .pr-desk { background: #E9ECEA; min-height: 100vh; padding: 24px 12px 48px; }
 .pr-a4 { width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,.12); box-sizing: border-box; color: #10231F; }
-@media (max-width: 860px) { .pr-a4 { width: 100%; min-height: auto; } }
+
 @page { size: A4; margin: 0; }
 @media print {
   body { background: #fff; }
@@ -63,5 +63,4 @@
 .rx-qr svg { width: 22mm; height: 22mm; display: block; }
 .rx-sign { text-align: center; border-top: 0.3mm solid #10231F; padding-top: 1.5mm; width: 55mm; color: #10231F; }
 .pr-paper { width: fit-content; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,.12); }
-@media (max-width: 860px) { .pr-paper { zoom: 0.5; } }
-@media print { .pr-paper { box-shadow: none; zoom: 1 !important; } }
+@media print { .pr-paper, .pr-desk > * { box-shadow: none; zoom: 1 !important; } }

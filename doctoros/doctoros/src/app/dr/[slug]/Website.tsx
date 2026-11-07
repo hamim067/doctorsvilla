@@ -48,7 +48,7 @@ const UI = {
     fChambers: "চেম্বারসমূহ", fLinks: "প্রয়োজনীয় লিংক", fContact: "যোগাযোগ ও সিরিয়াল", emergency: "জরুরি সতর্কবার্তা:",
     rights: "সর্বস্বত্ব সংরক্ষিত।", made: "DoctorsVilla দিয়ে তৈরি", menu: "মেনু",
     draft: "প্রিভিউ — ওয়েবসাইট এখনো প্রকাশ হয়নি। শুধু আপনি দেখছেন।",
-    queue: "লাইভ সিরিয়াল", videos: "ভিডিও", blog: "স্বাস্থ্য টিপস", videosEyebrow: "দেখে জানুন", videosTitle: "স্বাস্থ্য বিষয়ক ভিডিও", blogEyebrow: "পড়ে জানুন", blogTitle: "স্বাস্থ্য টিপস ও লেখা", readMore: "পুরোটা পড়ুন", play: "ভিডিও চালান", prev: "আগের ভিডিও", next: "পরের ভিডিও", queueEyebrow: "আজকের সিরিয়াল", queueTitle: "এখন কত নম্বর চলছে, কতজন অপেক্ষায়",
+    queue: "লাইভ সিরিয়াল", videos: "ভিডিও", blog: "স্বাস্থ্য টিপস", videosEyebrow: "দেখে জানুন", videosTitle: "স্বাস্থ্য বিষয়ক ভিডিও", blogEyebrow: "পড়ে জানুন", blogTitle: "স্বাস্থ্য টিপস ও লেখা", readMore: "পুরোটা পড়ুন", play: "ভিডিও চালান", findSlow: "অনেকবার খোঁজা হয়েছে — ১০ মিনিট পরে আবার চেষ্টা করুন", prev: "আগের ভিডিও", next: "পরের ভিডিও", queueEyebrow: "আজকের সিরিয়াল", queueTitle: "এখন কত নম্বর চলছে, কতজন অপেক্ষায়",
     nowServing: "এখন চলছে", qTotal: "আজ মোট", qWaiting: "অপেক্ষায়", qDone: "দেখা হয়েছে", perPt: "মিনিট/রোগী (গড়)",
     notStarted: "এখনো শুরু হয়নি", closedToday: "আজ এই চেম্বার বন্ধ", noSerial: "আজ এখনো কোনো সিরিয়াল নেই",
     lgWait: "অপেক্ষায়", lgNow: "চলছে", lgDone: "দেখা হয়েছে", lgAbsent: "অনুপস্থিত", updated: "আপডেট",
@@ -72,7 +72,7 @@ const UI = {
     fChambers: "Chambers", fLinks: "Quick links", fContact: "Contact & serial", emergency: "Emergency:",
     rights: "All rights reserved.", made: "Made with DoctorsVilla", menu: "Menu",
     draft: "Preview — not published yet. Only you can see this.",
-    queue: "Live queue", videos: "Videos", blog: "Health tips", videosEyebrow: "Watch & learn", videosTitle: "Health videos", blogEyebrow: "Read & learn", blogTitle: "Health tips & articles", readMore: "Read more", play: "Play video", prev: "Previous video", next: "Next video", queueEyebrow: "Today's queue", queueTitle: "Which serial is running, how many are waiting",
+    queue: "Live queue", videos: "Videos", blog: "Health tips", videosEyebrow: "Watch & learn", videosTitle: "Health videos", blogEyebrow: "Read & learn", blogTitle: "Health tips & articles", readMore: "Read more", play: "Play video", findSlow: "Too many tries — please try again in 10 minutes", prev: "Previous video", next: "Next video", queueEyebrow: "Today's queue", queueTitle: "Which serial is running, how many are waiting",
     nowServing: "Now serving", qTotal: "Today total", qWaiting: "Waiting", qDone: "Seen", perPt: "min/patient (avg)",
     notStarted: "Not started yet", closedToday: "Closed today", noSerial: "No serials yet today",
     lgWait: "Waiting", lgNow: "Now", lgDone: "Seen", lgAbsent: "Absent", updated: "Updated",
@@ -242,7 +242,7 @@ function LiveQueue({ slug, t, lang, live }: { slug: string; t: typeof UI.bn; lan
       const r = await fetch("/api/site/track", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone, code }) });
       const j = await r.json().catch(() => ({}));
       if (r.ok && j.url) { location.href = j.url; return; }
-      setMsg(r.status === 400 ? t.findFmt : t.findNo);
+      setMsg(r.status === 400 ? t.findFmt : r.status === 429 ? t.findSlow : t.findNo);
     } catch { setMsg(t.findNo); }
     setBusy(false);
   }

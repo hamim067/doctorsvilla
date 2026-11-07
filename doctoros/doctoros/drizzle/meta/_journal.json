@@ -64,6 +64,13 @@
       "when": 1793784885337,
       "tag": "0008_rx_templates",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794059177920,
+      "tag": "0009_rate_limits",
+      "breakpoints": true
     }
   ]
 }

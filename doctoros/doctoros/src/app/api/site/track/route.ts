@@ -2,12 +2,15 @@ import { and, desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db, schema } from "@/db";
 import { normalizePhone, toAsciiDigits } from "@/lib/booking";
+import { clientIp, hit } from "@/lib/rate-limit";
 
 /**
  * "আমার সিরিয়াল খুঁজুন" — মোবাইল নম্বর আর সিরিয়াল কোড দুটোই মিললে তবেই লাইভ পেজের লিংক দেয়,
  * যেন শুধু কোড আন্দাজ করে কেউ অন্যের তথ্য দেখতে না পারে।
  */
 export async function POST(req: Request) {
+  // নাম্বার+কোড আন্দাজ করে খোঁজা ঠেকাতে — এক জায়গা থেকে ১০ মিনিটে ২০ বার
+  if (!(await hit(`track-ip:${await clientIp()}`, 20, 600))) return NextResponse.json({ error: "slow" }, { status: 429 });
   let body: { phone?: string; code?: string; slug?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "bad" }, { status: 400 }); }
   const phone = normalizePhone(String(body.phone ?? ""));

@@ -10,6 +10,7 @@ import { doctorAssetUrls } from "@/lib/assets";
 import { normalizePad, sampleData } from "@/lib/rxpad";
 import "../print.css";
 import "../rxpad.css";
+import { FitPaper } from "@/components/FitPaper";
 
 export const metadata = { title: "প্রেসক্রিপশন প্যাড", robots: { index: false } };
 
@@ -34,7 +35,7 @@ export default async function RxSample({ searchParams }: { searchParams: Promise
         <span className="small muted">{blank ? "খালি প্যাড — ছাপিয়ে হাতে লেখার জন্য" : "নমুনা রোগী দিয়ে দেখানো"}</span>
         <PrintButton />
       </div>
-      <div className="pr-desk"><div className="pr-paper"><RxPad s={blank ? { ...pad, sections: { ...pad.sections, vitals: false } } : pad} d={data} /></div></div>
+      <FitPaper /><div className="pr-desk"><div className="pr-paper"><RxPad s={blank ? { ...pad, sections: { ...pad.sections, vitals: false } } : pad} d={data} /></div></div>
     </>
   );
 }

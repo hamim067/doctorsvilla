@@ -362,3 +362,10 @@ export type Doctor = typeof doctors.$inferSelect;
 export type Chamber = typeof chambers.$inferSelect;
 export type Booking = typeof bookings.$inferSelect;
 export type Patient = typeof patients.$inferSelect;
+
+/** অপব্যবহার ঠেকাতে গোনা — ভুল পাসওয়ার্ড, অনলাইন বুকিং, কোড চাওয়া (key যেমন "login:017…", "book-ip:1.2.3.4") */
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull().default(0),
+  resetAt: timestamp("reset_at", { withTimezone: true }).notNull(),
+});

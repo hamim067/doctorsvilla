@@ -7,6 +7,7 @@ import { requireDoctor } from "@/lib/auth";
 import { qrSvg, siteOrigin } from "@/lib/qr";
 import { bn, formatTimeBn, WEEKDAYS_BN } from "@/lib/time";
 import "../print.css";
+import { FitPaper } from "@/components/FitPaper";
 
 export const metadata = { title: "পোস্টার ও কার্ড", robots: { index: false } };
 
@@ -30,7 +31,7 @@ export default async function PosterPage({ searchParams }: { searchParams: Promi
     return (
       <>
         <div className="pr-bar"><Link href="/dashboard/share?tab=print">← ফিরে যান</Link><span className="small muted">A4 কাগজে ১০টি কার্ড · ড্যাশ দাগ বরাবর কাটুন</span><PrintButton /></div>
-        <div className="pr-desk"><div className="pr-a4 vc-sheet">
+        <FitPaper /><div className="pr-desk"><div className="pr-a4 vc-sheet">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="vc">
               <div className="vc-l">
@@ -55,7 +56,7 @@ export default async function PosterPage({ searchParams }: { searchParams: Promi
   return (
     <>
       <div className="pr-bar"><Link href="/dashboard/share?tab=print">← ফিরে যান</Link><span className="small muted">A4 পোস্টার · {c.name}</span><PrintButton /></div>
-      <div className="pr-desk"><div className="pr-a4 po">
+      <FitPaper /><div className="pr-desk"><div className="pr-a4 po">
         <div className="po-top">
           <h1>লাইনে দাঁড়াতে হবে না</h1>
           <p>ফোনে সিরিয়াল নিন, বাসা থেকেই দেখুন এখন কত নম্বর চলছে</p>
