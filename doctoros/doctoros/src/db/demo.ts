@@ -226,7 +226,7 @@ async function main() {
     {
       slug: "demo-tanvir",
       content: {
-        theme: "navy", sections: sec, stats: { experience: true, patients: true, chambers: true },
+        theme: "navy", design: "modern", sections: sec, stats: { experience: true, patients: true, chambers: true },
         order, videos: [], logo: { kind: "letters", text: "TA", shape: "rounded" }, font: "anek",
         posts: [
           { id: "demobp01", date: "2026-10-20", title: "উচ্চ রক্তচাপ: ঘরে প্রেসার মাপার সঠিক নিয়ম", titleEn: "", cover: 0,
@@ -285,7 +285,7 @@ async function main() {
     {
       slug: "demo-nusrat",
       content: {
-        theme: "green", sections: { ...sec, about: false }, stats: { experience: true, patients: true, chambers: false },
+        theme: "green", design: "modern", sections: { ...sec, about: false }, stats: { experience: true, patients: true, chambers: false },
         order, videos: [], posts: [], logo: { kind: "icon", text: "", shape: "circle" }, font: "hind",
         hotline: "01700000012", whatsapp: "", email: "", facebook: "", youtube: "", linkedin: "",
         bn: {

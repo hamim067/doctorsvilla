@@ -1,5 +1,6 @@
 // ডাক্তারের Premium ওয়েবসাইট — প্ল্যান যাচাই, ডিফল্ট লেখা, ইনপুট যাচাই
 import "server-only";
+import { DESIGN_IDS, THEME_IDS, isDesign } from "./designs";
 import { and, count, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
@@ -41,7 +42,7 @@ const emptyText = (): SiteText => ({
 /** নতুন ওয়েবসাইটের শুরুর লেখা — প্রোফাইলের তথ্য দিয়ে ভরা, ডাক্তার পরে বদলাবেন */
 export function defaultContent(d: { specialty: string; bio: string | null }): SiteContent {
   return {
-    theme: "navy",
+    theme: "navy", design: "modern",
     sections: { topbar: true, stats: true, services: true, about: true, chambers: true, booking: true, faq: true, emergency: true, queue: true, videos: true, blog: true },
     order: [...BLOCKS], videos: [], posts: [], logo: { kind: "icon", text: "", shape: "rounded" }, font: "anek",
     stats: { experience: true, patients: true, chambers: true },
@@ -70,6 +71,7 @@ export function normalize(c: Partial<SiteContent> | null | undefined, d: { speci
     sections: { ...base.sections, ...c.sections },
     order: fixOrder(c.order), videos: c.videos ?? [], posts: c.posts ?? [],
     logo: { ...base.logo, ...(c.logo ?? {}) }, font: c.font === "hind" ? "hind" : "anek",
+    design: isDesign(c.design) ? c.design : "modern", theme: (THEME_IDS as readonly string[]).includes(c.theme as string) ? c.theme! : "navy",
     stats: { ...base.stats, ...c.stats },
     bn: { ...emptyText(), ...c.bn },
     en: { ...emptyText(), ...c.en },
@@ -91,7 +93,8 @@ const textSchema = z.object({
 });
 const flag = z.boolean().default(true);
 export const contentSchema = z.object({
-  theme: z.enum(["navy", "green", "plum"]).catch("navy"),
+  theme: z.enum(THEME_IDS).catch("navy"),
+  design: z.enum(DESIGN_IDS).catch("modern"),
   sections: z.object({ topbar: flag, stats: flag, services: flag, about: flag, chambers: flag, booking: flag, faq: flag, emergency: flag, queue: flag, videos: flag, blog: flag }),
   order: z.array(z.string()).max(20).default([]).transform(fixOrder),
   logo: z.object({

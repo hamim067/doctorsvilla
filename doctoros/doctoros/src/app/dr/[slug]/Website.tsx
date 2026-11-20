@@ -558,7 +558,7 @@ export function DoctorWebsite({ d, live, forceLang }: { d: WsData; live?: boolea
   ) : null;
 
   return (
-    <div className={`ws th-${c.theme} f-${c.font ?? "anek"}${lang === "en" ? " is-en" : ""}`} id="top"
+    <div className={`ws th-${c.theme} d-${c.design ?? "modern"} f-${c.font ?? "anek"}${lang === "en" ? " is-en" : ""}`} id="top"
       onClickCapture={live ? (e) => {
         const a = (e.target as HTMLElement).closest("a");
         if (a && !a.getAttribute("href")?.startsWith("#")) e.preventDefault();

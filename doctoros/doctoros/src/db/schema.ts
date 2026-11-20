@@ -257,7 +257,9 @@ export type SiteVideo = { url: string; title: string; titleEn: string };
 /** ব্লগ / স্বাস্থ্য টিপস — cover = ছবির সংস্করণ (০ = ছবি নেই), ছবি doctor_assets-এ "post-<id>" নামে */
 export type SitePost = { id: string; date: string; title: string; titleEn: string; body: string; bodyEn: string; cover: number };
 export type SiteContent = {
-  theme: "navy" | "green" | "plum";
+  theme: import("@/lib/designs").ThemeId;
+  /** ওয়েবসাইটের টেমপ্লেট — শুধু চেহারা বদলায়, লেখা একই থাকে */
+  design: import("@/lib/designs").DesignId;
   sections: SiteSections;
   order: SiteBlock[];
   /** ওয়েবসাইটের লোগো: আইকন, ১-২ অক্ষর, বা আপলোড করা লোগো */

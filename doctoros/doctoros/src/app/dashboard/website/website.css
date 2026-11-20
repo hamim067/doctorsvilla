@@ -237,3 +237,83 @@
 .we-font.f-hind b { font-family: "Hind Siliguri", sans-serif; font-weight: 600; }
 .we-font.on { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
 @media (max-width: 420px) { .we-fonts { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- ডিজাইন / টেমপ্লেট গ্যালারি ---------- */
+.we-designs { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.we-design { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 14px; align-items: center; padding: 8px; border-radius: 16px; border: 2px solid var(--line-2); background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.we-design:hover { border-color: color-mix(in srgb, var(--teal) 55%, var(--line-2)); transform: translateY(-1px); }
+.we-design.on { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+.we-design-img { position: relative; display: block; aspect-ratio: 16 / 10; border-radius: 11px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08); }
+.we-design-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.we-design-on { position: absolute; left: 6px; top: 6px; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; background: var(--teal); color: #fff; font-size: 12px; font-weight: 700; box-shadow: 0 4px 10px rgba(0, 0, 0, .2); }
+.we-design-t { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.we-design-t b { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 18px; }
+.we-design-t > span { font-size: 14px; color: var(--muted); line-height: 1.45; }
+.we-design-dots { display: inline-flex; gap: 4px; flex: 0 0 auto; }
+.we-design-dots i { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--line-2); }
+@media (max-width: 520px) {
+  .we-design { grid-template-columns: 120px minmax(0, 1fr); gap: 10px; }
+  .we-design-t b { font-size: 16px; }
+  .we-design-t > span { font-size: 13px; }
+}
+
+/* ---------- উপরের বার + ট্যাব (PathDesk-এর মতো) ---------- */
+.we-top { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 14px; }
+.we-top-l { flex-direction: column; align-items: flex-start; gap: 2px; }
+.we-top-t { font-size: 21px; font-weight: 800; }
+.we-top-s { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13.5px; min-width: 0; }
+.we-dotsep { color: var(--muted); }
+.we-saved { color: var(--muted); }
+.we-top-s .we-dirty { color: var(--orange-ink); font-weight: 700; }
+.we-tools { display: flex; align-items: center; gap: 8px; }
+.we-icons button { width: 40px; min-height: 36px; padding: 0; justify-content: center; }
+.we-icons button:disabled { opacity: .35; cursor: default; }
+.we-icons button:not(.on):not(:disabled):hover { color: var(--ink); background: var(--ground); }
+.we-ghost { background: transparent; border-color: transparent; box-shadow: none; }
+.we-ghost:hover:not(:disabled) { background: var(--card); border-color: var(--line-2); }
+.we-ghost:disabled { opacity: .45; }
+
+.we-tabs { position: sticky; top: 0; z-index: 4; display: flex; gap: 4px; overflow-x: auto; padding: 8px; background: var(--card); border-bottom: 1px solid var(--line-2); scrollbar-width: thin; }
+.we-tab { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 68px; padding: 9px 10px 8px; border: 0; border-radius: 12px; background: transparent; color: var(--muted); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.we-tab:hover { background: var(--ground); color: var(--ink); }
+.we-tab.on { background: var(--teal); color: #fff; box-shadow: 0 6px 14px color-mix(in srgb, var(--teal) 35%, transparent); }
+.we-tab.off:not(.on) { opacity: .5; }
+.we-tab.off:not(.on) span { text-decoration: line-through; }
+.we-panel { display: flex; flex-direction: column; gap: 12px; padding: 14px; min-width: 0; }
+.we-left { gap: 0; padding: 0; background: var(--card); border: 1px solid var(--line-2); border-radius: 18px; box-shadow: var(--shadow-sm); }
+@media (min-width: 1101px) {
+  .we-left { position: sticky; top: 86px; height: calc(100vh - 106px); overflow-y: auto; overscroll-behavior: contain; }
+}
+.we-step.solo { border: 0; box-shadow: none; border-radius: 0; overflow: visible; background: transparent; }
+.we-step.solo .we-step-h { padding: 0 0 10px; border-bottom: 1px solid var(--line-2); }
+.we-step.solo .we-step-btn { cursor: default; padding-left: 0; }
+.we-step.solo .we-lock, .we-step.solo .we-chev { display: none; }
+.we-step.solo .we-body { padding: 14px 0 0; }
+.we-step.solo .we-step-btn:hover .we-step-t { color: var(--ink); }
+.we-step.solo .we-step-btn .we-hint { white-space: normal; }
+.we-order-note { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--teal-soft); color: var(--teal-ink); font-size: 14px; line-height: 1.5; }
+.we-order-note b { font-size: 15.5px; }
+.we-pv-bar .we-live { margin-left: 0; }
+.we-pv-bar .we-live b { color: var(--ink); }
+.we-pv-note { margin-left: auto; font-size: 13px; color: var(--muted); }
+.we-pv-tab iframe { border: 12px solid #0E1513; border-radius: 28px; box-shadow: 0 20px 50px rgba(0, 0, 0, .25); }
+
+@media (max-width: 1100px) {
+  .we-top { grid-template-columns: minmax(0, 1fr) auto; }
+  .we-dev { display: none; }
+  .we-left { border-radius: 16px; }
+  .we-tabs { top: 0; border-radius: 16px 16px 0 0; }
+}
+@media (max-width: 600px) {
+  .we-top { grid-template-columns: minmax(0, 1fr); }
+  .we-tools { justify-content: space-between; }
+  .we-top .we-tools .we-seg { width: auto; }
+  .we-top .we-tools .we-lang { flex: 1; }
+  .we-top .we-tools .we-icons button { flex: 0 0 auto; }
+  .we-panel { padding: 12px; }
+  .we-tab { min-width: 62px; padding: 8px 8px 7px; font-size: 12.5px; }
+  .we-top-r .we-ghost { padding: 0 10px; }
+}
+@media (min-width: 1101px) {
+  .we-left, .we-right { top: 100px; height: calc(100vh - 116px); }
+}

@@ -4,6 +4,7 @@ import { Fragment, useActionState, useEffect, useRef, useState } from "react";
 import { Icon, type ICON } from "@/components/Icons";
 import type { SiteBlock, SiteContent, SiteSections, SiteText } from "@/db/schema";
 import { parseVideo } from "@/lib/video";
+import { DESIGNS } from "@/lib/designs";
 import { savePostCover, saveSite } from "./actions";
 
 type Lang = "bn" | "en";
@@ -14,7 +15,17 @@ const THEMES: { id: SiteContent["theme"]; label: string; a: string; b: string }[
   { id: "navy", label: "নেভি ও টিল", a: "#123B65", b: "#20A89E" },
   { id: "green", label: "সবুজ", a: "#0F4D43", b: "#22A386" },
   { id: "plum", label: "বেগুনি", a: "#43306B", b: "#2BA39A" },
+  { id: "sky", label: "আকাশি", a: "#0B4F7C", b: "#1FA4D6" },
+  { id: "rose", label: "গোলাপি", a: "#7C2D4A", b: "#E26D8C" },
+  { id: "gold", label: "কালো ও সোনালি", a: "#1B2A3A", b: "#C9A24B" },
 ];
+
+/** উপরের ট্যাবের আইকন ও ছোট নাম — মাঝের অংশগুলো ডাক্তারের সাজানো ক্রমে আসে */
+const BLOCK_TAB: Record<SiteBlock, { icon: keyof typeof ICON; label: string }> = {
+  services: { icon: "steth", label: "সেবা" }, about: { icon: "award", label: "পরিচিতি" }, chambers: { icon: "pin", label: "চেম্বার" },
+  queue: { icon: "pulse", label: "লাইভ সিরিয়াল" }, booking: { icon: "calendar", label: "সিরিয়াল ফর্ম" }, videos: { icon: "youtube", label: "ভিডিও" },
+  blog: { icon: "edit", label: "ব্লগ" }, faq: { icon: "help", label: "প্রশ্নোত্তর" },
+};
 
 function Switch({ on, set, label }: { on: boolean; set: (v: boolean) => void; label: string }) {
   return (
@@ -25,13 +36,14 @@ function Switch({ on, set, label }: { on: boolean; set: (v: boolean) => void; la
 }
 
 type Move = { up: () => void; down: () => void; first: boolean; last: boolean; grab: (e: React.PointerEvent) => void; over: "above" | "below" | null; dragging: boolean };
-function Step({ n, icon, title, hint, on, set, open, onOpen, move, fixed, children }: {
+function Step({ n, icon, title, hint, on, set, open, onOpen, move, fixed, hide, solo, children }: {
   n: string; icon: keyof typeof ICON; title: string; hint: string; on?: boolean; set?: (v: boolean) => void;
-  open: boolean; onOpen: () => void; move?: Move; fixed?: string; children: React.ReactNode;
+  open: boolean; onOpen: () => void; move?: Move; fixed?: string; hide?: boolean; solo?: boolean; children: React.ReactNode;
 }) {
   const optional = on !== undefined && set;
+  if (hide) return null;
   return (
-    <section className={`we-step${optional && !on ? " off" : ""}${open ? " open" : ""}${move?.over ? ` drop-${move.over}` : ""}${move?.dragging ? " dragging" : ""}`} data-step={n} data-block={move ? n : undefined}>
+    <section className={`we-step${solo ? " solo" : ""}${optional && !on ? " off" : ""}${open ? " open" : ""}${move?.over ? ` drop-${move.over}` : ""}${move?.dragging ? " dragging" : ""}`} data-step={n} data-block={move ? n : undefined}>
       <div className="we-step-h">
         {move ? (
           <span className="we-handle" onPointerDown={move.grab} title="চেপে ধরে উপরে-নিচে টানুন" aria-hidden>
@@ -98,7 +110,8 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
   const setExpYears = (f: number | null | ((y: number | null) => number | null)) => { setExpYears0(f); setDirty(true); };
   const [state, action, pending] = useActionState(saveSite, undefined);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [openStep, setOpenStep] = useState("header");
+  const [tab, setTab] = useState("design");
+  const leftRef = useRef<HTMLDivElement>(null);
   const [dragK, setDragK] = useState<SiteBlock | null>(null);
   const [over, setOver] = useState<{ k: SiteBlock; pos: "above" | "below" } | null>(null);
   const overRef = useRef<{ k: SiteBlock; pos: "above" | "below" } | null>(null);
@@ -118,7 +131,10 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
     // কিনারায় গেলে পেজ নিজে থেকে স্ক্রল
     const scroll = () => {
       const edge = 90;
-      if (lastY < edge) window.scrollBy(0, -12); else if (lastY > innerHeight - edge) window.scrollBy(0, 12);
+      const sc = leftRef.current && leftRef.current.scrollHeight > leftRef.current.clientHeight + 4 ? leftRef.current : null;
+      const r = sc ? sc.getBoundingClientRect() : { top: 0, bottom: innerHeight };
+      const dy = lastY < r.top + edge ? -12 : lastY > r.bottom - edge ? 12 : 0;
+      if (dy) { if (sc) sc.scrollBy(0, dy); else window.scrollBy(0, dy); }
       raf = requestAnimationFrame(scroll);
     };
     raf = requestAnimationFrame(scroll);
@@ -133,7 +149,7 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
     window.addEventListener("pointermove", move, { passive: false });
     window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
   };
-  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [pvDark, setPvDark] = useState(false);
   const [pvSheet, setPvSheet] = useState(false);
   const frameRef = useRef<HTMLIFrameElement>(null);
@@ -165,15 +181,59 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
     return () => clearTimeout(t);
   }, [c, photo, photoOut, lang, pvDark, ready, expYears]); // eslint-disable-line react-hooks/exhaustive-deps
   const SECTION_OF: Record<string, string> = { header: "top", hero: "top", footer: "footer" };
-  const toggle = (n: string) => {
-    setOpenStep((o) => (o === n ? "" : n));
-    post({ type: "dv-scroll", id: SECTION_OF[n] ?? n });
+  const goTab = (n: string) => {
+    setTab(n);
+    if (n !== "design" && n !== "order") post({ type: "dv-scroll", id: SECTION_OF[n] ?? n });
+    leftRef.current?.scrollTo({ top: 0 });
   };
-  const stepProps = (n: string) => ({ n, open: openStep === n, onOpen: () => toggle(n) });
+  // বাছাই করা ট্যাব সবসময় চোখের সামনে (ট্যাবের সারি পাশে স্ক্রল হয়)
+  useEffect(() => {
+    const el = document.querySelector<HTMLElement>(".we-tab.on"), bar = el?.parentElement;
+    if (el && bar) bar.scrollTo({ left: el.offsetLeft - bar.clientWidth / 2 + el.offsetWidth / 2, behavior: "smooth" });
+  }, [tab]);
+  const isBlock = (n: string) => (c.order as string[]).includes(n);
+  /** "সাজান" ট্যাবে মাঝের অংশগুলোর তালিকা (টেনে সাজানো যায়); অন্য ট্যাবে শুধু সেই একটা অংশ খোলা */
+  const stepProps = (n: string) => (tab === "order"
+    ? { n, open: false, onOpen: () => goTab(n), hide: !isBlock(n), solo: false }
+    : { n, open: tab === n, onOpen: () => {}, hide: tab !== n, solo: true });
+
+  // ---- আগের অবস্থায় ফেরা (Undo/Redo) আর শেষ সেভ করা অবস্থা (বাতিল) ----
+  const cRef = useRef(c); cRef.current = c;
+  const past = useRef<SiteContent[]>([]);
+  const future = useRef<SiteContent[]>([]);
+  const lastPush = useRef(0);
+  const [, bump] = useState(0);
+  const saved = useRef({ c: initial, published: pub0, exp: doctor.experienceYears, photo: photo0 });
+  const jump = (from: React.RefObject<SiteContent[]>, to: React.RefObject<SiteContent[]>) => {
+    const prev = from.current.pop();
+    if (!prev) return;
+    to.current.push(cRef.current);
+    cRef.current = prev; lastPush.current = 0;
+    setC(prev); setDirty(true); bump((x) => x + 1);
+  };
+  const undo = () => jump(past, future);
+  const redo = () => jump(future, past);
+  const revert = () => {
+    const sv = saved.current;
+    past.current.push(cRef.current); future.current = [];
+    cRef.current = sv.c; setC(sv.c); setPublished(sv.published); setExpYears0(sv.exp); setPhoto(sv.photo); setPhotoOut("keep");
+    setDirty(false); bump((x) => x + 1);
+  };
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (!(e.ctrlKey || e.metaKey) || t.closest("input, textarea, select, [contenteditable]")) return;
+      const k = e.key.toLowerCase();
+      if (k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+      else if (k === "y" || (k === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (state?.at) { setPhotoOut("keep"); setDirty(false); }
-  }, [state?.at]);
+    if (state?.at) { setPhotoOut("keep"); setDirty(false); saved.current = { c: cRef.current, published, exp: expYears, photo }; }
+  }, [state?.at]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!dirty) return;
     const warn = (e: BeforeUnloadEvent) => { e.preventDefault(); };
@@ -181,7 +241,14 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
 
-  const up = (f: (x: SiteContent) => SiteContent) => { setC(f); setDirty(true); };
+  const up = (f: (x: SiteContent) => SiteContent) => {
+    const prev = cRef.current, next = f(prev);
+    const now = Date.now();
+    // টানা টাইপ করলে প্রতিটা অক্ষর আলাদা ধাপ নয় — ৭০০ মিলিসেকেন্ডের মধ্যের বদল এক ধাপ
+    if (now - lastPush.current > 700) { past.current = [...past.current.slice(-59), prev]; future.current = []; bump((x) => x + 1); }
+    lastPush.current = now;
+    cRef.current = next; setC(next); setDirty(true);
+  };
   const sec = (k: keyof SiteSections) => ({ on: c.sections[k], set: (v: boolean) => up((x) => ({ ...x, sections: { ...x.sections, [k]: v } })) });
   const T = c[lang];
   const B = c.bn;
@@ -357,46 +424,118 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
       <input type="hidden" name="published" value={published ? "1" : "0"} />
       <input type="hidden" name="experience" value={expYears ?? ""} />
 
-      {/* উপরের বার — Shopify-র মতো: শিরোনাম, অবস্থা, ভাষা, সেভ */}
+      {/* উপরের বার: শিরোনাম ও অবস্থা · আগের/পরের ধাপ · প্রিভিউ মাপ · ভাষা · সাইট দেখুন · বাতিল · সেভ */}
       <div className="we-top">
         <div className="we-top-l">
-          <span className="we-top-ic"><Icon name="globe" size={20} /></span>
-          <span className="col" style={{ gap: 0, minWidth: 0 }}>
-            <span className="we-top-t">আমার ওয়েবসাইট</span>
+          <span className="we-top-t">ওয়েবসাইট এডিটর</span>
+          <span className="we-top-s" aria-live="polite">
             <span className={`we-badge${published ? " on" : ""}`}><i />{published ? "প্রকাশিত" : "খসড়া"}</span>
+            <span className="we-dotsep">·</span>
+            {state?.error ? <span className="we-err">⚠ {state.error}</span> : dirty ? <span className="we-dirty">সংরক্ষণ হয়নি এমন পরিবর্তন আছে</span> : <span className="we-saved">সব পরিবর্তন সংরক্ষিত</span>}
           </span>
         </div>
-        <div className="we-seg" role="tablist" aria-label="লেখার ভাষা">
-          <button type="button" role="tab" aria-selected={!en} className={!en ? "on" : ""} onClick={() => setLang("bn")}>বাংলা</button>
-          <button type="button" role="tab" aria-selected={en} className={en ? "on" : ""} onClick={() => setLang("en")}>English</button>
+        <div className="we-tools">
+          <div className="we-seg we-icons" role="group" aria-label="আগের অবস্থা">
+            <button type="button" onClick={undo} disabled={!past.current.length} aria-label="আগের অবস্থায় ফিরুন" title="আগের অবস্থায় ফিরুন (Ctrl+Z)"><Icon name="undo" size={18} /></button>
+            <button type="button" onClick={redo} disabled={!future.current.length} aria-label="আবার করুন" title="আবার করুন (Ctrl+Y)"><Icon name="redo" size={18} /></button>
+          </div>
+          <div className="we-seg we-icons we-dev" role="group" aria-label="প্রিভিউ মাপ">
+            {([["desktop", "monitor", "ডেস্কটপ"], ["tablet", "tablet", "ট্যাবলেট"], ["mobile", "smartphone", "মোবাইল"]] as const).map(([k, ic, l]) => (
+              <button key={k} type="button" className={device === k ? "on" : ""} aria-pressed={device === k} aria-label={l} title={l} onClick={() => setDevice(k)}><Icon name={ic} size={18} /></button>
+            ))}
+          </div>
+          <div className="we-seg we-lang" role="tablist" aria-label="লেখার ভাষা">
+            <button type="button" role="tab" aria-selected={!en} className={!en ? "on" : ""} onClick={() => setLang("bn")}>বাংলা</button>
+            <button type="button" role="tab" aria-selected={en} className={en ? "on" : ""} onClick={() => setLang("en")}>English</button>
+          </div>
         </div>
         <div className="we-top-r">
-          <span className="we-status" aria-live="polite">
-            {state?.error ? <span className="we-err">⚠ {state.error}</span> : state?.ok && !dirty ? <span className="we-ok">✓ সেভ হয়েছে</span> : dirty ? <span className="we-dirty"><i />সেভ বাকি</span> : null}
-          </span>
+          <a className="btn btn-sm we-ghost we-hide-sm" href={`/dr/${doctor.slug}${published ? "" : "?preview=1"}`} target="_blank" rel="noreferrer"><Icon name="external" size={16} />সাইট দেখুন</a>
+          <button type="button" className="btn btn-sm we-ghost" disabled={!dirty || pending} onClick={revert} title="শেষ সেভ করা অবস্থায় ফিরুন"><Icon name="revert" size={16} />বাতিল</button>
           <button type="button" className="btn btn-sm we-pv-btn" onClick={() => setPvSheet(true)}><Icon name="eye" size={16} />প্রিভিউ</button>
-          <a className="btn btn-sm we-hide-sm" href={`/dr/${doctor.slug}?preview=1`} target="_blank" rel="noreferrer"><Icon name="external" size={16} />নতুন ট্যাবে</a>
           <button className="btn btn-primary btn-sm we-save-btn" disabled={pending}>{pending ? "সেভ হচ্ছে…" : published ? "সেভ ও প্রকাশ" : "সেভ করুন"}</button>
         </div>
       </div>
 
       <div className="we-grid">
-      <div className="we-left">
-      {offer && <p className="we-offer"><Icon name="award" size={18} />{offer}</p>}
+      <div className="we-left" ref={leftRef}>
+      <nav className="we-tabs" role="tablist" aria-label="ওয়েবসাইটের অংশ">
+        {[
+          { id: "design", icon: "palette" as const, label: "ডিজাইন", off: false },
+          { id: "header", icon: "layout" as const, label: "হেডার", off: false },
+          { id: "hero", icon: "user" as const, label: "প্রচ্ছদ", off: false },
+          ...c.order.map((k) => ({ id: k as string, ...BLOCK_TAB[k], off: !c.sections[k] })),
+          { id: "footer", icon: "mail" as const, label: "ফুটার", off: false },
+          { id: "order", icon: "grip" as const, label: "সাজান", off: false },
+        ].map((t) => (
+          <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} className={`we-tab${tab === t.id ? " on" : ""}${t.off ? " off" : ""}`} onClick={() => goTab(t.id)} title={t.off ? `${t.label} — লুকানো` : t.label}>
+            <Icon name={t.icon} size={20} /><span>{t.label}</span>
+          </button>
+        ))}
+      </nav>
+      <div className="we-panel">
+      {offer && tab === "design" && <p className="we-offer"><Icon name="award" size={18} />{offer}</p>}
       {state?.ok && !dirty && <p className="we-okbar">✓ {state.ok}</p>}
       {!premium && <p className="alert alert-error">আপনার Premium চালু নেই। লেখা সেভ করতে পারবেন, কিন্তু প্রকাশ করতে Premium লাগবে।</p>}
 
-      <div className="we-publish">
+      {tab === "design" && <div className="we-publish">
         <span className="col grow" style={{ gap: 2 }}>
           <b>{published ? "রোগীরা আপনার ওয়েবসাইট দেখছেন" : "ওয়েবসাইট এখনো প্রকাশ হয়নি"}</b>
           <span className="we-hint">{published ? <a href={`/dr/${doctor.slug}`} target="_blank" rel="noreferrer">{link}</a> : "চালু করে সেভ করলেই প্রকাশ হবে।"}</span>
         </span>
         <Switch on={published} set={(v) => { setPublished(v); setDirty(true); }} label="ওয়েবসাইট প্রকাশ" />
-      </div>
+      </div>}
 
       {en && <p className="we-note">ইংরেজি ঐচ্ছিক। অন্তত <b>পদবি</b> আর <b>বড় শিরোনাম</b> লিখলে ওয়েবসাইটে EN | বাংলা বোতাম দেখাবে। খালি ঘরে বাংলাটাই দেখাবে।</p>}
 
-      <span className="we-group">উপরে থাকে</span>
+      <Step icon="palette" {...stepProps("design")} title="ডিজাইন" hint={`${DESIGNS.find((d) => d.id === c.design)?.name ?? ""} · ${DESIGNS.length.toLocaleString("bn-BD")}টি টেমপ্লেট থেকে বেছে নিন`}>
+        <p className="we-hint" style={{ margin: 0 }}>যেকোনো ডিজাইনে চাপ দিলেই পাশের প্রিভিউতে সাথে সাথে দেখাবে। আপনার লেখা, ছবি, চেম্বার — কিছুই হারাবে না, শুধু চেহারা বদলাবে।</p>
+        <div className="we-designs" role="radiogroup" aria-label="ওয়েবসাইটের ডিজাইন">
+          {DESIGNS.map((d) => {
+            const on = c.design === d.id;
+            return (
+              <button key={d.id} type="button" role="radio" aria-checked={on} className={`we-design${on ? " on" : ""}`}
+                onClick={() => { if (!on) up((x) => ({ ...x, design: d.id, theme: d.theme, font: d.font })); }}>
+                <span className="we-design-img" style={{ background: `linear-gradient(135deg, ${d.dots[0]}, ${d.dots[1]})` }}>
+                  <img src={`/designs/${d.id}.jpg`} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                  {on && <span className="we-design-on"><Icon name="check" size={14} stroke={3} />চালু আছে</span>}
+                </span>
+                <span className="we-design-t">
+                  <b>{d.name}<span className="we-design-dots">{d.dots.map((x) => <i key={x} style={{ background: x }} />)}</span></b>
+                  <span>{d.desc}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {en ? <p className="we-note">ডিজাইন, রং আর ফন্ট বাংলা ও ইংরেজি দুই সংস্করণেই একই থাকে।</p> : <>
+        {(
+            <div className="field">
+              <span>লেখার ফন্ট</span>
+              <div className="we-fonts" role="radiogroup" aria-label="ফন্ট">
+                {([["anek", "Anek Bangla", "আধুনিক, পরিষ্কার"], ["hind", "Hind Siliguri", "চেনা, সাধারণ"]] as const).map(([k, n, h]) => (
+                  <button key={k} type="button" role="radio" aria-checked={c.font === k} className={`we-font${c.font === k ? " on" : ""} f-${k}`} onClick={() => up((x) => ({ ...x, font: k }))}>
+                    <b>{doctor.name}</b><span>{n} · {h}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {(
+            <div className="field">
+              <span>ওয়েবসাইটের রং</span>
+              <div className="we-themes">
+                {THEMES.map((t) => (
+                  <button key={t.id} type="button" className={`we-theme${c.theme === t.id ? " on" : ""}`} aria-pressed={c.theme === t.id} onClick={() => up((x) => ({ ...x, theme: t.id }))}>
+                    <span className="we-sw"><i style={{ background: t.a }} /><i style={{ background: t.b }} /></span>{t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </>}
+      </Step>
+
       <Step icon="layout" {...stepProps("header")} fixed="হেডার সবসময় উপরে থাকে" title="হেডার" hint="নাম, ডিগ্রি, BMDC আর সিরিয়াল হটলাইন">
         <div className="we-profile">
           <span className="we-logo"><Icon name="heart" size={22} color="#fff" /></span>
@@ -452,30 +591,6 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
                 {([["rounded", "গোল কোণ"], ["circle", "পুরো গোল"]] as const).map(([k, l]) => <button key={k} type="button" role="radio" aria-checked={c.logo.shape === k} className={c.logo.shape === k ? "on" : ""} onClick={() => up((x) => ({ ...x, logo: { ...x.logo, shape: k } }))}>{l}</button>)}
               </div>
             )}
-          </div>
-        )}
-        {!en && (
-          <div className="field">
-            <span>লেখার ফন্ট</span>
-            <div className="we-fonts" role="radiogroup" aria-label="ফন্ট">
-              {([["anek", "Anek Bangla", "আধুনিক, পরিষ্কার"], ["hind", "Hind Siliguri", "চেনা, সাধারণ"]] as const).map(([k, n, h]) => (
-                <button key={k} type="button" role="radio" aria-checked={c.font === k} className={`we-font${c.font === k ? " on" : ""} f-${k}`} onClick={() => up((x) => ({ ...x, font: k }))}>
-                  <b>{doctor.name}</b><span>{n} · {h}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        {!en && (
-          <div className="field">
-            <span>ওয়েবসাইটের রং</span>
-            <div className="we-themes">
-              {THEMES.map((t) => (
-                <button key={t.id} type="button" className={`we-theme${c.theme === t.id ? " on" : ""}`} aria-pressed={c.theme === t.id} onClick={() => up((x) => ({ ...x, theme: t.id }))}>
-                  <span className="we-sw"><i style={{ background: t.a }} /><i style={{ background: t.b }} /></span>{t.label}
-                </button>
-              ))}
-            </div>
           </div>
         )}
       </Step>
@@ -539,7 +654,7 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
       </Step>
 
 
-      <span className="we-group">মাঝের অংশ — ↑↓ চেপে বা ⠿ ধরে টেনে উপর-নিচে সাজান</span>
+      {tab === "order" && <p className="we-order-note"><b>অংশগুলোর ক্রম সাজান</b><span>⠿ ধরে টেনে বা ↑↓ চেপে উপর-নিচে নিন। সুইচ বন্ধ করলে সেই অংশ লুকাবে। কোনো অংশে চাপ দিলে সেটা এডিট করতে পারবেন। হেডার, প্রচ্ছদ আর ফুটার নিজের জায়গায় থাকে।</span></p>}
       {c.order.map((k, idx) => {
         const move: Move = {
           first: idx === 0, last: idx === c.order.length - 1,
@@ -547,7 +662,7 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
           grab: grab(k), dragging: dragK === k,
           over: over?.k === k ? over.pos : null,
         };
-        const p = { ...stepProps(k), move };
+        const p = { ...stepProps(k), move: tab === "order" ? move : undefined };
         return <Fragment key={k}>{(() => { switch (k) {
           case "services": return (
       <Step icon="steth" {...p} title="চিকিৎসা সেবা" hint="কোন কোন সমস্যার চিকিৎসা করেন — কার্ড আকারে দেখাবে" {...sec("services")}>
@@ -662,7 +777,6 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
         } })()}</Fragment>;
       })}
 
-      <span className="we-group">নিচে থাকে</span>
       <Step icon="mail" {...stepProps("footer")} fixed="ফুটার সবসময় নিচে থাকে" title="ফুটার" hint="যোগাযোগ, সোশ্যাল লিংক আর জরুরি সতর্কবার্তা">
         {!en && (
           <div className="grid">
@@ -679,17 +793,15 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
         {c.sections.emergency && txt("emergency", "সতর্কবার্তার লেখা", "জরুরি অবস্থায় ৯৯৯-এ কল করুন…", 2, 300)}
       </Step>
 
-      <p className="we-tip"><Icon name="shield" size={18} />BMDC-র নিয়ম মেনে চলুন: &quot;সেরা ডাক্তার&quot;, &quot;১০০% সুস্থ&quot; বা আগে-পরের ছবির মতো দাবি লিখবেন না।</p>
+      {tab !== "design" && tab !== "order" && <p className="we-tip"><Icon name="shield" size={18} />BMDC-র নিয়ম মেনে চলুন: &quot;সেরা ডাক্তার&quot;, &quot;১০০% সুস্থ&quot; বা আগে-পরের ছবির মতো দাবি লিখবেন না।</p>}
+      </div>
       </div>
 
       {/* ডানে লাইভ প্রিভিউ */}
       <div className="we-right">
         <div className="we-pv-bar">
-          <div className="we-seg sm" role="group" aria-label="প্রিভিউ মাপ">
-            <button type="button" className={device === "desktop" ? "on" : ""} aria-pressed={device === "desktop"} onClick={() => setDevice("desktop")}><Icon name="monitor" size={16} />ডেস্কটপ</button>
-            <button type="button" className={device === "mobile" ? "on" : ""} aria-pressed={device === "mobile"} onClick={() => setDevice("mobile")}><Icon name="smartphone" size={16} />মোবাইল</button>
-          </div>
-          <span className="we-live"><i />লাইভ প্রিভিউ</span>
+          <span className="we-live"><i />লাইভ প্রিভিউ · <b>{DESIGNS.find((d) => d.id === c.design)?.name}</b></span>
+          <span className="we-pv-note">{dirty ? "সেভ না করা পর্যন্ত আসল সাইটে দেখাবে না" : "আসল সাইটের মতোই"}</span>
           <button type="button" className="we-ib" onClick={() => setPvDark(!pvDark)} aria-label={pvDark ? "লাইট প্রিভিউ" : "ডার্ক প্রিভিউ"} title={pvDark ? "লাইট প্রিভিউ" : "ডার্ক প্রিভিউ"}><Icon name={pvDark ? "sun" : "moon"} size={16} /></button>
         </div>
         <div className="we-pv" ref={boxRef}>
@@ -697,7 +809,14 @@ export function WebsiteEditor({ initial, published: pub0, photo: photo0, premium
             <div className="we-pv-desk" style={{ width: 1280, height: box.h / (box.w / 1280), transform: `scale(${box.w / 1280})` }}>
               <iframe ref={frameRef} src="/site-preview" title="ওয়েবসাইটের প্রিভিউ" />
             </div>
-          ) : (
+          ) : device === "tablet" ? (() => {
+            const sc = Math.min(1, (box.w - 40) / 820, (box.h - 36) / 700);
+            return (
+              <div className="we-pv-desk we-pv-tab" style={{ width: 820, height: (box.h - 36) / sc, transform: `scale(${sc})`, left: (box.w - 820 * sc) / 2, top: 18 }}>
+                <iframe ref={frameRef} src="/site-preview" title="ট্যাবলেট প্রিভিউ" />
+              </div>
+            );
+          })() : (
             <div className="we-pv-phone"><iframe ref={frameRef} src="/site-preview" title="মোবাইল প্রিভিউ" /></div>
           )}
         </div>

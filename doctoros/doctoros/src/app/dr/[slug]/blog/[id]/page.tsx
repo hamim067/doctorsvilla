@@ -12,6 +12,7 @@ import { postDate } from "@/lib/post-date";
 import { doctorAssetUrls } from "@/lib/assets";
 import { SiteLogo } from "../../Website";
 import "../../../site.css";
+import "../../../designs.css";
 import "@fontsource/anek-bangla/400.css";
 import "@fontsource/anek-bangla/600.css";
 import "@fontsource/anek-bangla/700.css";
@@ -58,7 +59,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   const initials = doctor.name.replace(/^(অধ্যাপক|সহযোগী অধ্যাপক|ডা\.?|ডাঃ|Dr\.?|Prof\.?)\s*/g, "").trim().slice(0, 2);
   const others = c.posts.filter((p) => p.id !== id && p.title.trim()).slice(0, 3);
   return (
-    <div className={`ws ws-art-page th-${c.theme} f-${c.font}`}>
+    <div className={`ws ws-art-page th-${c.theme} d-${c.design} f-${c.font}`}>
       <header className="ws-nav">
         <div className="ws-wrap ws-nav-in">
           <Link href={`/dr/${slug}`} className="ws-brand">

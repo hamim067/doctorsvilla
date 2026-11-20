@@ -5,6 +5,7 @@ import { requireDoctor } from "@/lib/auth";
 import { loadSite } from "@/lib/site";
 import { websiteData } from "@/lib/site-data";
 import "../dr/site.css";
+import "../dr/designs.css";
 import "@fontsource/anek-bangla/400.css";
 import "@fontsource/anek-bangla/500.css";
 import "@fontsource/anek-bangla/600.css";

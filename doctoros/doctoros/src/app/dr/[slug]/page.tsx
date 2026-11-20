@@ -11,6 +11,8 @@ import { hasPremium, loadSite } from "@/lib/site";
 import { bn, formatTimeBn, today, WEEKDAYS_BN } from "@/lib/time";
 import "../patient.css";
 import "../site.css";
+import "../designs.css";
+import { DESIGNS } from "@/lib/designs";
 import "@fontsource/anek-bangla/400.css";
 import "@fontsource/anek-bangla/500.css";
 import "@fontsource/anek-bangla/600.css";
@@ -81,11 +83,12 @@ function scheduleLines(list: { weekday: number; startTime: string; endTime: stri
   });
 }
 
-export default async function DoctorProfile({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ preview?: string }> }) {
+export default async function DoctorProfile({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ preview?: string; design?: string }> }) {
   const data = await load((await params).slug);
   if (!data) notFound();
-  const mode = await websiteMode(data, (await searchParams).preview === "1");
-  if (mode.show) return <Website data={data} preview={mode.preview} />;
+  const sp = await searchParams;
+  const mode = await websiteMode(data, sp.preview === "1");
+  if (mode.show) return <Website data={data} preview={mode.preview} tryDesign={DESIGNS.find((x) => x.id === sp.design)} />;
   const { doctor, chambers } = data;
   const t = today();
   const todays = await Promise.all(chambers.map((c) => dayAvailability(c.id, t)));
@@ -170,8 +173,10 @@ export default async function DoctorProfile({ params, searchParams }: { params: 
 }
 
 /** Premium ওয়েবসাইট — সার্ভারে সব তথ্য গুছিয়ে ক্লায়েন্ট কম্পোনেন্টে পাঠানো */
-async function Website({ data, preview }: { data: NonNullable<Awaited<ReturnType<typeof load>>>; preview: "draft" | "plan" | null }) {
+async function Website({ data, preview, tryDesign }: { data: NonNullable<Awaited<ReturnType<typeof load>>>; preview: "draft" | "plan" | null; tryDesign?: (typeof DESIGNS)[number] }) {
   const d = await websiteData(data, preview);
+  // ?design=<id> — শুধু দেখার জন্য অন্য টেমপ্লেটে সাইটটা কেমন লাগে (কিছু সেভ হয় না)
+  if (tryDesign) d.content = { ...d.content, design: tryDesign.id, theme: tryDesign.theme, font: tryDesign.font };
   const origin = await siteOrigin();
   const { doctor, chambers } = data;
   // Google-এর জন্য গোছানো তথ্য (schema.org Physician)

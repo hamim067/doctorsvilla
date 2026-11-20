@@ -9,6 +9,9 @@
 }
 .ws.th-green { --p: #0F4D43; --p-dark: #08302A; --p-soft: #E6F1EE; --a: #22A386; --a-btn: #178A6F; --a-ink: #11745D; --a-soft: #E3F5EF; --ink: #10241F; --mut: #52645F; }
 .ws.th-plum { --p: #43306B; --p-dark: #271B42; --p-soft: #EFEBF6; --a: #2BA39A; --a-btn: #1C877F; --a-ink: #157A72; --a-soft: #E4F5F3; --ink: #1E1830; --mut: #5E5870; }
+.ws.th-sky { --p: #0B4F7C; --p-dark: #06304D; --p-soft: #E6F1F8; --a: #1FA4D6; --a-btn: #1283B0; --a-ink: #0D6A8F; --a-soft: #E2F4FB; --ink: #0E2333; --mut: #536677; }
+.ws.th-rose { --p: #7C2D4A; --p-dark: #4A1529; --p-soft: #F8ECF1; --a: #E26D8C; --a-btn: #C24E6E; --a-ink: #A23C5A; --a-soft: #FCEDF1; --ink: #2A1520; --mut: #6E5862; }
+.ws.th-gold { --p: #1B2A3A; --p-dark: #0E1722; --p-soft: #EDF0F3; --a: #C9A24B; --a-btn: #9C7726; --a-ink: #82621E; --a-soft: #F7F0DF; --ink: #141C25; --mut: #58616B; }
 .ws.is-en { font-family: "Plus Jakarta Sans", "Hind Siliguri", system-ui, sans-serif; }
 .ws *, .ws *::before, .ws *::after { box-sizing: border-box; }
 .ws a { color: inherit; text-decoration: none; }
@@ -270,8 +273,14 @@
 }
 :root[data-theme="dark"] .ws.th-green { --page: #08130F; --bg: #0C1B16; --card: #11241E; --input: #0C1B16; --line: #1E3A31; --p-soft: #15302A; --a-soft: #0F2E26; --a-ink: #5FD6B5; --nav-bg: rgba(8, 19, 15, 0.9); --mut: #9DB8AF; --body: #C3D6CF; }
 :root[data-theme="dark"] .ws.th-plum { --page: #0F0B19; --bg: #151024; --card: #1C1630; --input: #151024; --line: #2E2648; --p-soft: #251D3C; --a-soft: #10292B; --a-ink: #5FD3C8; --nav-bg: rgba(15, 11, 25, 0.9); --mut: #ADA6C2; --body: #D0CBE0; }
+:root[data-theme="dark"] .ws.th-sky { --page: #07131D; --bg: #0B1B28; --card: #102536; --input: #0B1B28; --line: #1D3A50; --p-soft: #12304A; --a-soft: #0C2D3B; --a-ink: #6CCDF0; --nav-bg: rgba(7, 19, 29, 0.9); --mut: #9DB3C4; --body: #C3D3DF; }
+:root[data-theme="dark"] .ws.th-rose { --page: #160A10; --bg: #1F0F17; --card: #29151F; --input: #1F0F17; --line: #43243A; --p-soft: #3A1A2A; --a-soft: #3A1622; --a-ink: #F59AB2; --nav-bg: rgba(22, 10, 16, 0.9); --mut: #C2A6B2; --body: #E0CDD5; }
+:root[data-theme="dark"] .ws.th-gold { --page: #0A0E13; --bg: #10161D; --card: #161E27; --input: #10161D; --line: #26323E; --p-soft: #1C2733; --a-soft: #2A2414; --a-ink: #E2C47A; --nav-bg: rgba(10, 14, 19, 0.9); --mut: #A3ACB6; --body: #CDD3D9; }
 :root[data-theme="dark"] .ws .ws-btn-p { background: color-mix(in srgb, var(--p) 70%, #5B7FB0); }
 :root[data-theme="dark"] .ws.th-green .ws-btn-p { background: #1B6B5C; }
+:root[data-theme="dark"] .ws.th-sky .ws-btn-p { background: #17689C; }
+:root[data-theme="dark"] .ws.th-rose .ws-btn-p { background: #9A3A5C; }
+:root[data-theme="dark"] .ws.th-gold .ws-btn-p { background: #8C6B24; }
 :root[data-theme="dark"] .ws.th-plum .ws-btn-p { background: #5E4596; }
 :root[data-theme="dark"] .ws .ws-logo, :root[data-theme="dark"] .ws .ws-ch-n { background: color-mix(in srgb, var(--p) 65%, #5B7FB0); }
 :root[data-theme="dark"] .ws .ws-lang button.on { background: var(--a-btn); }
